@@ -5,11 +5,11 @@
             "previewLimit": 50,
             "server": "localhost",
             "port": 5432,
-            "askForPassword": true,
             "driver": "PostgreSQL",
             "name": "alumni_detail",
             "database": "alumni_detail",
-            "username": "munifmubtashim"
+            "username": "munifmubtashim",
+            "password": ""
         }
     ]
 }
