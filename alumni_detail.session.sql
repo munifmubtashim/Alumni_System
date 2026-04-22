@@ -1,0 +1,46 @@
+CREATE TABLE users (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(100) NOT NULL,
+ email TEXT UNIQUE NOT NULL,
+ password TEXT NOT NULL,
+ role VARCHAR(20),
+ photo_url TEXT,
+ login_at TIMESTAMP NULL,
+ logout_at TIMESTAMP NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
+
+CREATE TABLE alumni_profile (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    department VARCHAR(100) NOT NULL,
+    graduation_yr INTEGER,
+    current_company VARCHAR(100),
+    job_title VARCHAR(100) NOT NULL,
+    experience TEXT,
+    bio TEXT,
+    linkedin_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    caption TEXT,
+    media_url TEXT,
+    comment_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    parent_id INTEGER NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
