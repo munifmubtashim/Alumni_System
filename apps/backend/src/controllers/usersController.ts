@@ -1,8 +1,7 @@
-import { error } from "node:console";
 import { createUser , findUserByEmail  } from "../models/users";
 import { Request , Response}  from "express";
 
-async function register(req:Request , res:Response ){
+export async function register(req:Request , res:Response ){
 try{
     const {name, email, password, role} = req.body;
     const existEmail = await findUserByEmail(email);
