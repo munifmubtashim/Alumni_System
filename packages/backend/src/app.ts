@@ -1,6 +1,6 @@
 import pool from './db';
 import express from 'express';
-import router from './routes/usersRoutes';
+import router from './routes/userRoutes';
 
 pool.query('SELECT NOW()')
     .then(() => console.log('DATABASE CONNECTED'))
