@@ -1,45 +1,35 @@
 import { createUserDal , findUserByEmailDal } from "../dal/user.dal";
-import {User,createUser} from "@alumni/shared";
+import {User,CreateUserInput,LoginUserInput} from "@alumni/shared";
 import bcrypt from 'bcrypt';
-import { register , login } from "../controllers/userController";
+import jwt from 'jsonwebtoken';
 
 
-export async function registerUser(data:createUser): Promise<User>{
-try{
+
+export async function registerUser(data:CreateUserInput): Promise<User>{
     const existEmail = await findUserByEmailDal(data.email);
     if(existEmail){
-           return res.status(400).json({ error: 'Email already exists' });
+           throw new Error('Email already exists')
     }
         const hashpass  = await bcrypt.hash(data.password,10);
-    if(!existEmail){
-       const newUser = await createUserDal(data.name, data.email, hashpass, data.role);
-       res.status(201).json(newUser);
-    }
-}catch(error:any){
-    res.status(500).json({error: error.message});
-
-
-}
+       return await createUserDal({name: data.name, email: data.email, password: hashpass, role: data.role});
+       
+    
 }
 
-export async function loginUser(req: Request , res:Response) {
-    try{
+export async function loginUser(data:LoginUserInput) {
+    
+    const emailCheck = await findUserByEmailDal(data.email);
 
-     if(!userEmail){
-         return res.status(404).json({error: 'Email not found'});
+     if(!emailCheck){
+           throw new Error( 'Email not found');
 
      }
-    const passCompare = await bcrypt.compare(password, userEmail.password)
+    const passCompare = await bcrypt.compare(data.password, emailCheck.password)
      if(!passCompare){
-      return res.status(401).json({error: 'Wrong password'});
+      throw new Error('Wrong password');
      }
      else{
-        const token = jwt.sign({id: userEmail.id , role: userEmail.role},process.env.SECRET!,{expiresIn: '1h'});
-        return res.status(200).json({message: 'Login Successful', token});
+        return  jwt.sign({id: emailCheck.id , role: emailCheck.role},process.env.SECRET!,{expiresIn: '1h'});
      }
-    }
-    catch(error:any){
-    res.status(500).json({error: error.message});
-    }
     
 }
