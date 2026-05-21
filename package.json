@@ -1,9 +1,26 @@
 {
   "name": "alumni_system",
   "version": "1.0.0",
-  "description": "",
-  "workspaces": ["packages/*"],
+  "description": "```\r Alumni_System\r ├─ .DS_Store\r ├─ .postman\r │  └─ resources.yaml\r ├─ Alumni Detail system.drawio.pdf\r ├─ README.md\r ├─ alumni_detail.session.sql\r ├─ package-lock.json\r ├─ package.json\r ├─ packages\r │  ├─ .DS_Store\r │  ├─ backend\r │  │  ├─ .DS_Store\r │  │  ├─ package-lock.json\r │  │  ├─ package.json\r │  │  ├─ src\r │  │  │  ├─ .DS_Store\r │  │  │  ├─ app.ts\r │  │  │  ├─ config\r │  │  │  │  └─ db.ts\r │  │  │  ├─ controllers\r │  │  │  │  └─ usersController.ts\r │  │  │  ├─ dal\r │  │  │  ├─ middleware\r │  │  │  │  └─ auth.ts\r │  │  │  ├─ models\r │  │  │  │  └─ users.ts\r │  │  │  ├─ routes\r │  │  │  │  └─ usersRoutes.ts\r │  │  │  ├─ server.ts\r │  │  │  ├─ services\r │  │  │  └─ types\r │  │  │     ├─ .DS_Store\r │  │  │     └─ express.d.ts\r │  │  └─ tsconfig.json\r │  ├─ frontend\r │  │  └─ src\r │  │     ├─ components\r │  │     ├─ pages\r │  │     └─ services\r │  └─ shared\r │     ├─ .DS_Store\r │     ├─ package.json\r │     └─ src\r │        ├─ index.ts\r │        └─ types\r │           ├─ alumni.types.ts\r │           ├─ comment.types.ts\r │           ├─ post.types.ts\r │           └─ user.types.ts\r └─ postman\r    ├─ collections\r    ├─ environments\r    ├─ flows\r    ├─ globals\r    │  └─ workspace.globals.yaml\r    ├─ mocks\r    └─ specs",
+  "keywords": [],
+  "homepage": "https://github.com/munifmubtashim/Alumni_System#readme",
+  "bugs": {
+    "url": "https://github.com/munifmubtashim/Alumni_System/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munifmubtashim/Alumni_System.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "accepts": "^2.0.0",
     "acorn": "^8.16.0",
@@ -100,20 +117,10 @@
     "xtend": "^4.0.2",
     "yn": "^3.1.1"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/munifmubtashim/Alumni_System.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/munifmubtashim/Alumni_System/issues"
-  },
-  "homepage": "https://github.com/munifmubtashim/Alumni_System#readme"
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.1",
+    "globals": "^17.5.0",
+    "typescript-eslint": "^8.59.1"
+  }
 }
