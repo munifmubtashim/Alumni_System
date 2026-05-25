@@ -22,7 +22,7 @@
   "type": "module",
   "main": "src/app.ts",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/app.ts"
+    "dev": "tsx src/app.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

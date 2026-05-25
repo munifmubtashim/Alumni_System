@@ -1,4 +1,4 @@
-import { BaseDTO } from "./baseDTO.js";
+import type  { BaseDTO } from "./BaseDTO";
 
 
 export class PostDTO implements BaseDTO {
