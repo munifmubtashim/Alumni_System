@@ -22,7 +22,13 @@ export class CommentQuery{
             const info = await pool.query(
                 'SELECT * FROM comments ORDER BY created_at DESC'
             );
-            return info.rows;
+                 const comments:CommentDTO[]=[];
+                    for(const comment of info.rows){
+                        console.log(comment);
+                      comments.push(comment);
+                    }
+                    return comments;
+            
         }
 
             public async updatePost(comment: CommentDTO): Promise<CommentDTO> {

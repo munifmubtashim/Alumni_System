@@ -39,6 +39,12 @@ public async  updateUser(id: number, data: Partial<UserDTO>): Promise<UserDTO> {
 
 public async getAllUsers(): Promise<UserDTO[]> {
     const info = await pool.query('SELECT * FROM users');
+         const users:UserDTO[]=[];
+            for(const user of info.rows){
+                console.log(user);
+              users.push(user);
+            }
+            return users;
     return info.rows;
 }
 public async deleteUser(id: number): Promise<void> {
