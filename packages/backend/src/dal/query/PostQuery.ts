@@ -31,11 +31,11 @@ export class PostQuery {
         return posts;
     }
 
-    public async getPostsByUserId(post: PostDTO): Promise<PostDTO[]> {
+    public async getPostsByUserId(user_id:number): Promise<PostDTO[]> {
         const info = await pool.query(
             'SELECT * FROM posts WHERE user_id = $1 ORDER BY created_at DESC',
             [
-                post.user_id
+                user_id
             ]
         );
         return info.rows;
@@ -54,21 +54,21 @@ export class PostQuery {
         return info.rows[0];
     }
 
-    public async deletePost(post: PostDTO): Promise<void> {
+    public async deletePost(id:number): Promise<void> {
         await pool.query(
             'DELETE FROM posts WHERE id = $1',
             [
-                post.id
+                id
             ]
         );
     }
 
-    public async updateCommentCount(post: PostDTO): Promise<void> {
+    public async updateCommentCount(id: number, comment_count: number): Promise<void> {
         await pool.query(
             'UPDATE posts SET comment_count=$1 WHERE id=$2',
             [
-                post.comment_count,
-                post.id
+                comment_count,
+                id
             ]
         );
 
