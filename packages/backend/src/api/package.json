@@ -1,0 +1,13 @@
+{
+  "name": "@alumni/api",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@alumni/business-logic": "*",
+    "@alumni/shared": "*",
+    "tsx": "^4.22.4"
+  },
+  "scripts": {
+    "dev": "nodemon --exec tsx index.ts"
+  }
+}

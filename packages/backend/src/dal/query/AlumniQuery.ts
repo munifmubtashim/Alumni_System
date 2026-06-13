@@ -1,8 +1,8 @@
-import pool from "../../config/db.js";
+import pool from "../config/db.js";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 
 export class AlumniQuery {
-  constructor() {}
+  constructor() { }
 
   public async createAlumni(alumni: AlumniDTO): Promise<AlumniDTO> {
     const info = await pool.query(

@@ -1,7 +1,7 @@
 import type  { BaseDTO } from "./BaseDTO";
 
 export class CommentDTO implements BaseDTO {
-    id: number;
+    id!: number;
     user_id: number;
     post_id: number;
     parent_id: number;

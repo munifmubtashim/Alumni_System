@@ -1,44 +1,5 @@
 {
-  "name": "alumni_system",
+  "name": "@alumni/backend",
   "version": "1.0.0",
-  "description": "A full-stack alumni management system built with React, Node.js, and PostgreSQL",
-  "keywords": [
-    "alumni",
-    "management",
-    "react",
-    "nodejs",
-    "postgresql"
-  ],
-  "homepage": "https://github.com/munifmubtashim/Alumni_System#readme",
-  "bugs": {
-    "url": "https://github.com/munifmubtashim/Alumni_System/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/munifmubtashim/Alumni_System.git"
-  },
-  "license": "ISC",
-  "author": "Munif Mubtashim",
-  "type": "module",
-  "main": "src/app.ts",
-  "scripts": {
-    "dev": "tsx src/app.ts"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.6.0",
-    "@types/pg": "^8.20.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
-    "@alumni/shared": "*"
-  }
+  "private": true
 }

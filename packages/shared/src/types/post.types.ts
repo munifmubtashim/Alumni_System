@@ -8,13 +8,3 @@ export interface Post {
   updated_at?: Date;
 }
 
-export interface CreatePostInput {
-  user_id: number;
-  caption?: string;
-  media_url?: string;
-}
-
-export interface UpdatePostInput {
-  caption?: string;
-  media_url?: string;
-}

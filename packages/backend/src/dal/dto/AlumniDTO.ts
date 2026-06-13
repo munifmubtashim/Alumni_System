@@ -1,6 +1,6 @@
 import type { BaseDTO } from "./BaseDTO";
 export class AlumniDTO implements BaseDTO {
-    id: number;
+    id!: number;
     user_id: number;
     graduation_yr?: number;
     department: string;

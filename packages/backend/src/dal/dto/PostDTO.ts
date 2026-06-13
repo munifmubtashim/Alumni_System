@@ -1,7 +1,7 @@
 import type { BaseDTO } from "./BaseDTO";
 
 export class PostDTO implements BaseDTO {
-  id: number;
+  id!: number;
   user_id: number;
   caption?: string;
   media_url?: string;
@@ -10,6 +10,7 @@ export class PostDTO implements BaseDTO {
   updated_at?: Date;
 
   constructor(
+    
     user_id: number,
     comment_count: number,
     caption?: string,
