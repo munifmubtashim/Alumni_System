@@ -1,32 +1,18 @@
-import {PostDTO , PostQuery} from "@alumni/dal"
-
-
-
+import { PostDTO, PostQuery } from "@alumni/dal";
 
 export class PostManager {
-  public async createNewPost(
-    user_id: number,
-    caption: string,
-    media_url: string,
-    comments_count: number,
-   
-  ) {
-    const postQuery = new PostQuery();
-    const post = new PostDTO(
-      user_id,
-      comments_count,
-      caption,
-      media_url,
-      
-    );
-    const newPost = postQuery.createPost(post);
-    console.log(newPost);
+  postQuery: PostQuery;
+
+  constructor() {
+    this.postQuery = new PostQuery();
+  }
+  public async createNewPost(post: PostDTO) {
+    const newPost = await this.postQuery.createPost(post);
+    return newPost;
   }
 
-
-
-    
- public async updatePost(post:PostDTO){
-
- }
+  public async updatePost(post: PostDTO) {
+    const newUpatePost = await this.postQuery.updatePost(post);
+    return newUpatePost;
+  }
 }

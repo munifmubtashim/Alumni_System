@@ -1,6 +1,7 @@
 {
-  "name": "@alumni/business-logic",
+  "name": "@alumni/businesslogic",
   "version": "1.0.0",
+   "type": "module",
   "main": "index.ts",
   "dependencies": {
     "@alumni/dal": "*",

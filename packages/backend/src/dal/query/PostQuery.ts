@@ -41,7 +41,7 @@ export class PostQuery {
         return info.rows;
     }
 
-    public async updatePost(post: PostDTO, fieldToUpdate: string[]): Promise<PostDTO> {
+    public async updatePost(post: PostDTO): Promise<PostDTO> {
         const info = await pool.query(
             `UPDATE posts SET caption=$1, media_url=$2, updated_at=NOW()
             WHERE id=$3 RETURNING *`,
