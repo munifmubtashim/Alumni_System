@@ -15,4 +15,13 @@ export class PostManager {
     const newUpatePost = await this.postQuery.updatePost(post);
     return newUpatePost;
   }
+  public async deletePost(post:PostDTO){
+    const newDeletePOst = await this.postQuery.deletePost(post.id);
+    return newDeletePOst;
+  }
+  public async getAllPosts(){
+    const allPosts = await this.postQuery.getAllPosts();
+    return allPosts;
+
+  }
 }
