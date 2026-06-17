@@ -24,4 +24,13 @@ export class PostManager {
     return allPosts;
 
   }
+  public async getPostsByUserId(post:PostDTO){
+    const  newPostById = await this.postQuery.getPostsByUserId(post.user_id);
+    return newPostById;
+
+  }
+  public async updateCommentCount(post:PostDTO){
+    const newCommentCount = await this.postQuery.updateCommentCount(post.id ,post.comment_count);
+    return newCommentCount;
+  }
 }
