@@ -31,7 +31,7 @@ export class UserQuery {
 
     public async updateUser(id: number, data: Partial<UserDTO>): Promise<UserDTO> {
         const info = await pool.query(
-            `UPDATE users SET name=$1, photo_url=$2, password=$3,email=$4, updated_at=NOW() WHERE id=$4 RETURNING *`,
+            `UPDATE users SET name=$1, photo_url=$2, password=$3,email=$4, updated_at=NOW() WHERE id=$5 RETURNING *`,
             [data.name, data.photo_url, data.password, data.email, id]
         );
         return info.rows[0];
@@ -44,7 +44,7 @@ export class UserQuery {
             console.log(user);
             users.push(user);
         }
-        return users;
+
         return info.rows;
     }
     public async deleteUser(id: number): Promise<void> {
