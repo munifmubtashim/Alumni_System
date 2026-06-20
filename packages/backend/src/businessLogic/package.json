@@ -1,10 +1,13 @@
 {
   "name": "@alumni/businesslogic",
   "version": "1.0.0",
-   "type": "module",
+  "type": "module",
   "main": "index.ts",
   "dependencies": {
     "@alumni/dal": "*",
     "@alumni/shared": "*"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0"
   }
 }
