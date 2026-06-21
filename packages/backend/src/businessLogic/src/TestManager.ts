@@ -39,10 +39,10 @@ import { UserManager } from "./UserManager";
 // commentManager.deleteComment(deleteComment);
 
 
-// const alumniManager = new AlumniManager();
+const alumniManager = new AlumniManager();
 // const alumni = new AlumniDTO(
-//   1,
-//   1,
+//   23,
+//   15,
 //   "CSE",
 //   2023,
 //   "Google",
@@ -52,7 +52,7 @@ import { UserManager } from "./UserManager";
 //   "https://linkedin.com/in/alumni",
 // );
 // alumniManager.createAlumni(alumni);
-// alumniManager.getAllAlumni();
+alumniManager.getAllAlumni();
 // alumniManager.findAlumniById(1);
 // alumniManager.findAlumniByEmail("alumni@email.com");
 // alumniManager.updateAlumni(1, { department: "Software Engineering" });
@@ -61,11 +61,7 @@ import { UserManager } from "./UserManager";
 
 // const userManager = new UserManager();
 // const user = new UserDTO(
-//   "Munif Mubtashim",
-//   "munifmubtashim@gmail.com",
-//   "password123",
-//   "alumni",
-//   "https://image.com/photo.jpg",
+// "MD Rahim", "test001@email.com", "password123", "alumni", "https://image.com/photo.jpg"
 // );
 // userManager.createUser(user);
 // userManager.getAllUsers();
@@ -74,4 +70,5 @@ import { UserManager } from "./UserManager";
 // userManager.updateUser(1, { name: "Updated" });
 // userManager.updateLoginTime(1);
 // userManager.updateLogoutTime(1);
-// userManager.deleteUser(1);
+// // userManager.deleteUser(1);\
+

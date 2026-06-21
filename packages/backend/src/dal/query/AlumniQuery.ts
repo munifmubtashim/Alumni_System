@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 
 export class AlumniQuery {
@@ -55,6 +55,12 @@ public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
 
   public async getAllAlumnil(): Promise<AlumniDTO[]> {
     const info = await pool.query("SELECT * FROM alumni_profile");
-    return info.rows;
+    
+      const alumnis: AlumniDTO[] = [];
+            for (const alumni of info.rows) {
+                console.log(alumni);
+                alumnis.push(alumni);
+            }
+            return alumnis;
   }
 }

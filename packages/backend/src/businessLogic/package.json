@@ -2,12 +2,14 @@
   "name": "@alumni/businesslogic",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "@alumni/dal": "*",
     "@alumni/shared": "*"
   },
   "devDependencies": {
-    "@types/pg": "^8.20.0"
+    "@types/pg": "^8.20.0",
+    "dotenv": "^16.3.1"
   }
 }
