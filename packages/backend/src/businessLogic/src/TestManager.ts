@@ -39,23 +39,23 @@ import { UserManager } from "./UserManager";
 // commentManager.deleteComment(deleteComment);
 
 
-const alumniManager = new AlumniManager();
-// const alumni = new AlumniDTO(
-//   23,
-//   15,
-//   "CSE",
-//   2023,
-//   "Google",
-//   "Engineer",
-//   "5 years",
-//   "I am an alumni",
-//   "https://linkedin.com/in/alumni",
-// );
-// alumniManager.createAlumni(alumni);
-alumniManager.getAllAlumni();
-// alumniManager.findAlumniById(1);
-// alumniManager.findAlumniByEmail("alumni@email.com");
-// alumniManager.updateAlumni(1, { department: "Software Engineering" });
+// const alumniManager = new AlumniManager();
+// // const alumni = new AlumniDTO(
+// //   23,
+// //   15,
+// //   "CSE",
+// //   2023,
+// //   "Google",
+// //   "Engineer",
+// //   "5 years",
+// //   "I am an alumni",
+// //   "https://linkedin.com/in/alumni",
+// // );
+// // alumniManager.createAlumni(alumni);
+// alumniManager.getAllAlumni();
+// // alumniManager.findAlumniById(1);
+// // alumniManager.findAlumniByEmail("alumni@email.com");
+// // alumniManager.updateAlumni(1, { department: "Software Engineering" });
 
 
 

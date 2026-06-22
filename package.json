@@ -1,10 +1,17 @@
 {
   "name": "alumni-system",
   "private": true,
-  "workspaces": ["packages/*", "packages/backend/src/*"],
+  "workspaces": [
+    "packages/*",
+    "packages/backend/src/*"
+  ],
   "scripts": {
     "dev:api": "npm run dev --workspace=packages/backend/src/api",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
     "dev": "npm run dev:api & npm run dev:frontend"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "pg": "^8.22.0"
   }
 }
