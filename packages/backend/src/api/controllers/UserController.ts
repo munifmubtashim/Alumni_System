@@ -1,0 +1,82 @@
+import { Request, Response } from "express";
+import { UserManager } from "@alumni/businesslogic";
+import { UserDTO } from "@alumni/dal";
+
+const userManager = new UserManager();
+
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, role, photo_url } = req.body;
+    const user = new UserDTO(name, email, password, role, photo_url);
+    const newUser = await userManager.createUser(user);
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+};
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await userManager.getAllUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+export const findUserById = async (req: Request, res: Response) => {
+  try {
+    const user = await userManager.findUserById(Number(req.params.id));
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(404).json({ error: (error as Error).message });
+  }
+};
+
+export const findUserByEmail = async (req: Request, res: Response) => {
+  try {
+    const user = await userManager.findUserByEmail(req.params.email);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(404).json({ error: (error as Error).message });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const updated = await userManager.updateUser(
+      Number(req.params.id),
+      req.body,
+    );
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    await userManager.deleteUser(Number(req.params.id));
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+};
+
+export const updateLoginTime = async (req: Request, res: Response) => {
+  try {
+    await userManager.updateLoginTime(Number(req.params.id));
+    res.status(200).json({ message: "Login time updated" });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+};
+
+export const updateLogoutTime = async (req: Request, res: Response) => {
+  try {
+    await userManager.updateLogoutTime(Number(req.params.id));
+    res.status(200).json({ message: "Logout time updated" });
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message });
+  }
+};
