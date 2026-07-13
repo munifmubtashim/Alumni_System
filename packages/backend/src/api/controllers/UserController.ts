@@ -1,8 +1,28 @@
 import { Request, Response } from "express";
 import { UserManager } from "@alumni/businesslogic";
 import { UserDTO } from "@alumni/dal";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userManager = new UserManager();
+const JWT_SECRET = process.env.JWT_SECRET as string;
+export async function login(email: string, password: string) {
+  const user = await userManager.findUserByEmail(email);
+  if (!user) throw { status: 401, message: "Invalid" };
+
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) throw { status: 401, message: "Invalid" };
+
+  const token = jwt.sign(
+    { sub: user.id, role: user.role },
+    JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+  return { token };
+}
+
+
+
 
 export const createUser = async (req: Request, res: Response) => {
   try {
