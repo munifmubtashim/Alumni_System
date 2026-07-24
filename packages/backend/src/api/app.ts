@@ -5,6 +5,7 @@ import alumniRoutes from './routes/AlumniRoutes';
 import postRoutes from './routes/PostRoutes';
 import commentRoutes from './routes/CommentRoutes';
 import userRoutes from './routes/UserRoutes';
+import authRoutes from "./routes/AuthRoutes"
 
 dotenv.config({ path: '../../.env' });
 
@@ -16,7 +17,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
-
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/alumni', alumniRoutes);
 app.use('/api/posts', postRoutes);

@@ -64,7 +64,7 @@ import { UserManager } from "./UserManager";
 // "MD Rahim", "test001@email.com", "password123", "alumni", "https://image.com/photo.jpg"
 // );
 // userManager.createUser(user);
-// userManager.getAllUsers();
+// userManager.getAllUsers().then(users => console.log(users));
 // userManager.findUserById(1);
 // userManager.findUserByEmail("munifmubtashim@gmail.com");
 // userManager.updateUser(1, { name: "Updated" });

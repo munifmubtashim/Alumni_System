@@ -21,13 +21,17 @@ export async function login(email: string, password: string) {
   return { token };
 }
 
+export function verifyToken(token: string) {
+  return jwt.verify(token, JWT_SECRET) as unknown as { sub: number; role: string };
+}
 
 
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role, photo_url } = req.body;
-    const user = new UserDTO(name, email, password, role, photo_url);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new UserDTO(name, email, hashedPassword, role, photo_url);
     const newUser = await userManager.createUser(user);
     res.status(201).json(newUser);
   } catch (error) {
