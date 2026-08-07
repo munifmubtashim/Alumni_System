@@ -9,6 +9,9 @@ import {
   updateLoginTime,
   updateLogoutTime,
 } from "../controllers/UserController";
+import { updateAlumni } from "../controllers/AlumniController";
+import { authMiddleware } from "../Middleware/authMIddleware.js";
+import { requireRole } from "../Middleware/roleMiddleware";
 
 const router = Router();
 
@@ -17,8 +20,9 @@ router.get("/", getAllUsers);
 router.get("/:id", findUserById);
 router.get("/email/:email", findUserByEmail);
 router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+router.delete("/:id", authMiddleware, requireRole("admin"), deleteUser);
 router.put("/:id/login", updateLoginTime);
 router.put("/:id/logout", updateLogoutTime);
+router.put("/:id", authMiddleware, requireRole("admin"), updateAlumni);
 
 export default router;
