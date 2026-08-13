@@ -2,7 +2,7 @@ import LoginForm from "../components/LoginForm";
 
 export default function LoginPage() {
   const handleSuccess = (token: string) => {
-    localStorage.setItem("token", token); // consider memory/context for production
+    localStorage.setItem("token", token); 
     window.location.href = "/dashboard";
   };
 

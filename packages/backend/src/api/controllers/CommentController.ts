@@ -39,6 +39,7 @@ export const updateComment = async (req: Request, res: Response) => {
 export const deleteComment = async (req: Request, res: Response) => {
   try {
     const comment = new CommentDTO(0,0, 0, '');
+ 
     comment.id = Number(req.params.id);
     await commentManager.deleteComment(comment);
     res.status(200).json({ message: 'Comment deleted successfully' });
