@@ -2,7 +2,7 @@ import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 
 export class AlumniQuery {
-  constructor() {}
+  constructor() { }
 
   public async createAlumni(alumni: AlumniDTO): Promise<AlumniDTO> {
     const info = await pool.query(
@@ -20,13 +20,13 @@ export class AlumniQuery {
     );
     return info.rows[0];
   }
-public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
-  const info = await pool.query(
-    "SELECT ap.* FROM alumni_profile ap JOIN users u ON ap.user_id = u.id WHERE u.email = $1",
-    [email]
-  );
-  return info.rows[0];
-}
+  public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
+    const info = await pool.query(
+      "SELECT ap.* FROM alumni_profile ap JOIN users u ON ap.user_id = u.id WHERE u.email = $1",
+      [email]
+    );
+    return info.rows[0];
+  }
 
   public async findAlumniById(id: number): Promise<AlumniDTO> {
     const info = await pool.query("SELECT * FROM alumni_profile WHERE id = $1", [id]);
@@ -55,12 +55,12 @@ public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
 
   public async getAllAlumnil(): Promise<AlumniDTO[]> {
     const info = await pool.query("SELECT * FROM alumni_profile");
-    
-      const alumnis: AlumniDTO[] = [];
-            for (const alumni of info.rows) {
-                console.log(alumni);
-                alumnis.push(alumni);
-            }
-            return alumnis;
+
+    const alumnis: AlumniDTO[] = [];
+    for (const alumni of info.rows) {
+      console.log(alumni);
+      alumnis.push(alumni);
+    }
+    return alumnis;
   }
 }

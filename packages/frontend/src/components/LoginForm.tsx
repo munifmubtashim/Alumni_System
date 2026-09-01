@@ -1,45 +1,94 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Button, Checkbox, Form, Input, message } from "antd";
 import { login } from "../services/authApi";
 
-interface Props {
+type FieldType = {
+  email: string;
+  password: string;
+  remember?: boolean;
+};
+
+type LoginFormProps = {
   onSuccess: (token: string) => void;
-}
+};
 
-export default function LoginForm({ onSuccess }: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const onFinish = async (values: FieldType) => {
+    setLoading(true);
     try {
-      const data = await login(email, password);
-      onSuccess(data.token);
-    } catch (err: any) {
-  console.log(err);
-  setError(err.response?.data?.message || "Login failed");
- }
+      const data = await login(values.email, values.password);
+
+      message.success("Login successful!");
+      
+      // Ensure data.token exists (e.g., if authApi returns { token: "..." })
+      if (data?.token) {
+        onSuccess(data.token);
+      } else {
+        message.error("No token received from server.");
+      }
+    } catch (error: any) {
+      console.error("Status:", error.response?.status);
+      console.error("Response:", error.response?.data);
+
+      const errorMessage =
+        error.response?.data?.message || "Invalid email or password.";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log("Validation failed:", errorInfo);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit">Log In</button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </form>
+    <Form<FieldType>
+      name="login"
+      labelCol={{ span: 8 }}
+      wrapperCol={{ span: 16 }}
+      style={{ maxWidth: 600 }}
+      initialValues={{ remember: true }}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      autoComplete="off"
+    >
+      <Form.Item<FieldType>
+        label="Email"
+        name="email"
+        rules={[
+          { required: true, message: "Please input your email!" },
+          { type: "email", message: "Please enter a valid email!" },
+        ]}
+      >
+        <Input placeholder="user@example.com" />
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        label="Password"
+        name="password"
+        rules={[{ required: true, message: "Please input your password!" }]}
+      >
+        <Input.Password placeholder="Password" />
+      </Form.Item>
+
+      <Form.Item<FieldType>
+        name="remember"
+        valuePropName="checked"
+        wrapperCol={{ offset: 8, span: 16 }}
+      >
+        <Checkbox>Remember me</Checkbox>
+      </Form.Item>
+
+      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+        <Button type="primary" htmlType="submit" loading={loading}>
+          Login
+        </Button>
+      </Form.Item>
+    </Form>
   );
-}
+};
+
+export default LoginForm;
