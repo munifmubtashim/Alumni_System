@@ -1,85 +1,72 @@
 import React from 'react';
-import { AppstoreOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Flex, Listy, Spin, Typography, Empty, Avatar, Card, Button } from 'antd';
+import { UserOutlined, CommentOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import type { Post } from '@alumni/shared';
 
-const { Header, Content, Sider } = Layout;
-
-const topItems: MenuProps['items'] = [
-  { key: 'dashboard', label: 'Dashboard' },
-  { key: 'posts', label: 'Feed' },
-  { key: 'directory', label: 'Directory' },
-];
-
-const sideItems: MenuProps['items'] = [
-  { key: 'profile', icon: <UserOutlined />, label: 'My Profile' },
-  { key: 'posts', icon: <AppstoreOutlined />, label: 'Posts' },
-  { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
-];
+const PAGE_SIZE = 50;
 
 const PostFeed: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const activeKey = location.pathname.replace('/', '') || 'dashboard';
+  const [items, setItems] = React.useState<Post[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [hasMore, setHasMore] = React.useState(true);
+  const loadingRef = React.useRef(false);
 
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
+  const loadPage = (offset: number) => {
+    loadingRef.current = true;
+    setLoading(true);
+    axios
+      .get(`http://localhost:3000/api/posts?limit=${PAGE_SIZE}&offset=${offset}`)
+      .then((res) => {
+        const newPosts: Post[] = res.data;
+        setItems((prev) => [...prev, ...newPosts]);
+        if (newPosts.length < PAGE_SIZE) setHasMore(false);
+      })
+      .finally(() => {
+        loadingRef.current = false;
+        setLoading(false);
+      });
+  };
 
-const onClick = (e: { key: string }) => navigate(`/${e.key}`);
+  React.useEffect(() => {
+    loadPage(0);
+  }, []);
+
+  const onScroll: React.UIEventHandler<HTMLElement> = (event) => {
+    const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight > 200 || loadingRef.current || !hasMore) return;
+    loadPage(items.length);
+  };
+
+  if (loading && items.length === 0) {
+    return <Flex justify="center" style={{ height: 200 }}><Spin size="large" /></Flex>;
+  }
+  if (items.length === 0) return <Empty description="No posts yet" />;
 
   return (
-    <Layout>
-      <Header style={{ display: 'flex', alignItems: 'center',position:'sticky' }}>
-        <div style={{ color: 'white', marginRight: 24, fontWeight: 'bold' }}>Alumni Details System</div>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[activeKey]}
-          items={topItems}
-          onClick={onClick}
-          style={{ flex: 1, minWidth: 0 }}
-        />
-      </Header>
-      <Layout>
-        <Sider width={200} style={{ background: colorBgContainer }}>
-          <Menu
-            mode="inline"
-            selectedKeys={[activeKey]}
-            style={{ height: '100%', borderInlineEnd: 0 }}
-            items={sideItems}
-            onClick={onClick}
-            
-          />
-        </Sider>
-        <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
-          <div
-            style={{
-              padding: 24,
-              textAlign: 'center',
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            <p>long content</p>
-            {
-              // indicates very long content
-              Array.from({ length: 100 }, (_, index) => (
-                <React.Fragment key={index}>
-                  {index % 20 === 0 && index ? 'more' : '...'}
-                  <br />
-                </React.Fragment>
-              ))
-            }
-          </div>
-        </Content>
-       
-      </Layout>
-      </Layout>
-    </Layout>
+    <Flex vertical gap="small" style={{ maxWidth: 600, margin: '0 auto',minHeight:'100%' }}>
+      <Listy<Post>
+        virtual
+        items={items}
+        rowKey="id"
+        height={600}
+        onScroll={onScroll}
+        itemRender={(post) => (
+          <Card style={{ marginBottom: 16 }}>
+            <Flex align="center" gap="small" style={{ marginBottom: 12 }}>
+              <Typography.Text strong>{post.author_name ?? `User #${post.user_id}`}</Typography.Text>
+            </Flex>
+            <Typography.Paragraph style={{ marginBottom: 8 }}>{post.caption}</Typography.Paragraph>
+            <Flex justify="space-between" align="center">
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {post.comment_count ?? 0} comments
+              </Typography.Text>
+              <Button type="text" icon={<CommentOutlined />} size="small">Comment</Button>
+            </Flex>
+          </Card>
+        )}
+      />
+    </Flex>
   );
 };
 

@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@alumni/shared": "*",
+    "@ant-design/icons": "^6.3.4",
+    "antd": "^6.6.2",
     "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
