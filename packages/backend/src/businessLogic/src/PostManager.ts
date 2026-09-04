@@ -19,11 +19,10 @@ export class PostManager {
     const newDeletePOst = await this.postQuery.deletePost(post.id);
     return newDeletePOst;
   }
-  public async getAllPosts(){
-    const allPosts = await this.postQuery.getAllPosts();
-    return allPosts;
-
-  }
+public async getAllPosts(limit?: number, offset?: number){
+  const allPosts = await this.postQuery.getAllPosts(limit, offset);
+  return allPosts;
+}
   public async getPostsByUserId(post:PostDTO){
     const  newPostById = await this.postQuery.getPostsByUserId(post.user_id);
     return newPostById;

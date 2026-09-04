@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppstoreOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Flex, Layout, Menu, theme } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 const { Header, Content, Sider } = Layout;
@@ -18,7 +18,7 @@ const sideItems: MenuProps['items'] = [
   { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
 ];
 
-const PostFeed: React.FC = () => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeKey = location.pathname.replace('/', '') || 'dashboard';
@@ -31,7 +31,7 @@ const onClick = (e: { key: string }) => navigate(`/${e.key}`);
 
   return (
     <Layout>
-      <Header style={{ display: 'flex', alignItems: 'center',position:'sticky' }}>
+      <Header style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ color: 'white', marginRight: 24, fontWeight: 'bold' }}>Alumni Details System</div>
         <Menu
           theme="dark"
@@ -50,37 +50,26 @@ const onClick = (e: { key: string }) => navigate(`/${e.key}`);
             style={{ height: '100%', borderInlineEnd: 0 }}
             items={sideItems}
             onClick={onClick}
-            
           />
         </Sider>
-        <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
-          <div
+        <Layout style={{ padding: '0 24px 24px' ,minHeight:'100vh'}}>
+          <Breadcrumb items={[{ title: 'Home' }, { title: activeKey }]} style={{ margin: '16px 0' }} />
+          <Content
             style={{
               padding: 24,
-              textAlign: 'center',
+              margin: 0,
+              Flex:1,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
           >
-            <p>long content</p>
-            {
-              // indicates very long content
-              Array.from({ length: 100 }, (_, index) => (
-                <React.Fragment key={index}>
-                  {index % 20 === 0 && index ? 'more' : '...'}
-                  <br />
-                </React.Fragment>
-              ))
-            }
-          </div>
-        </Content>
-       
-      </Layout>
+            <h2>Welcome back!</h2>
+            <Outlet />
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   );
 };
 
-export default PostFeed;
+export default Dashboard;

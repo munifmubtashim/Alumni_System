@@ -6,5 +6,6 @@ export interface Post {
   comment_count?: number;
   created_at?: Date;
   updated_at?: Date;
+  author_name?: string;
+  author_photo?: string;
 }
-

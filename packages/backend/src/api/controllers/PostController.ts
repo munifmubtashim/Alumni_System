@@ -17,6 +17,8 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const getAllPosts = async (req: Request, res: Response) => {
   try {
+    const limit = req.query.limit ? Number(req.query.limit) : 50;
+    const offset = req.query.offset ? Number(req.query.offset) : 0;
     const posts = await postManager.getAllPosts();
     res.status(200).json(posts);
   } catch (error) {

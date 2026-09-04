@@ -1,15 +1,17 @@
+import Dashboard from "../components/Dashboard";
+
+
 export default function DashboardPage() {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    window.location.href = "/";
+    window.location.href = "/posts";
     return null;
   }
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <p>Welcome! You're logged in.</p>
+       <div>
+      <Dashboard  />
     </div>
   );
 }

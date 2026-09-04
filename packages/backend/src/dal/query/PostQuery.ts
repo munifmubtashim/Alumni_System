@@ -19,17 +19,17 @@ export class PostQuery {
         return info.rows[0];
     }
 
-    public async getAllPosts(): Promise<PostDTO[]> {
-        const info = await pool.query(
-            'SELECT * FROM posts ORDER BY created_at DESC'
-        );
-        const posts: PostDTO[] = [];
-        for (const post of info.rows) {
-            console.log(post);
-            posts.push(post);
-        }
-        return posts;
-    }
+public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDTO[]> {
+    const info = await pool.query(
+        `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+         FROM posts
+         JOIN users ON posts.user_id = users.id
+         ORDER BY posts.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+    );
+    return info.rows;
+}
 
     public async getPostsByUserId(user_id: number): Promise<PostDTO[]> {
         const info = await pool.query(
