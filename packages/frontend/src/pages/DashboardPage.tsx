@@ -1,6 +1,5 @@
 import Dashboard from "../components/Dashboard";
 
-
 export default function DashboardPage() {
   const token = localStorage.getItem("token");
 
@@ -10,8 +9,8 @@ export default function DashboardPage() {
   }
 
   return (
-       <div>
-      <Dashboard  />
+    <div>
+      <Dashboard />
     </div>
   );
 }

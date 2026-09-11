@@ -21,7 +21,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       const data = await login(values.email, values.password);
 
       message.success("Login successful!");
-      
+
       // Ensure data.token exists (e.g., if authApi returns { token: "..." })
       if (data?.token) {
         onSuccess(data.token);

@@ -9,7 +9,14 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route element={<DashboardPage />}>
-          <Route path="/dashboard" element={<div><h1>Welcome!</h1></div>}  />
+          <Route
+            path="/dashboard"
+            element={
+              <div>
+                <h1>Welcome!</h1>
+              </div>
+            }
+          />
           <Route path="/posts" element={<PostFeedPage />} />
         </Route>
       </Routes>

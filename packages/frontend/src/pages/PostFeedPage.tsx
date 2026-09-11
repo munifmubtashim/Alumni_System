@@ -10,7 +10,7 @@ export default function PostFeedPage() {
 
   return (
     <div>
-     <PostFeed/>
+      <PostFeed />
     </div>
   );
 }
