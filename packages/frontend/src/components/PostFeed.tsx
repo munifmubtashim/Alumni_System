@@ -39,7 +39,7 @@ const PostFeed: React.FC = () => {
     loadingRef.current = true;
     setLoading(true);
     axios
-      .get(`http://localhost:3000/api/posts?limit=${PAGE_SIZE}&offset=${offset}`)
+      .get(`/api/posts?limit=${PAGE_SIZE}&offset=${offset}`)
       .then((res) => {
         const newPosts: Post[] = res.data;
         setItems((prev) => {
