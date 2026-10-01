@@ -33,7 +33,11 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
 
     public async getPostsByUserId(user_id: number): Promise<PostDTO[]> {
         const info = await pool.query(
-            'SELECT * FROM posts WHERE user_id = $1 ORDER BY created_at DESC',
+            `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+             FROM posts
+             JOIN users ON posts.user_id = users.id
+             WHERE posts.user_id = $1
+             ORDER BY posts.created_at DESC`,
             [
                 user_id
             ]

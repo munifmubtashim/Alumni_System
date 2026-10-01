@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import { UserDTO } from "../dto/UserDTO.js";
+import type { AlumniEditableFields, AlumniProfileFields, MyProfileRow, PublicUserRow, RegisterUserFields, UserBasicsFields } from "../dto/RegisterDTO.js";
 
 
 export class UserQuery {
@@ -29,13 +30,6 @@ export class UserQuery {
 
     }
 
-    public async updateUser(id: number, data: Partial<UserDTO>): Promise<UserDTO> {
-        const info = await pool.query(
-            `UPDATE users SET name=$1, photo_url=$2, password=$3,email=$4, updated_at=NOW() WHERE id=$5 RETURNING *`,
-            [data.name, data.photo_url, data.password, data.email, id]
-        );
-        return info.rows[0];
-    }
 
     public async getAllUsers(): Promise<UserDTO[]> {
         const info = await pool.query('SELECT * FROM users');
@@ -55,5 +49,99 @@ export class UserQuery {
     }
     public async updateLogoutTime(id: number): Promise<void> {
         await pool.query('UPDATE users SET logout_at=NOW() WHERE id=$1', [id]);
+    }
+
+    // Creates the user (role always 'alumni') and their alumni row atomically.
+    public async createAlumniUser(user: RegisterUserFields, profile: AlumniProfileFields): Promise<PublicUserRow> {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const userResult = await client.query(
+                `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, 'alumni')
+                 RETURNING id, name, email, role, photo_url, created_at`,
+                [user.name, user.email, user.password]
+            );
+            const newUser: PublicUserRow = userResult.rows[0];
+            await client.query(
+                `INSERT INTO alumni (user_id, department, graduation_year, current_company, job_title, linkedin_url)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                [
+                    newUser.id,
+                    profile.department ?? null,
+                    profile.graduation_year ?? null,
+                    profile.current_company ?? null,
+                    profile.job_title ?? null,
+                    profile.linkedin_url ?? null
+                ]
+            );
+            await client.query('COMMIT');
+            return newUser;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    // users row + their first alumni row (if any). Never selects the password.
+    private static readonly MY_PROFILE_SQL = `
+        SELECT u.id AS user_id, u.name, u.email, u.photo_url, u.role,
+               a.id AS alumni_id, (a.id IS NOT NULL) AS has_alumni_profile,
+               a.department, a.graduation_year, a.current_company, a.job_title,
+               a.experience, a.bio, a.linkedin_url, a.updated_at
+        FROM users u
+        LEFT JOIN alumni a ON a.id = (SELECT id FROM alumni WHERE user_id = u.id ORDER BY id LIMIT 1)
+        WHERE u.id = $1`;
+
+    public async findMyProfile(userId: number): Promise<MyProfileRow | undefined> {
+        const info = await pool.query(UserQuery.MY_PROFILE_SQL, [userId]);
+        return info.rows[0];
+    }
+
+    // Updates the user's own name/photo and, when `alumni` is given, their alumni row, in one transaction.
+    // Returns undefined (and changes nothing) if the user doesn't exist.
+    public async updateMyProfile(
+        userId: number,
+        basics: UserBasicsFields,
+        alumni?: AlumniEditableFields
+    ): Promise<MyProfileRow | undefined> {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const userResult = await client.query(
+                'UPDATE users SET name=$1, photo_url=$2, updated_at=NOW() WHERE id=$3',
+                [basics.name, basics.photo_url ?? null, userId]
+            );
+            if (userResult.rowCount === 0) {
+                await client.query('ROLLBACK');
+                return undefined;
+            }
+            if (alumni) {
+                await client.query(
+                    `UPDATE alumni SET department=$1, graduation_year=$2, current_company=$3, job_title=$4,
+                        experience=$5, bio=$6, linkedin_url=$7, updated_at=NOW()
+                     WHERE id = (SELECT id FROM alumni WHERE user_id = $8 ORDER BY id LIMIT 1)`,
+                    [
+                        alumni.department ?? null,
+                        alumni.graduation_year ?? null,
+                        alumni.current_company ?? null,
+                        alumni.job_title ?? null,
+                        alumni.experience ?? null,
+                        alumni.bio ?? null,
+                        alumni.linkedin_url ?? null,
+                        userId
+                    ]
+                );
+            }
+            const profile = await client.query(UserQuery.MY_PROFILE_SQL, [userId]);
+            await client.query('COMMIT');
+            return profile.rows[0];
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }

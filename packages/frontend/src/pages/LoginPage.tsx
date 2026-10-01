@@ -1,38 +1,46 @@
-import { Card, Col, Row, Typography, theme } from "antd";
-import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/LoginForm";
+import { Alert, App, theme } from "antd";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import LoginForm, { type LoginValues } from "../components/LoginForm";
+import { useLogin } from "../hooks/useLogin";
+import AuthLayout from "../layouts/AuthLayout";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const sessionExpired = params.get("session") === "expired";
+  const { login, submitting, error, clearError } = useLogin();
+  const { message } = App.useApp();
   const {
-    token: { colorBgLayout, boxShadowTertiary, padding, marginXS, marginLG },
+    token: { margin },
   } = theme.useToken();
 
-  const handleSuccess = (token: string) => {
+  const handleSubmit = async ({ email, password }: LoginValues) => {
+    const token = await login(email, password);
+    if (!token) return;
     localStorage.setItem("token", token);
+    message.success("Login successful!");
     navigate("/posts", { replace: true });
   };
 
   return (
-    <Row
-      justify="center"
-      align="middle"
-      style={{ minHeight: "100vh", padding, background: colorBgLayout }}
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to your alumni account"
+      footer={
+        <>
+          New here? <Link to="/register">Create an account</Link>
+        </>
+      }
     >
-      <Col xs={24} sm={16} md={12} lg={8} xxl={6}>
-        <Card style={{ boxShadow: boxShadowTertiary }}>
-          <Typography.Title level={3} style={{ textAlign: "center", marginBottom: marginXS }}>
-            Alumni Details System
-          </Typography.Title>
-          <Typography.Paragraph
-            type="secondary"
-            style={{ textAlign: "center", marginBottom: marginLG }}
-          >
-            Sign in to continue
-          </Typography.Paragraph>
-          <LoginForm onSuccess={handleSuccess} />
-        </Card>
-      </Col>
-    </Row>
+      {sessionExpired && !error && (
+        <Alert
+          type="warning"
+          showIcon
+          title="Your session has expired. Please sign in again."
+          style={{ marginBottom: margin }}
+        />
+      )}
+      <LoginForm submitting={submitting} error={error} onSubmit={handleSubmit} onEdit={clearError} />
+    </AuthLayout>
   );
 }

@@ -1,16 +1,20 @@
 import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 
+// Public user columns joined onto alumni rows. Email is only exposed on single-profile reads.
+const LIST_COLUMNS = "a.*, u.name, u.photo_url";
+const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url";
+
 export class AlumniQuery {
   constructor() { }
 
   public async createAlumni(alumni: AlumniDTO): Promise<AlumniDTO> {
     const info = await pool.query(
-      "INSERT INTO alumni_profile (user_id,department,graduation_yr,  current_company,job_title,experience,bio,linkedin_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+      "INSERT INTO alumni (user_id, department, graduation_year, current_company, job_title, experience, bio, linkedin_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
       [
         alumni.user_id,
         alumni.department,
-        alumni.graduation_yr,
+        alumni.graduation_year,
         alumni.current_company,
         alumni.job_title,
         alumni.experience,
@@ -22,14 +26,17 @@ export class AlumniQuery {
   }
   public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
     const info = await pool.query(
-      "SELECT ap.* FROM alumni_profile ap JOIN users u ON ap.user_id = u.id WHERE u.email = $1",
+      `SELECT ${PROFILE_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id WHERE u.email = $1`,
       [email]
     );
     return info.rows[0];
   }
 
   public async findAlumniById(id: number): Promise<AlumniDTO> {
-    const info = await pool.query("SELECT * FROM alumni_profile WHERE id = $1", [id]);
+    const info = await pool.query(
+      `SELECT ${PROFILE_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id WHERE a.id = $1`,
+      [id]
+    );
     return info.rows[0];
   }
 
@@ -38,10 +45,10 @@ export class AlumniQuery {
     alumni: Partial<AlumniDTO>,
   ): Promise<AlumniDTO> {
     const info = await pool.query(
-      `UPDATE alumni_profile SET department=$1 ,graduation_yr=$2 ,  current_company=$3 ,job_title=$4 ,experience=$5 ,bio=$6 ,linkedin_url=$7 , updated_at=NOW() WHERE id=$8 RETURNING *`,
+      `UPDATE alumni SET department=$1 ,graduation_year=$2 ,  current_company=$3 ,job_title=$4 ,experience=$5 ,bio=$6 ,linkedin_url=$7 , updated_at=NOW() WHERE id=$8 RETURNING *`,
       [
         alumni.department,
-        alumni.graduation_yr,
+        alumni.graduation_year,
         alumni.current_company,
         alumni.job_title,
         alumni.experience,
@@ -54,13 +61,9 @@ export class AlumniQuery {
   }
 
   public async getAllAlumnil(): Promise<AlumniDTO[]> {
-    const info = await pool.query("SELECT * FROM alumni_profile");
-
-    const alumnis: AlumniDTO[] = [];
-    for (const alumni of info.rows) {
-      console.log(alumni);
-      alumnis.push(alumni);
-    }
-    return alumnis;
+    const info = await pool.query(
+      `SELECT ${LIST_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id ORDER BY u.name`
+    );
+    return info.rows;
   }
 }

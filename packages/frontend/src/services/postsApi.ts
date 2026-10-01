@@ -5,8 +5,19 @@ const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 
-export async function createPost(caption: string, media_url?: string): Promise<Post> {
-  const res = await axios.post("/api/posts", { caption, media_url }, { headers: authHeaders() });
+export async function getPosts(limit: number, offset: number): Promise<Post[]> {
+  const res = await axios.get("/api/posts", { params: { limit, offset } });
+  return res.data;
+}
+
+export async function getPostsByUser(userId: number): Promise<Post[]> {
+  const res = await axios.get(`/api/posts/user/${userId}`);
+  return res.data;
+}
+
+// TODO(security bolt): the server should take user_id from the JWT instead of the body.
+export async function createPost(user_id: number, caption: string, media_url?: string): Promise<Post> {
+  const res = await axios.post("/api/posts", { user_id, caption, media_url }, { headers: authHeaders() });
   return res.data;
 }
 

@@ -31,4 +31,8 @@ export const themeConfig: ThemeConfig = {
 export const layoutTokens = {
   contentMaxWidth: 1200,
   mobileDrawerSize: "80vw",
+  profileAvatarSize: 64,
+  authFormMaxWidth: 400,
+  // Sign-in side panel: a touch darker than colorBgLayout (#f5f7fa).
+  authPanelBg: "#e6ebf2",
 };

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AlumniManager } from "@alumni/businesslogic";
+import { AlumniManager, AppError } from "@alumni/businesslogic";
 import { AlumniDTO } from "@alumni/dal";
 
 const alumniManager = new AlumniManager();
@@ -9,7 +9,7 @@ export const createAlumni = async (req: Request, res: Response) => {
     const {
       user_id,
       department,
-      graduation_yr,
+      graduation_year,
       current_company,
       job_title,
       experience,
@@ -19,7 +19,7 @@ export const createAlumni = async (req: Request, res: Response) => {
     const alumni = new AlumniDTO(
       user_id,
       department,
-      graduation_yr,
+      graduation_year,
       current_company,
       job_title,
       experience,
@@ -44,7 +44,9 @@ export const getAllAlumni = async (req: Request, res: Response) => {
 
 export const findAlumniById = async (req: Request, res: Response) => {
   try {
-    const alumni = await alumniManager.findAlumniById(Number(req.params.id));
+    const id = Number(req.params.id);
+    const alumni = Number.isInteger(id) ? await alumniManager.findAlumniById(id) : undefined;
+    if (!alumni) return res.status(404).json({ error: "Alumni not found" });
     res.status(200).json(alumni);
   } catch (error) {
     res.status(404).json({ error: (error as Error).message });
@@ -60,14 +62,15 @@ export const findAlumniByEmail = async (req: Request, res: Response) => {
   }
 };
 
+// Owner-only (requires authMiddleware): edits the caller's own alumni row.
 export const updateAlumni = async (req: Request, res: Response) => {
   try {
-    const updated = await alumniManager.updateAlumni(
-      Number(req.params.id),
-      req.body,
-    );
+    const updated = await alumniManager.updateOwnAlumni(Number(req.user.sub), req.params.id, req.body ?? {});
     res.status(200).json(updated);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    if (error instanceof AppError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Something went wrong" });
   }
 };

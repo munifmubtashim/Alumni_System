@@ -2,8 +2,8 @@ import type { BaseDTO } from "./BaseDTO";
 export class AlumniDTO implements BaseDTO {
   id!: number;
   user_id: number;
-  department: string;
-  graduation_yr?: number;
+  department?: string;
+  graduation_year?: string;
   current_company?: string;
   job_title?: string;
   experience?: string;
@@ -11,12 +11,15 @@ export class AlumniDTO implements BaseDTO {
   linkedin_url?: string;
   created_at: Date;
   updated_at: Date;
+  // Joined from users on reads; never includes the password.
+  name?: string;
+  email?: string;
+  photo_url?: string;
 
   constructor(
-    id: number,
     user_id: number,
-    department: string,
-    graduation_yr?: number,
+    department?: string,
+    graduation_year?: string,
     current_company?: string,
     job_title?: string,
     experience?: string,
@@ -24,8 +27,8 @@ export class AlumniDTO implements BaseDTO {
     linkedin_url?: string,
   ) {
     this.user_id = user_id;
-    this.graduation_yr = graduation_yr;
     this.department = department;
+    this.graduation_year = graduation_year;
     this.current_company = current_company;
     this.job_title = job_title;
     this.experience = experience;

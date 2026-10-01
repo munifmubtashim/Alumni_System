@@ -1,7 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getCurrentUser } from "../services/authApi";
+import { getCurrentUser, isSessionExpired } from "../services/authApi";
 
 export default function RequireAuth() {
-  if (!getCurrentUser()) return <Navigate to="/" replace />;
+  if (!getCurrentUser()) {
+    return <Navigate to={isSessionExpired() ? "/?session=expired" : "/"} replace />;
+  }
   return <Outlet />;
 }

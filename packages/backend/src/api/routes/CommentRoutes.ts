@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { createComment, getAllComments, updateComment, deleteComment } from "../controllers/CommentController";
+import { deleteComment } from "../controllers/CommentController";
+import { authMiddleware } from "../Middleware/authMIddleware";
 
+// Listing and creating comments live under /api/posts/:id/comments (see PostRoutes).
 const router = Router();
 
-router.post("/", createComment);
-router.get("/", getAllComments);
-router.put("/:id", updateComment);
-router.delete("/:id", deleteComment);
+router.delete("/:id", authMiddleware, deleteComment);
 
 export default router;

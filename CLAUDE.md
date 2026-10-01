@@ -52,7 +52,7 @@ Each backend sub-package is its own workspace with its own `package.json`/`tscon
 `packages/frontend/src`, React + Vite + TypeScript, routed with `react-router-dom`, styled via `antd`, state via `jotai` atoms (`store/*Atom.ts`, e.g. `postsAtom`, `postsLoadingAtom`, `currentUserAtom`).
 
 - `services/*Api.ts` wrap `axios` calls to the backend (e.g. `authApi.ts`, `postsApi.ts`); authenticated calls manually attach `Authorization: Bearer <token>` read from `localStorage` (no axios interceptor — each call site builds its own headers).
-- `authApi.ts` decodes the JWT client-side (`atob` on the payload segment) to get `{ id, role }` for `getCurrentUser()` — there is no `/me` endpoint.
+- `authApi.ts` decodes the JWT client-side (`atob` on the payload segment) to get `{ id, role }` for `getCurrentUser()` (used for nav/ownership checks; it does not check expiry). Profile data for the logged-in user comes from `GET/PUT /api/me` (`services/meApi.ts`), which identifies the user only from the verified JWT — never from params or body.
 - `pages/` are route-level components (`LoginPage`, `DashboardPage`, `PostFeedPage`); `components/` are reusable pieces used by pages (`LoginForm`, `Dashboard`, `PostFeed`).
 - Vite dev server has no API proxy configured (`vite.config.ts` is default) — API calls use relative paths like `/api/auth/login`, so confirm how requests actually reach the backend port before assuming same-origin dev works out of the box.
 
@@ -61,7 +61,7 @@ Each backend sub-package is its own workspace with its own `package.json`/`tscon
 - Never write code before I approve the plan in aidlc/plan.md.
 - Work in small bolts; one bolt per session.
 - After each bolt: show diff, give test checklist, wait for approval.
-- Update docs/aidlc/plan.md status after each bolt.
+- Update aidlc/plan.md status after each bolt.
 
 ## UI Rules
 - Use Ant Design only; no other UI libraries.

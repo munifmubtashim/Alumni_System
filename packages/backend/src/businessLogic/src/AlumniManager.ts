@@ -1,4 +1,6 @@
 import { AlumniDTO, AlumniQuery } from "@alumni/dal";
+import { AppError } from "./errors.js";
+import { requireId, validateAlumniFields } from "./validation.js";
 
 export class AlumniManager {
   alumniQuery: AlumniQuery;
@@ -21,9 +23,13 @@ export class AlumniManager {
     return alumni;
   }
 
-  public async updateAlumni(id: number, alumni: Partial<AlumniDTO>) {
-    const updatedAlumni = await this.alumniQuery.updateAlumni(id, alumni);
-    return updatedAlumni;
+  // PUT /api/alumni/:id: only the row's owner may edit it (admins included). user_id can't change.
+  public async updateOwnAlumni(requesterId: number, alumniId: unknown, body: Record<string, unknown>) {
+    const id = requireId(alumniId, "Alumni");
+    const existing = await this.alumniQuery.findAlumniById(id);
+    if (!existing) throw new AppError(404, "Alumni not found");
+    if (existing.user_id !== requesterId) throw new AppError(403, "You can only edit your own profile");
+    return this.alumniQuery.updateAlumni(id, validateAlumniFields(body));
   }
 
   public async getAllAlumni() {

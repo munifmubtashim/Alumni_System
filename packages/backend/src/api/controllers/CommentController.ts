@@ -1,49 +1,40 @@
 import { Request, Response } from "express";
-import { CommentManager } from "@alumni/businesslogic";
-import { CommentDTO } from "@alumni/dal";
+import { AppError, CommentManager } from "@alumni/businesslogic";
 
 const commentManager = new CommentManager();
 
-export const createComment = async (req: Request, res: Response) => {
+function sendError(res: Response, error: unknown) {
+  if (error instanceof AppError) {
+    return res.status(error.status).json({ message: error.message });
+  }
+  res.status(500).json({ message: "Something went wrong" });
+}
+
+// GET /api/posts/:id/comments
+export const getPostComments = async (req: Request, res: Response) => {
   try {
-    const { user_id, post_id, content, parent_id } = req.body;
-    const comment = new CommentDTO(user_id, post_id, content, parent_id);
-    const newComment = await commentManager.createComment(comment);
-    res.status(201).json(newComment);
+    res.status(200).json(await commentManager.getCommentsForPost(req.params.id));
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
-export const getAllComments = async (req: Request, res: Response) => {
+// POST /api/posts/:id/comments (requires authMiddleware)
+export const addComment = async (req: Request, res: Response) => {
   try {
-    const comments = await commentManager.getAllComments();
-    res.status(200).json(comments);
+    const comment = await commentManager.addComment(Number(req.user.sub), req.params.id, req.body ?? {});
+    res.status(201).json(comment);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
-export const updateComment = async (req: Request, res: Response) => {
-  try {
-    const { user_id, post_id, content } = req.body;
-    const comment = new CommentDTO(user_id, post_id, 0, content);
-    comment.id = Number(req.params.id);
-    const updated = await commentManager.updateComment(comment);
-    res.status(200).json(updated);
-  } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
-  }
-};
-
+// DELETE /api/comments/:id (requires authMiddleware)
 export const deleteComment = async (req: Request, res: Response) => {
   try {
-    const comment = new CommentDTO(0,0, 0, '');
- 
-    comment.id = Number(req.params.id);
-    await commentManager.deleteComment(comment);
-    res.status(200).json({ message: 'Comment deleted successfully' });
+    await commentManager.deleteComment({ id: Number(req.user.sub), role: req.user.role }, req.params.id);
+    res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };

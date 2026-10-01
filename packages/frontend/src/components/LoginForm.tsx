@@ -1,50 +1,39 @@
-import React, { useState } from "react";
-import { App, Button, Form, Input } from "antd";
+import React from "react";
+import { Alert, Button, Flex, Form, Input, theme } from "antd";
+import { Link } from "react-router-dom";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import { login } from "../services/authApi";
 
-type FieldType = {
+export type LoginValues = {
   email: string;
   password: string;
 };
 
 type LoginFormProps = {
-  onSuccess: (token: string) => void;
+  submitting: boolean;
+  error?: string | null;
+  onSubmit: (values: LoginValues) => void;
+  // Called when the user edits a field, so a stale error can be cleared.
+  onEdit?: () => void;
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
-  const [loading, setLoading] = useState(false);
-  const { message } = App.useApp();
-
-  const onFinish = async (values: FieldType) => {
-    setLoading(true);
-    try {
-      const data = await login(values.email, values.password);
-
-      // Ensure data.token exists (e.g., if authApi returns { token: "..." })
-      if (data?.token) {
-        message.success("Login successful!");
-        onSuccess(data.token);
-      } else {
-        message.error("No token received from server.");
-      }
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Invalid email or password.";
-      message.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+const LoginForm: React.FC<LoginFormProps> = ({ submitting, error, onSubmit, onEdit }) => {
+  const {
+    token: { margin, marginSM },
+  } = theme.useToken();
 
   return (
-    <Form<FieldType>
+    <Form<LoginValues>
       name="login"
       layout="vertical"
       requiredMark={false}
-      onFinish={onFinish}
+      onFinish={onSubmit}
+      onValuesChange={() => onEdit?.()}
     >
-      <Form.Item<FieldType>
+      {error && (
+        <Alert type="error" showIcon title={error} role="alert" style={{ marginBottom: margin }} />
+      )}
+
+      <Form.Item<LoginValues>
         label="Email"
         name="email"
         rules={[
@@ -56,14 +45,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           prefix={<MailOutlined />}
           placeholder="user@example.com"
           autoComplete="email"
+          autoFocus
           size="large"
         />
       </Form.Item>
 
-      <Form.Item<FieldType>
+      <Form.Item<LoginValues>
         label="Password"
         name="password"
         rules={[{ required: true, message: "Please input your password!" }]}
+        style={{ marginBottom: marginSM }}
       >
         <Input.Password
           prefix={<LockOutlined />}
@@ -73,9 +64,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         />
       </Form.Item>
 
+      <Flex justify="flex-end" style={{ marginBottom: margin }}>
+        <Link to="/forgot-password">Forgot password?</Link>
+      </Flex>
+
       <Form.Item style={{ marginBottom: 0 }}>
-        <Button type="primary" htmlType="submit" loading={loading} block size="large">
-          Login
+        <Button type="primary" htmlType="submit" loading={submitting} block size="large">
+          Sign in
         </Button>
       </Form.Item>
     </Form>

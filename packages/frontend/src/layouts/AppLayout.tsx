@@ -5,6 +5,7 @@ import {
   ReadOutlined,
   TeamOutlined,
   InfoCircleOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Drawer, Flex, Grid, Layout, Menu, Typography, theme } from "antd";
@@ -19,6 +20,7 @@ const { Header, Content, Footer } = Layout;
 const navItems: MenuProps["items"] = [
   { key: "posts", icon: <ReadOutlined />, label: "Feed" },
   { key: "alumni", icon: <TeamOutlined />, label: "Alumni" },
+  { key: "me", icon: <UserOutlined />, label: "My Profile" },
   { key: "about", icon: <InfoCircleOutlined />, label: "About" },
 ];
 
@@ -83,7 +85,7 @@ const AppLayout: React.FC = () => {
         <Button
           ghost
           icon={<LogoutOutlined />}
-          onClick={logout}
+          onClick={() => logout()}
           aria-label="Logout"
         >
           {isDesktop && "Logout"}

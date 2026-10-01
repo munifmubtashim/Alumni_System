@@ -14,6 +14,6 @@ router.post("/", createAlumni);
 router.get("/", getAllAlumni);
 router.get("/:id", authMiddleware, findAlumniById);
 router.get("/email/:email", findAlumniByEmail);
-router.put("/:id", updateAlumni);
+router.put("/:id", authMiddleware, updateAlumni);
 
 export default router;

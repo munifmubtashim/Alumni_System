@@ -17,9 +17,9 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const getAllPosts = async (req: Request, res: Response) => {
   try {
-    const limit = req.query.limit ? Number(req.query.limit) : 50;
-    const offset = req.query.offset ? Number(req.query.offset) : 0;
-    const posts = await postManager.getAllPosts();
+    const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
+    const offset = Math.max(Number(req.query.offset) || 0, 0);
+    const posts = await postManager.getAllPosts(limit, offset);
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
