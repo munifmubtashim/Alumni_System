@@ -55,3 +55,24 @@ Each backend sub-package is its own workspace with its own `package.json`/`tscon
 - `authApi.ts` decodes the JWT client-side (`atob` on the payload segment) to get `{ id, role }` for `getCurrentUser()` — there is no `/me` endpoint.
 - `pages/` are route-level components (`LoginPage`, `DashboardPage`, `PostFeedPage`); `components/` are reusable pieces used by pages (`LoginForm`, `Dashboard`, `PostFeed`).
 - Vite dev server has no API proxy configured (`vite.config.ts` is default) — API calls use relative paths like `/api/auth/login`, so confirm how requests actually reach the backend port before assuming same-origin dev works out of the box.
+
+## Workflow: AI-DLC
+- Phases: Inception → Construction → Operations.
+- Never write code before I approve the plan in aidlc/plan.md.
+- Work in small bolts; one bolt per session.
+- After each bolt: show diff, give test checklist, wait for approval.
+- Update docs/aidlc/plan.md status after each bolt.
+
+## UI Rules
+- Use Ant Design only; no other UI libraries.
+- Theme via ConfigProvider tokens in src/theme/ (no hardcoded colors/sizes).
+- Responsive via antd Grid (Row/Col breakpoints) and Grid.useBreakpoint.
+- Structure:
+  src/
+    theme/        # tokens, ConfigProvider setup
+    components/   # reusable (AlumniCard, SearchBar, FilterPanel)
+    layouts/      # AppLayout (Header/Content/Footer)
+    pages/        # About, AlumniList, AlumniProfile
+    hooks/        # useAlumni, useFilters (data fetching)
+    services/     # API calls
+- Components: typed props from shared packages, no API calls inside UI components.

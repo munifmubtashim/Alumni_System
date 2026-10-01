@@ -34,7 +34,6 @@ echo "==> Stack is running:"
 echo "    App:     https://$DOMAIN"
 echo "    API:     https://$DOMAIN/api"
 echo "    Backend PID: $BACKEND_PID"
-echo ""
-echo "    Press Ctrl+C to stop the backend."
+
 
 wait $BACKEND_PID
