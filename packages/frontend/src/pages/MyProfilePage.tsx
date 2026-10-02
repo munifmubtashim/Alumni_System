@@ -1,18 +1,25 @@
 import React from "react";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, LockOutlined } from "@ant-design/icons";
 import { App, Button, Card, Col, Flex, Result, Row, Skeleton, Tag, Typography, theme } from "antd";
-import type { Alumni, MyProfile, UpdateMyProfileInput } from "@alumni/shared";
+import { useSearchParams } from "react-router-dom";
+import type { Alumni, ChangePasswordInput, MyProfile, UpdateMyProfileInput } from "@alumni/shared";
+import AccountDetails from "../components/AccountDetails";
 import AlumniProfileView from "../components/AlumniProfileView";
-import ProfileEditForm from "../components/ProfileEditForm";
+import ChangePasswordModal from "../components/ChangePasswordModal";
+import ProfileEditForm, { type ProfileKind } from "../components/ProfileEditForm";
 import UserPostList from "../components/UserPostList";
 import { useMyProfile } from "../hooks/useMyProfile";
 import { useUserPosts } from "../hooks/useUserPosts";
 import { logout } from "../services/authApi";
+import { ROLE_LABELS } from "../utils/alumni";
 
 const toFormValues = (p: MyProfile): UpdateMyProfileInput => ({
   name: p.name,
+  email: p.email,
   photo_url: p.photo_url ?? undefined,
+  university: p.university ?? undefined,
   department: p.department ?? undefined,
+  expected_graduation_year: p.expected_graduation_year ?? undefined,
   graduation_year: p.graduation_year ?? undefined,
   current_company: p.current_company ?? undefined,
   job_title: p.job_title ?? undefined,
@@ -28,8 +35,10 @@ const toViewModel = (p: MyProfile): Alumni => ({
   name: p.name,
   email: p.email,
   photo_url: p.photo_url ?? undefined,
+  university: p.university ?? undefined,
   department: p.department ?? undefined,
-  graduation_year: p.graduation_year ?? undefined,
+  // Students: their expected year, labelled "Expected graduation" in the view.
+  graduation_year: p.graduation_year ?? p.expected_graduation_year ?? undefined,
   current_company: p.current_company ?? undefined,
   job_title: p.job_title ?? undefined,
   experience: p.experience ?? undefined,
@@ -37,12 +46,18 @@ const toViewModel = (p: MyProfile): Alumni => ({
   linkedin_url: p.linkedin_url ?? undefined,
 });
 
-const ROLE_LABELS: Record<MyProfile["role"], string> = { admin: "Admin", alumni: "Alumni", student: "Student" };
+const profileKind = (p: MyProfile): ProfileKind =>
+  p.has_alumni_profile ? "alumni" : p.has_student_profile ? "student" : "none";
 
 export default function MyProfilePage() {
-  const { profile, loading, error, reload, save, saving } = useMyProfile();
+  const { profile, loading, error, reload, save, saving, changePassword, changingPassword } = useMyProfile();
   const userPosts = useUserPosts(profile?.user_id ?? null);
   const [editing, setEditing] = React.useState(false);
+  // "Change password" in the header's account menu links to /me?changePassword=1.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const passwordOpen = searchParams.get("changePassword") === "1";
+  const setPasswordOpen = (open: boolean) =>
+    setSearchParams(open ? { changePassword: "1" } : {}, { replace: true });
   const { message } = App.useApp();
   const {
     token: { margin },
@@ -53,6 +68,12 @@ export default function MyProfilePage() {
     message.success("Profile updated");
     setEditing(false);
     userPosts.reload();
+  };
+
+  const handleChangePassword = async (values: ChangePasswordInput) => {
+    await changePassword(values);
+    message.success("Password changed");
+    setPasswordOpen(false);
   };
 
   if (loading) {
@@ -95,7 +116,7 @@ export default function MyProfilePage() {
         <Col xs={24} lg={16} xl={12}>
           <Card title="Edit profile">
             <ProfileEditForm
-              alumniFields={profile.has_alumni_profile}
+              profileKind={profileKind(profile)}
               initialValues={toFormValues(profile)}
               saving={saving}
               onSubmit={handleSave}
@@ -110,15 +131,37 @@ export default function MyProfilePage() {
   return (
     <Row gutter={[margin, margin]}>
       <Col xs={24} lg={9}>
-        <AlumniProfileView
-          alumni={toViewModel(profile)}
-          showAlumniDetails={profile.has_alumni_profile}
-          extraTags={<Tag color="processing">{ROLE_LABELS[profile.role] ?? profile.role}</Tag>}
-          actions={
-            <Button type="primary" icon={<EditOutlined />} onClick={() => setEditing(true)}>
-              Edit profile
-            </Button>
-          }
+        <Flex vertical gap={margin}>
+          <AlumniProfileView
+            alumni={toViewModel(profile)}
+            showAlumniDetails={profileKind(profile) !== "none"}
+            yearLabel={profileKind(profile) === "student" ? "Expected graduation" : undefined}
+            extraTags={<Tag color="processing">{ROLE_LABELS[profile.role] ?? profile.role}</Tag>}
+            actions={
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setEditing(true)}>
+                Edit profile
+              </Button>
+            }
+          />
+          <AccountDetails
+            profile={profile}
+            actions={
+              <Button size="small" icon={<LockOutlined />} onClick={() => setPasswordOpen(true)}>
+                Change password
+              </Button>
+            }
+          />
+          {profileKind(profile) === "none" && (
+            <Typography.Text type="secondary">
+              Your account has no alumni or student profile, so there are no extra details to show.
+            </Typography.Text>
+          )}
+        </Flex>
+        <ChangePasswordModal
+          open={passwordOpen}
+          saving={changingPassword}
+          onSubmit={handleChangePassword}
+          onClose={() => setPasswordOpen(false)}
         />
       </Col>
       <Col xs={24} lg={15}>

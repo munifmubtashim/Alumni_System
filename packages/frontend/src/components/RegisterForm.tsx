@@ -9,11 +9,13 @@ import {
   MailOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Collapse, Form, Input, Select, Typography, theme } from "antd";
-import type { RegisterInput } from "@alumni/shared";
+import { Alert, Button, Collapse, Form, Input, Segmented, Select, Typography, theme } from "antd";
+import type { RegisterInput, SignupRole } from "@alumni/shared";
 import type { RegisterError } from "../hooks/useRegister";
 import { webUrlRules } from "../utils/formRules";
+import { expectedYearOptions, graduationYearOptions } from "../utils/years";
 import PasswordStrengthMeter from "./PasswordStrength";
+import UniversityInput from "./UniversityInput";
 
 type FormValues = RegisterInput & { confirm: string };
 
@@ -22,16 +24,15 @@ type RegisterFormProps = {
   onSubmit: (input: RegisterInput) => Promise<void>;
 };
 
-// Newest first: this year + 5 down to 1950 (within the 1900 – this year + 10 range the server accepts).
-const THIS_YEAR = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: THIS_YEAR + 5 - 1950 + 1 }, (_, i) => {
-  const year = String(THIS_YEAR + 5 - i);
-  return { label: year, value: year };
-});
+const ROLE_OPTIONS: { label: string; value: SignupRole }[] = [
+  { label: "Alumni", value: "alumni" },
+  { label: "Student", value: "student" },
+];
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ submitting, onSubmit }) => {
   const [form] = Form.useForm<FormValues>();
   const password = Form.useWatch("password", form);
+  const role = Form.useWatch("role", form) ?? "alumni";
   const [formError, setFormError] = React.useState<string | null>(null);
   const {
     token: { margin, marginSM },
@@ -63,7 +64,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ submitting, onSubmit }) => 
           size="large"
           placeholder="Select year"
           prefix={<CalendarOutlined />}
-          options={YEAR_OPTIONS}
+          options={graduationYearOptions}
         />
       </Form.Item>
       <Form.Item<FormValues> label="Company" name="current_company" rules={[{ max: 100 }]}>
@@ -78,11 +79,50 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ submitting, onSubmit }) => 
     </>
   );
 
+  // Required for students; shown outside the optional section.
+  const studentFields = (
+    <>
+      <Form.Item<FormValues>
+        label="Department"
+        name="department"
+        rules={[
+          { required: true, whitespace: true, message: "Please enter your department" },
+          { max: 100, message: "Department must be at most 100 characters" },
+        ]}
+      >
+        <Input prefix={<ApartmentOutlined />} placeholder="e.g. CSE" size="large" />
+      </Form.Item>
+      <Form.Item<FormValues>
+        label="Expected graduation year"
+        name="expected_graduation_year"
+        rules={[{ required: true, message: "Please select your expected graduation year" }]}
+      >
+        <Select
+          showSearch
+          size="large"
+          placeholder="Select year"
+          prefix={<CalendarOutlined />}
+          options={expectedYearOptions}
+        />
+      </Form.Item>
+    </>
+  );
+
   return (
-    <Form<FormValues> form={form} layout="vertical" requiredMark="optional" onFinish={onFinish}>
+    <Form<FormValues>
+      form={form}
+      layout="vertical"
+      requiredMark="optional"
+      initialValues={{ role: "alumni" }}
+      onFinish={onFinish}
+    >
       {formError && (
         <Alert type="error" showIcon title={formError} role="alert" style={{ marginBottom: margin }} />
       )}
+
+      <Form.Item<FormValues> label="I am a" name="role">
+        <Segmented<SignupRole> block size="large" options={ROLE_OPTIONS} />
+      </Form.Item>
 
       <Form.Item<FormValues>
         label="Full name"
@@ -138,18 +178,33 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ submitting, onSubmit }) => 
         <Input.Password prefix={<LockOutlined />} autoComplete="new-password" size="large" />
       </Form.Item>
 
-      <Collapse
-        ghost
-        style={{ marginBottom: margin }}
-        items={[
-          {
-            key: "alumni",
-            label: "Add alumni details (optional)",
-            forceRender: true,
-            children: alumniFields,
-          },
+      <Form.Item<FormValues>
+        label="University"
+        name="university"
+        rules={[
+          { required: true, whitespace: true, message: "Please enter your university" },
+          { max: 150, message: "University must be at most 150 characters" },
         ]}
-      />
+      >
+        <UniversityInput size="large" />
+      </Form.Item>
+
+      {role === "student" ? (
+        studentFields
+      ) : (
+        <Collapse
+          ghost
+          style={{ marginBottom: margin }}
+          items={[
+            {
+              key: "alumni",
+              label: "Add alumni details (optional)",
+              forceRender: true,
+              children: alumniFields,
+            },
+          ]}
+        />
+      )}
 
       <Form.Item style={{ marginBottom: 0 }}>
         <Button type="primary" htmlType="submit" loading={submitting} block size="large">

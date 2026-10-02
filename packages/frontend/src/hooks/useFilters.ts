@@ -4,6 +4,7 @@ import type { Alumni } from "@alumni/shared";
 
 export type AlumniFilters = {
   q: string;
+  universities: string[];
   departments: string[];
   companies: string[];
   yearFrom?: string;
@@ -11,18 +12,20 @@ export type AlumniFilters = {
 };
 
 export type FilterOptions = {
+  universities: string[];
   departments: string[];
   companies: string[];
   years: string[];
 };
 
-// URL query params: ?q=&dept=&dept=&company=&from=&to=
+// URL query params: ?q=&uni=&dept=&dept=&company=&from=&to=
 export function useFilters() {
   const [params, setParams] = useSearchParams();
 
   const filters = useMemo<AlumniFilters>(
     () => ({
       q: params.get("q") ?? "",
+      universities: params.getAll("uni"),
       departments: params.getAll("dept"),
       companies: params.getAll("company"),
       yearFrom: params.get("from") ?? undefined,
@@ -36,6 +39,7 @@ export function useFilters() {
       const next = { ...filters, ...patch };
       const nextParams = new URLSearchParams();
       if (next.q.trim()) nextParams.set("q", next.q.trim());
+      next.universities.forEach((u) => nextParams.append("uni", u));
       next.departments.forEach((d) => nextParams.append("dept", d));
       next.companies.forEach((c) => nextParams.append("company", c));
       if (next.yearFrom) nextParams.set("from", next.yearFrom);
@@ -49,6 +53,7 @@ export function useFilters() {
 
   // Search text is not counted; it is visible in the search bar.
   const activeCount =
+    filters.universities.length +
     filters.departments.length +
     filters.companies.length +
     (filters.yearFrom || filters.yearTo ? 1 : 0);
@@ -68,6 +73,7 @@ function uniqueSorted(values: (string | undefined)[]): string[] {
 
 export function getFilterOptions(alumni: Alumni[]): FilterOptions {
   return {
+    universities: uniqueSorted(alumni.map((a) => a.university)),
     departments: uniqueSorted(alumni.map((a) => a.department)),
     companies: uniqueSorted(alumni.map((a) => a.current_company)),
     years: uniqueSorted(alumni.map((a) => a.graduation_year)),
@@ -85,12 +91,13 @@ export function filterAlumni(alumni: Alumni[], filters: AlumniFilters): Alumni[]
 
   return alumni.filter((a) => {
     if (terms.length) {
-      const haystack = [a.name, a.job_title, a.current_company, a.department]
+      const haystack = [a.name, a.job_title, a.current_company, a.department, a.university]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       if (!terms.every((t) => haystack.includes(t))) return false;
     }
+    if (!matchesAny(a.university, filters.universities)) return false;
     if (!matchesAny(a.department, filters.departments)) return false;
     if (!matchesAny(a.current_company, filters.companies)) return false;
     if (from !== undefined || to !== undefined) {

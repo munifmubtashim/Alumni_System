@@ -1,4 +1,4 @@
-import { login, registerAlumni } from "../controllers/UserController";
+import { login, register } from "../controllers/UserController";
 import { Router } from "express";
 
 
@@ -13,6 +13,6 @@ router.post("/login", async (req, res) => {
     res.status(err.status || 500).json({ message: err.message });
   }
 });
-router.post("/register", registerAlumni);
+router.post("/register", register);
 
 export default router;

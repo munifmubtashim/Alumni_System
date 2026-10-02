@@ -2,8 +2,8 @@ import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 
 // Public user columns joined onto alumni rows. Email is only exposed on single-profile reads.
-const LIST_COLUMNS = "a.*, u.name, u.photo_url";
-const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url";
+const LIST_COLUMNS = "a.*, u.name, u.photo_url, u.university";
+const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url, u.university";
 
 export class AlumniQuery {
   constructor() { }

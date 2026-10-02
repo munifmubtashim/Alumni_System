@@ -20,12 +20,12 @@ function signToken(user: { id: number; role: string }) {
   return jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
 }
 
-// Public self-registration: always creates an alumni account and logs it in.
-export const registerAlumni = async (req: Request, res: Response) => {
+// Public self-registration: creates a student or alumni account (never admin) and logs it in.
+export const register = async (req: Request, res: Response) => {
   try {
     const input = userManager.validateRegistration(req.body ?? {});
     const passwordHash = await bcrypt.hash(input.password, 10);
-    const user = await userManager.registerAlumni(input, passwordHash);
+    const user = await userManager.register(input, passwordHash);
     res.status(201).json({ token: signToken(user), user });
   } catch (error) {
     if (error instanceof AppError) {

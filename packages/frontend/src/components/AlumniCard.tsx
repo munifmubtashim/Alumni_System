@@ -1,5 +1,5 @@
 import React from "react";
-import { LinkedinOutlined } from "@ant-design/icons";
+import { BankOutlined, LinkedinOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Flex, Tag, Typography, theme } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import type { Alumni } from "@alumni/shared";
@@ -44,6 +44,11 @@ const AlumniCard: React.FC<AlumniCardProps> = ({ alumni, to }) => {
           <Typography.Text type="secondary" ellipsis={{ tooltip: role }}>
             {role || "Alumni member"}
           </Typography.Text>
+          {alumni.university && (
+            <Typography.Text type="secondary" ellipsis={{ tooltip: alumni.university }}>
+              <BankOutlined /> {alumni.university}
+            </Typography.Text>
+          )}
         </Flex>
         {(alumni.department || alumni.graduation_year) && (
           <Flex wrap justify="center" gap={marginXS}>

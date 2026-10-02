@@ -18,11 +18,13 @@ export const themeConfig: ThemeConfig = {
   },
   components: {
     Layout: {
-      headerBg: "#0f172a",
+      // Light, minimal header (matches the sign-in pages).
+      headerBg: "#ffffff",
       headerPadding: "0 24px",
     },
     Menu: {
-      darkItemBg: "#0f172a",
+      // No bottom border on the horizontal nav; the header draws its own.
+      activeBarBorderWidth: 0,
     },
   },
 };
@@ -32,6 +34,9 @@ export const layoutTokens = {
   contentMaxWidth: 1200,
   mobileDrawerSize: "80vw",
   profileAvatarSize: 64,
+  // Header: account-menu text widths before truncating.
+  userMenuMaxWidth: 240,
+  navNameMaxWidth: 160,
   authFormMaxWidth: 400,
   // Sign-in side panel: a touch darker than colorBgLayout (#f5f7fa).
   authPanelBg: "#e6ebf2",

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { TeamOutlined } from "@ant-design/icons";
-import { Avatar, Col, Flex, Grid, Row, Typography, theme } from "antd";
+import { Col, Flex, Grid, Row, Typography, theme } from "antd";
+import BrandMark from "../components/BrandMark";
 import { brandContent } from "../content/brand";
 import { layoutTokens } from "../theme/tokens";
 
@@ -18,8 +18,6 @@ export default function AuthLayout({ title, subtitle, children, footer }: AuthLa
   const isWide = !!screens.md;
   const {
     token: {
-      colorPrimary,
-      colorTextLightSolid,
       colorBgContainer,
       colorBorderSecondary,
       lineWidth,
@@ -27,25 +25,12 @@ export default function AuthLayout({ title, subtitle, children, footer }: AuthLa
       paddingLG,
       paddingXL,
       margin,
-      marginSM,
       marginXS,
       marginLG,
-      fontSizeLG,
     },
   } = theme.useToken();
 
-  const brand = (
-    <Flex align="center" gap={marginSM}>
-      <Avatar
-        size="large"
-        icon={<TeamOutlined />}
-        style={{ backgroundColor: colorPrimary, color: colorTextLightSolid, flexShrink: 0 }}
-      />
-      <Typography.Text strong style={{ fontSize: fontSizeLG }}>
-        {brandContent.appName}
-      </Typography.Text>
-    </Flex>
-  );
+  const brand = <BrandMark />;
 
   return (
     <Row style={{ minHeight: "100vh", background: colorBgContainer }}>

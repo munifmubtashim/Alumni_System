@@ -34,3 +34,12 @@ export const updateMe = async (req: Request, res: Response) => {
     sendError(res, error);
   }
 };
+
+export const changeMyPassword = async (req: Request, res: Response) => {
+  try {
+    await userManager.changeMyPassword(currentUserId(req), req.body ?? {});
+    res.status(204).end();
+  } catch (error) {
+    sendError(res, error);
+  }
+};

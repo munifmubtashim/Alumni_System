@@ -1,4 +1,4 @@
-import type { AlumniEditableFields, UserBasicsFields } from "@alumni/dal";
+import type { AlumniEditableFields, StudentEditableFields, UserBasicsFields } from "@alumni/dal";
 import { AppError } from "./errors.js";
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,11 +36,51 @@ export function optionalWebUrl(value: unknown, field: string): string | undefine
   return url;
 }
 
-// Profile fields every account may edit on itself. Email, password and role are never accepted.
+// 8–72 characters (bcrypt only uses the first 72 bytes).
+export function validateNewPassword(value: unknown, field = "Password"): string {
+  if (typeof value !== "string" || value.length < 8) {
+    throw new AppError(400, `${field} must be at least 8 characters`);
+  }
+  if (Buffer.byteLength(value, "utf8") > 72) throw new AppError(400, `${field} is too long`);
+  return value;
+}
+
+export function requiredEmail(value: unknown): string {
+  const email = requiredText(value, "Email", 100);
+  if (!EMAIL_PATTERN.test(email)) throw new AppError(400, "Email is not valid");
+  return email;
+}
+
+// Profile fields every account may edit on itself. Email and password have their own checks (UserManager); role is never accepted.
 export function validateUserBasics(body: Record<string, unknown>): UserBasicsFields {
   return {
     name: requiredText(body.name, "Name", 100),
     photo_url: optionalWebUrl(body.photo_url, "Photo URL"),
+    university: optionalText(body.university, "University", 150),
+  };
+}
+
+// Expected graduation year for students: this year … this year + 8.
+export function requiredExpectedYear(value: unknown): string {
+  const field = "Expected graduation year";
+  const year = optionalText(typeof value === "number" ? String(value) : value, field, 10);
+  if (!year) throw new AppError(400, `${field} is required`);
+  const thisYear = new Date().getFullYear();
+  const n = Number(year);
+  if (!/^\d{4}$/.test(year) || n < thisYear || n > thisYear + 8) {
+    throw new AppError(400, `${field} must be between ${thisYear} and ${thisYear + 8}`);
+  }
+  return year;
+}
+
+// Student details: department + expected year are required; the alumni-style details are optional
+// (full replace: omitted ones are cleared). user_id/id are never accepted.
+export function validateStudentFields(body: Record<string, unknown>): StudentEditableFields {
+  const { department: _department, graduation_year: _year, ...details } = validateAlumniFields(body);
+  return {
+    ...details,
+    department: requiredText(body.department, "Department", 100),
+    expected_graduation_year: requiredExpectedYear(body.expected_graduation_year),
   };
 }
 

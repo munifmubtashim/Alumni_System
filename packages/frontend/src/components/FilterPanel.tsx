@@ -17,6 +17,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ options, value, onChange, onC
 
   return (
     <Form layout="vertical">
+      <Form.Item label="University">
+        <Select
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="Any university"
+          options={toOptions(options.universities)}
+          value={value.universities}
+          onChange={(universities) => onChange({ universities })}
+        />
+      </Form.Item>
+
       <Form.Item label="Department">
         <Select
           mode="multiple"

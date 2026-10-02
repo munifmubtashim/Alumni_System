@@ -57,7 +57,7 @@ export const aboutContent = {
   whoCanJoin: {
     title: "Who can join",
     body:
-      "Graduates of the institution can create an alumni account from the sign-up page. Student and administrator accounts are set up by the system administrators.",
+      "Students and graduates can create an account from the sign-up page: pick Student or Alumni and enter your university. Administrator accounts are set up by the system administrators.",
   },
 
   contact: {

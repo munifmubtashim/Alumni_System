@@ -19,3 +19,12 @@ export function formatRelative(value?: Date | string): string | null {
   }
   return relativeTime.format(0, "minute");
 }
+
+const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+// "Oct 2, 2026, 3:45 PM", or null for missing/invalid dates.
+export function formatDateTime(value?: Date | string): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : dateTime.format(date);
+}

@@ -114,7 +114,7 @@ export default function AlumniListPage() {
           <SearchBar
             value={filters.q}
             onChange={(q) => setFilters({ q })}
-            placeholder="Search by name, job title, company or department"
+            placeholder="Search by name, university, job title, company or department"
           />
         </div>
         {!isDesktop && (

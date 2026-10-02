@@ -1,5 +1,5 @@
 import React from "react";
-import { LinkedinOutlined, MailOutlined } from "@ant-design/icons";
+import { BankOutlined, LinkedinOutlined, MailOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Descriptions, Flex, Tag, Typography, theme } from "antd";
 import type { Alumni } from "@alumni/shared";
 import { layoutTokens } from "../theme/tokens";
@@ -11,8 +11,10 @@ type AlumniProfileViewProps = {
   actions?: React.ReactNode;
   // Extra tags next to department/class (e.g. the account role on My Profile).
   extraTags?: React.ReactNode;
-  // False for accounts without an alumni profile: hides the alumni-only About card.
+  // False for accounts without an alumni or student profile: hides the About card.
   showAlumniDetails?: boolean;
+  // Students show their expected graduation year instead of a graduation year.
+  yearLabel?: string;
 };
 
 const AlumniProfileView: React.FC<AlumniProfileViewProps> = ({
@@ -20,6 +22,7 @@ const AlumniProfileView: React.FC<AlumniProfileViewProps> = ({
   actions,
   extraTags,
   showAlumniDetails = true,
+  yearLabel = "Graduation year",
 }) => {
   const {
     token: { colorPrimary, margin, marginSM, marginXS },
@@ -41,6 +44,13 @@ const AlumniProfileView: React.FC<AlumniProfileViewProps> = ({
               {name}
             </Typography.Title>
             {role && <Typography.Text type="secondary">{role}</Typography.Text>}
+            {alumni.university && (
+              <div>
+                <Typography.Text type="secondary">
+                  <BankOutlined /> {alumni.university}
+                </Typography.Text>
+              </div>
+            )}
           </div>
           {(alumni.department || alumni.graduation_year || extraTags) && (
             <Flex wrap justify="center" gap={marginXS}>
@@ -68,10 +78,20 @@ const AlumniProfileView: React.FC<AlumniProfileViewProps> = ({
       {showAlumniDetails && (
         <Card title="About">
           <Descriptions column={1} size="small" style={{ marginBottom: margin }}>
+            <Descriptions.Item label="University">{alumni.university || notSet}</Descriptions.Item>
             <Descriptions.Item label="Department">{alumni.department || notSet}</Descriptions.Item>
-            <Descriptions.Item label="Graduation year">{alumni.graduation_year || notSet}</Descriptions.Item>
+            <Descriptions.Item label={yearLabel}>{alumni.graduation_year || notSet}</Descriptions.Item>
             <Descriptions.Item label="Company">{alumni.current_company || notSet}</Descriptions.Item>
             <Descriptions.Item label="Job title">{alumni.job_title || notSet}</Descriptions.Item>
+            <Descriptions.Item label="LinkedIn">
+              {isWebUrl(alumni.linkedin_url) ? (
+                <Typography.Link href={alumni.linkedin_url} target="_blank" rel="noopener noreferrer" ellipsis>
+                  {alumni.linkedin_url}
+                </Typography.Link>
+              ) : (
+                alumni.linkedin_url || notSet
+              )}
+            </Descriptions.Item>
             {alumni.email && (
               <Descriptions.Item label="Email">
                 <Typography.Text copyable ellipsis>
