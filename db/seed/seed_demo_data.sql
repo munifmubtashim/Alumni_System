@@ -3,10 +3,11 @@
 --   psql -h <host> -p <port> -U <user> -d <db> -v ON_ERROR_STOP=1 -f db/seed/seed_demo_data.sql
 -- Requires migrations 001–003.
 --
--- Deletes EVERY user except munifmubtashim@gmail.com (kept as-is, with an alumni row added if missing).
+-- Deletes EVERY user except munifmubtashim@gmail.com (kept, password reset to the demo password,
+-- alumni row added if missing).
 -- Deleting users cascades to their alumni/students rows, posts and comments.
 --
--- All demo accounts use the password:  Password123!
+-- All demo accounts (and munifmubtashim@gmail.com) use the password:  Password123!
 --   admin    admin@alumni.test
 --   student  nadia.rahman@alumni.test, tanvir.hossain@alumni.test, sara.islam@alumni.test
 --   alumni   arif.chowdhury@alumni.test, farhana.akter@alumni.test, rakib.hasan@alumni.test,
@@ -85,7 +86,8 @@ BEGIN
          'GMP compliance and QA for oral solid dosage manufacturing.',
          'Pharmacy alumna; glad to help with industry placements.', NULL);
 
-    -- Kept account: make sure it has an alumni row so it appears in the directory.
+    -- Kept account: same demo password, and an alumni row so it appears in the directory.
+    UPDATE users SET password = pw, updated_at = NOW() WHERE email = 'munifmubtashim@gmail.com';
     INSERT INTO alumni (user_id)
     SELECT id FROM users WHERE email = 'munifmubtashim@gmail.com'
     ON CONFLICT (user_id) DO NOTHING;
