@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Munif",
+    "email": "munif@gmail.com",
+    "password": "$2b$10$mkIHcl5sl8UVyCB.XFlZPuG39dF9roUcOqfpmauQ8Cm8ZkBp8LcJ2",
+    "role": "alumni",
+    "photo_url": null,
+    "login_at": null,
+    "logout_at": null,
+    "created_at": "2026-04-30 15:53:45.588303",
+    "updated_at": "2026-04-30 15:53:45.588303"
+  },
+  {
+    "id": 3,
+    "name": "Tanvir Islam",
+    "email": "tanvir@example.com",
+    "password": "test1234",
+    "role": "alumni",
+    "photo_url": "https://i.pravatar.cc/150?img=12",
+    "login_at": null,
+    "logout_at": null,
+    "created_at": "2026-09-02 03:31:34.609943",
+    "updated_at": "2026-09-02 03:31:34.609943"
+  },
+  {
+    "id": 4,
+    "name": "Rafiq Hasan",
+    "email": "rafiq@example.com",
+    "password": "test1234",
+    "role": "alumni",
+    "photo_url": "https://i.pravatar.cc/150?img=15",
+    "login_at": null,
+    "logout_at": null,
+    "created_at": "2026-09-02 03:31:34.609943",
+    "updated_at": "2026-09-02 03:31:34.609943"
+  },
+  {
+    "id": 5,
+    "name": "Imran Chowdhury",
+    "email": "imran@example.com",
+    "password": "test1234",
+    "role": "student",
+    "photo_url": "https://i.pravatar.cc/150?img=20",
+    "login_at": null,
+    "logout_at": null,
+    "created_at": "2026-09-02 03:31:34.609943",
+    "updated_at": "2026-09-02 03:31:34.609943"
+  }
+]
