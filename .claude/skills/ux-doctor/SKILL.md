@@ -1,0 +1,16 @@
+---
+name: ux-doctor
+description: "Standalone UX & design-system audit of the whole app or a chosen part of it. Sizes the UI surface first — small apps get one pass; large apps get a gated segment plan run in phases (system pass → per-segment passes → cross-segment consolidation) with durable progress that survives sessions (/ux-doctor resume). Dispatches the design-system-auditor (static pass over the UI source) and the ui-reviewer in standalone-audit mode (runtime pass in a browser) in parallel, consolidates their findings into a dated severity-by-effort report in .adlc/audits/, and maintains .adlc/context/design-system.md. No pipeline state, no gates; fixes route to /task or /spec."
+---
+
+Toolkit root: .adlc-toolkit
+
+Execute the ADLC **ux-doctor** protocol — defined in `.adlc-toolkit/core/skills/ux-doctor.md` — against the `.adlc/` vault in the current repository.
+
+Read that file in full and follow **every step literally**. It is a protocol, not a guideline (ADLC ETHOS principle 5 — load `.adlc-toolkit/ETHOS.md`).
+
+**Paths:** `.adlc-toolkit/core/VAULT-LAYOUT.md` owns where work records live under `.adlc/specs`, `.adlc/bugs`, and `.adlc/sprints`. A vault may hold flat and month-bucketed folders at the same time, so never hard-code a path under those trees — resolve it.
+
+This skill dispatches sub-agents (design-system-auditor, ui-reviewer). Run them as subagents and consolidate their reports.
+
+**Git policy:** follow `git.mode` in `.adlc/config.yml` (default `manual`). `manual` — never run git writes; read git state and draft commit/PR artifacts for the user. `commit` / `commit+push` — you may commit (and push, fast-forward only) the REQ's own feature branch once that phase's gate is approved. Never a protected branch, force-push, history rewrite, branch delete, `gh pr create`/`gh pr merge`, or `--no-verify` — in any mode.

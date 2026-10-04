@@ -1,0 +1,23 @@
+# ADLC vault — append-only logs use git's built-in `union` merge driver, so
+# concurrent appends from different branches COMBINE instead of conflicting.
+# This is what makes these files safe to COMMIT for shared team visibility:
+# two people landing REQs in parallel won't collide on the activity log.
+#
+# `union` is built into git — no per-clone `.gitconfig` setup is required.
+# It keeps every line from both sides (a duplicate line is possible but harmless
+# for a dated log). Mutable, in-place state like now.md is deliberately NOT here:
+# it's gitignored and regenerated from each REQ's pipeline-state.json by /status
+# and /recover, so it never needs merging.
+
+hot.md                merge=union
+decisions.md          merge=union
+glossary.md           merge=union
+knowledge/gotchas.md  merge=union
+
+# knowledge/lesson-ledger.md is GENERATED (one row per lesson file), never hand-edited.
+# union can leave a duplicated row after a parallel merge; the next rebuild clears it,
+# so it is safe here. index.md is deliberately NOT listed: it is hand-maintained, and
+# union silently keeps BOTH versions when two branches rewrite the same row — a real
+# conflict marker is the better outcome there. (/config migrate appends missing lines
+# from this file to an existing vault's .adlc/.gitattributes; it never removes any.)
+knowledge/lesson-ledger.md  merge=union
