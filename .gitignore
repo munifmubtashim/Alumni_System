@@ -28,3 +28,4 @@ node_modules
 .adlc/bugs/**/last-seen.json
 .adlc/sprints/**/*.json
 .adlc/ui-auth.env
+db/backups/
