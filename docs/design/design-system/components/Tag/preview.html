@@ -1,0 +1,28 @@
+<!-- @dsCard group="Surfaces" height=120 subtitle="Neutral, accent and status" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  .stage { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-5); align-items: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .tag { display: inline-flex; align-items: center; gap: var(--space-1); border-radius: var(--radius-sm);
+    font-size: 12px; line-height: 16px; font-weight: 500; padding: var(--space-1) var(--space-2); border: 1px solid transparent; }
+  .tag-neutral { background: var(--surface-sunken); color: var(--ink-secondary); border-color: var(--border-subtle); }
+  .tag-accent { background: var(--accent-soft); color: var(--accent-strong); }
+  .tag-success { background: var(--surface-sunken); color: var(--success); border-color: var(--border-subtle); }
+  .tag-warning { background: var(--surface-sunken); color: var(--warning); border-color: var(--border-subtle); }
+  .tag-error { background: var(--surface-sunken); color: var(--error); border-color: var(--border-subtle); }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+</style>
+</head>
+<body style="margin:0; background: var(--surface-page);">
+  <div class="stage">
+    <span class="tag tag-neutral">Alumni</span>
+    <span class="tag tag-accent">Mentor</span>
+    <span class="tag tag-success"><span class="dot"></span>Available</span>
+    <span class="tag tag-warning"><span class="dot"></span>Pending</span>
+    <span class="tag tag-error"><span class="dot"></span>Inactive</span>
+  </div>
+</body>
+</html>

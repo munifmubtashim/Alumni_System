@@ -1,0 +1,52 @@
+<!-- @dsCard height=300 -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; padding: 0; }
+  .cover { position: relative; width: 960px; height: 300px; background: var(--surface-page); overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .band { position: absolute; top: 0; left: 0; width: 960px; height: 96px; }
+  .accent { fill: var(--accent); }
+  .ink { fill: var(--ink-primary); }
+  .disc { fill: var(--surface-sunken); stroke: var(--border-subtle); stroke-width: 2; }
+  .text-block { position: absolute; left: 64px; top: 162px; width: 820px; }
+  .name { margin: 0; font-size: 64px; line-height: 0.95; font-weight: 600; color: var(--ink-primary); }
+  .tagline { margin: 12px 0 0; font-size: 14px; color: var(--ink-secondary); }
+</style>
+</head>
+<body style="margin:0;">
+<div class="cover">
+  <!--
+    derivation:
+    blocks: accent terracotta (the one identity hue) as a single radius-lg block bleeding off
+            the top-left, sized generously (220x116) since it's the only thing the brand is
+            known by; ink-primary as one small radius-md square — the "dark surface" note —
+            kept deliberately small, since the brief leads with warmth, not charcoal.
+    arrangement: top band, mostly empty ground either side — generous whitespace was the
+            explicit brief, so blocks occupy under a quarter of the band and the rest of the
+            960x300 canvas is bare surface-page.
+    pattern row: "soft, friendly, large radii -> discs, pills, half-rounds" (radius-pill /
+            radius-lg) -- chosen because the brief asks for soft borders over shadows and
+            generous whitespace; five sparse discs, ground-colored with a border-subtle
+            hairline, read as the soft-border motif rather than filled shapes.
+    scales used: radius-lg (14px, on the accent block), radius-pill (discs), border-subtle
+            (disc strokes), space-8 (64px) as the name's left inset.
+  -->
+  <svg class="band" viewBox="0 0 960 96" width="960" height="96">
+    <rect class="accent" x="-20" y="-20" width="220" height="136" rx="14"></rect>
+    <rect class="ink" x="248" y="28" width="40" height="40" rx="8"></rect>
+    <circle class="disc" cx="420" cy="48" r="20"></circle>
+    <circle class="disc" cx="470" cy="30" r="12"></circle>
+    <circle class="disc" cx="860" cy="50" r="24"></circle>
+    <circle class="disc" cx="905" cy="26" r="10"></circle>
+    <circle class="disc" cx="640" cy="60" r="8"></circle>
+  </svg>
+  <div class="text-block">
+    <p class="name">Alumni Network</p>
+    <p class="tagline">A warm, quiet design system — off-white and charcoal, one muted accent, soft borders over shadows.</p>
+  </div>
+</div>
+</body>
+</html>

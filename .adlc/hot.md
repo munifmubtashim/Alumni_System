@@ -17,6 +17,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-04] spec-gate-cleared | REQ-001-frontend-foundation
+
 ## [2026-10-04] init | Vault initialized
 ## [2026-10-04] init-import | README.md → context/project-overview.md
 ## [2026-10-04] init-import | README.md → context/architecture.md

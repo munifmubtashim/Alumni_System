@@ -1,0 +1,51 @@
+<!-- @dsCard group="Controls" height=120 subtitle="Light / dark / system — try it" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  .stage { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; align-items: flex-start; }
+  .track { display: inline-flex; background: var(--surface-sunken); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill); padding: 3px; gap: 2px; }
+  .opt { appearance: none; cursor: pointer; border: none; background: transparent; color: var(--ink-secondary);
+    font-family: inherit; font-size: 13px; font-weight: 500; line-height: 18px; border-radius: var(--radius-pill);
+    padding: var(--space-1) var(--space-3); transition: background-color .15s ease, color .15s ease; }
+  .opt:hover { color: var(--ink-primary); }
+  .opt[aria-pressed="true"] { background: var(--surface-raised); color: var(--ink-primary); border: 1px solid var(--border-subtle); }
+  .note { font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+</style>
+</head>
+<body style="margin:0; background: var(--surface-page);">
+  <div class="stage">
+    <div class="track" role="radiogroup" aria-label="Theme">
+      <button class="opt" data-mode="light" aria-pressed="true">Light</button>
+      <button class="opt" data-mode="dark" aria-pressed="false">Dark</button>
+      <button class="opt" data-mode="system" aria-pressed="false">System</button>
+    </div>
+    <span class="note" id="note">Try it — this flips every token on this card live.</span>
+  </div>
+  <script>
+    var root = document.documentElement;
+    var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('.opt'));
+    function apply(mode) {
+      var theme = mode === 'system' ? ((media && media.matches) ? 'dark' : 'light') : mode;
+      root.setAttribute('data-theme', theme);
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === mode)); });
+      var note = document.getElementById('note');
+      note.textContent = mode === 'system'
+        ? 'Following system — currently ' + theme + '.'
+        : 'Theme set to ' + theme + '.';
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { apply(b.getAttribute('data-mode')); });
+    });
+    if (media && media.addEventListener) {
+      media.addEventListener('change', function () {
+        if (document.querySelector('.opt[data-mode="system"]').getAttribute('aria-pressed') === 'true') apply('system');
+      });
+    }
+  </script>
+</body>
+</html>
