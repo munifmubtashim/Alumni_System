@@ -139,3 +139,88 @@
 **Claim:** In this zsh shell, quote separators and globs in agent commands (`echo '----'`, `--include='*.css'`); `====` and an unmatched glob abort the whole command.
 **Saw it in:** agent Bash calls in TASK-010 (zsh `=cmd` expansion and NOMATCH)
 **Context:** Two verification commands died mid-way; one left background servers running past the failed check.
+
+## CAND-UI-001 [ui-review]
+**Claim:** When a muted token is swapped for contrast on one element, grep every other use of it (placeholders, disabled text) in the same pass.
+**Saw it in:** `packages/frontend/src/components/ui/Input/Input.module.css` (`::placeholder` still `--ink-muted`, 2.79:1)
+**Context:** Helper text was moved to ink-secondary but the placeholder was missed.
+
+## CAND-029 [review-arch]
+**Claim:** When docs say a layer boundary is lint-enforced, add an enforcement-test case per boundary; a rule list shorter than the doc list is silent drift.
+**Saw it in:** `packages/frontend/eslint.config.js:793-830`
+**Context:** Only ui and services overrides exist; the "nothing imports app/ but main.tsx" rule has no lint rule.
+
+## CAND-030 [review-arch]
+**Claim:** Inline `style` objects bypass CSS-only token linting; require a CSS Module even for tiny components.
+**Saw it in:** `packages/frontend/src/app/RouteError.tsx:6-8`
+**Context:** Stylelint strict-value covers only .css files, so inline spacing/font would pass unchecked.
+
+## CAND-031 [review-arch]
+**Claim:** When an ADR changes a convention, update the "Conventions" list in root CLAUDE.md in the same REQ.
+**Saw it in:** `CLAUDE.md` Conventions (redesign) / Frontend ("State: Jotai atoms")
+**Context:** ADR-02 added TanStack Query but the conventions list still reads Jotai-only.
+
+## CAND-029 [review-corr]
+**Claim:** Detect "run as CLI" in ESM scripts with realpath-resolved paths (or `import.meta.main`), never raw `argv[1]` vs `import.meta.url`.
+**Saw it in:** `packages/frontend/scripts/generate-tokens.ts:1344`
+**Context:** Symlinked paths make the check false and the script exits 0 silently, so a CI `--check` passes without checking.
+
+## CAND-030 [review-corr]
+**Claim:** Use `||` not `??` when defaulting values read from env files, since empty strings are valid-but-useless.
+**Saw it in:** `packages/frontend/vite.config.ts:3873`
+**Context:** `PORT=` in `.env` yields an empty proxy port.
+
+## CAND-029 [review-reflect]
+**Claim:** Before adding a small helper under `components/ui/`, check `cx.ts` and sibling primitives; write a short "ui primitives" concept page listing shared helpers.
+**Saw it in:** `packages/frontend/src/components/ui/ThemeToggle/ThemeToggle.tsx:22`
+**Context:** `joinClasses` duplicates `cx`; no concept page told the author `cx` existed.
+
+## CAND-030 [review-reflect]
+**Claim:** (ADR-gap) Record the choice of React Router 8 data router with two errorElement layers, and the frontend's own tsconfigs not extending the root, as an ADR or concept.
+**Saw it in:** `packages/frontend/src/app/router.tsx:20`, `packages/frontend/tsconfig.app.json`
+**Context:** Both are structural, recur in every page REQ, and live only in README/conventions prose.
+
+## CAND-031 [review-reflect]
+**Claim:** (gotcha) The theme storage key `alumni.theme` exists in `index.html` and `themeAtom.ts`; do not rename it in one place.
+**Saw it in:** `packages/frontend/index.html:15`, `packages/frontend/src/store/themeAtom.ts:11`
+**Context:** Inline script duplicates the key on purpose (no flash); only a test guards it.
+
+## CAND-032 [review-reflect]
+**Claim:** (gotcha) `@alumni/shared` still resolves to its source and frontend uses `~6.0` TypeScript while backend uses 5.9; don't unify tsconfigs or bump TS to 7 without checking typescript-eslint support.
+**Saw it in:** `packages/frontend/package.json` (`typescript ~6.0.3`), `.adlc/context/conventions.md` TypeScript section
+**Context:** Version pins (TS 6, ESLint 9, jsdom 29) each rest on a plugin or Node limit written only in README/conventions.
+
+## CAND-033 [review-reflect]
+**Claim:** Inline `style` objects in TS bypass Stylelint; keep all component styling in `.module.css`, or extend the ESLint rule to non-color properties.
+**Saw it in:** `packages/frontend/src/app/RouteError.tsx:6`
+**Context:** Same root as REFL-004; becomes a lesson if a second inline-style file appears.
+
+## CAND-032 [review-qual]
+**Claim:** Fill the Naming, Logging, Comments and Git sections of conventions.md when a package is rebuilt; blank templates leave reviewers nothing to enforce.
+**Saw it in:** `.adlc/context/conventions.md:5-61`
+**Context:** REQ-001 filled Testing/TypeScript/Linting/Frontend only.
+
+## CAND-033 [review-qual]
+**Claim:** A lint-rule self-test must have one fixture per rule block, not just per rule family.
+**Saw it in:** `packages/frontend/scripts/enforcement.test.ts:1005`
+**Context:** The services/ import override has no fixture; deleting it keeps the guard green.
+
+## CAND-034 [review-qual]
+**Claim:** Guard tests that list "pairs in use" (contrast) must be updated whenever CSS starts using a new foreground/background pair.
+**Saw it in:** `packages/frontend/src/styles/contrast.test.ts:3314`
+**Context:** Skip link and RouteError link use accent as text on surface-raised, only tested at 3:1.
+
+## CAND-035 [review-qual]
+**Claim:** Regex-based raw-color lint on string literals false-positives on hex-looking words (#feed); document or pin the escape hatch.
+**Saw it in:** `packages/frontend/eslint.config.js:730`
+**Context:** Feed page anchors are a likely first victim.
+
+## CAND-036 [review-qual]
+**Claim:** Decide whether motion durations and layout sizes are tokens or allowed literals; the tokens-only rule is silent on them.
+**Saw it in:** `packages/frontend/src/components/ui/Button/Button.module.css:11`
+**Context:** `0.15s ease` repeated in three primitives.
+
+## CAND-037 [review-qual]
+**Claim:** Do not write tests that rely on the previous test leaking state to prove a reset.
+**Saw it in:** `packages/frontend/src/test/smoke.test.tsx:36`
+**Context:** Reset check passes only under sequential order.

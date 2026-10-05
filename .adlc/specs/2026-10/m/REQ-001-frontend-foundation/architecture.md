@@ -85,7 +85,8 @@ packages/frontend/
     components/ui/         Button/ Input/ Card/ Tag/ ThemeToggle/ (tsx + module.css + test + index.ts)
     store/                 themeAtom.ts (+ test)
     services/              httpClient.ts, authToken.ts (+ tests)
-    styles/                tokens.css (generated), global.css, tokens.test.ts
+    styles/                tokens.css (generated), global.css, contrast.test.ts
+  scripts/                 generate-tokens.ts (+ .test.ts), enforcement.test.ts
     test/                  setup.ts (jest-dom, matchMedia stub, storage reset)
 ```
 
@@ -101,7 +102,7 @@ flowchart LR
   J[docs/design/.../tokens.json] -->|npm run tokens| G[scripts/generate-tokens.ts]
   G --> C[src/styles/tokens.css]
   C -->|var(--…)| M[*.module.css]
-  T[tokens.test.ts] -.regenerates + compares.-> C
+  T[scripts/generate-tokens.test.ts] -.regenerates + compares.-> C
   H[index.html script] -->|data-theme| R[:root]
   A[themeAtom + useApplyTheme] -->|data-theme| R
 ```
@@ -112,7 +113,7 @@ flowchart LR
 - `:root, :root[data-theme="light"] { color-scheme: light; --surface-page: …; … }` and `:root[data-theme="dark"] { color-scheme: dark; … }` — light is the default when no attribute is set.
 - A header comment: "Generated from tokens.json — do not edit".
 
-`tokens.test.ts` calls `renderTokensCss` on the real JSON and asserts it equals the committed `tokens.css` (fails with "run npm run tokens"), and asserts every token name in the JSON appears for both themes. `tokens:check` runs the same comparison for CI use.
+`scripts/generate-tokens.test.ts` calls `renderTokensCss` on the real JSON and asserts it equals the committed `tokens.css` (fails with "run npm run tokens"), and asserts every token name in the JSON appears for both themes. `tokens:check` runs the same comparison for CI use.
 
 `main.tsx` imports, in order, `@fontsource-variable/inter`, `@/styles/tokens.css`, `@/styles/global.css` — this is how tokens reach the browser. `global.css` (no `@import`): minimal reset, body uses `--surface-page`/`--ink-primary`/`--text-body`, `:focus-visible` uses an accent **outline** (an outline is not a shadow; Input keeps the README's border-only focus — see Risks), `prefers-reduced-motion` respected.
 
@@ -146,16 +147,16 @@ All are plain function components with typed props, `forwardRef` not needed (Rea
 
 ### Contrast
 
-Computed from `tokens.json` (WCAG 2.x). Dark theme passes every **text** pair; its Input resting border is 1.51:1 (see last row). Light theme does not fully match the design README's "every pairing meets 4.5:1" claim:
+Computed from `tokens.json` (WCAG 2.x). Dark theme passes every **text** pair; its Input resting border (now `border-strong`) is 1.94:1 on the fill (see last row). Light theme does not fully match the design README's "every pairing meets 4.5:1" claim:
 
 | Light-theme pair | Ratio | Needed | Handling in this design |
 |---|---|---|---|
 | `warning` text on `surface-sunken` (Tag) | 3.0 | 4.5 | **fixed by usage** — Tag text uses `ink-secondary` (4.84); status color only on the dot |
 | `success` text on `surface-sunken` (Tag) | 4.0 | 4.5 | **fixed by usage** — same |
-| `ink-muted` helper text on page/sunken | 3.3 / 2.8 | 4.5 | **fixed by usage** — helper text uses `ink-secondary`; `ink-muted` kept for placeholders and disabled text |
+| `ink-muted` helper text on page/sunken | 3.3 / 2.8 | 4.5 | **fixed by usage** — helper text uses `ink-secondary`; `ink-muted` kept for disabled text only; placeholders also use `ink-secondary` (review fix m3) |
 | `accent-ink` on `accent` (primary Button label) | 4.02 | 4.5 | ⚠ **gate decision** |
 | `accent` link text on `surface-page` | 3.97 | 4.5 | ⚠ **gate decision** |
-| `border-subtle` Input border on `surface-sunken` | 1.14 light / 1.51 dark | 3.0 (WCAG 1.4.11) | accepted: the visible label plus the sunken fill identify the field; focus border (`accent`) is 3.97 |
+| Input resting border on `surface-sunken` / page | was `border-subtle` 1.14 / 1.51; now `border-strong` 1.44 / 1.94 on the fill, 1.60 / 1.83 on the page (review decision d1) | 3.0 (WCAG 1.4.11) | accepted: the visible label plus the sunken fill identify the field; recorded as exceptions in `contrast.test.ts`; focus border (`accent`) passes |
 
 The accent decision (see Open questions): darken light-mode `accent` to `#975c43` (5.0:1 on page, 5.07 for the label) and `accent-strong` to roughly `#7a4734` so hover stays distinct — a change to `docs/design/design-system/tokens.json`; or keep the values and record both as accepted exceptions. ThemeToggle's selected segment (`surface-raised` on the `surface-sunken` track) is 1.19:1 light / 1.18 dark as a shape, so the selected option must also be marked by text (`ink-primary` vs `ink-secondary`, 12.5 vs 4.8) — TASK-008. `contrast.test.ts` (TASK-004) encodes whichever is chosen, so later token edits can't silently make it worse.
 
@@ -166,9 +167,10 @@ flowchart TD
   main[main.tsx] --> App[app/App.tsx]
   App --> P[providers: Query + Jotai]
   P --> R[RouterProvider]
-  R --> S["/ — AppShell layout (errorElement: RouteError)"]
+  R --> S["/ — AppShell layout (errorElement: RouteError, shell crashes)"]
   S --> H[header: brand + ThemeToggle]
-  S --> O["&lt;Outlet/&gt; — index + * render nothing"]
+  S --> L["pathless layout (errorElement: RouteError, page errors under the header)"]
+  L --> O["&lt;Outlet/&gt; — index + * render nothing"]
 ```
 
 `router.tsx`: `createBrowserRouter([{ path: '/', element: <AppShell/>, errorElement: <RouteError/>, children: [{ errorElement: <RouteError/>, children: [{ index: true, element: null }, { path: '*', element: null }] }] }])`. Two error layers (decided during implement, 2026-10-05): the outer one catches shell crashes (no header then); the path-less inner one keeps the header for page errors. No feature routes, no 404 page (spec non-goal) — unknown paths show the empty shell. `RouteError` is a minimal in-shell "Something went wrong" message, not a page. `AppShell` has a skip link to `<main id="main">`, a `<header>` with the brand name ("Alumni Network", the design system's title) and `ThemeToggle` wired to `themePreferenceAtom`. Layout: max-width container with `space-4` gutters at 360px, `space-6+` wider; header wraps instead of overflowing.
@@ -256,7 +258,7 @@ Deviations, with reasons:
 | Base UI's 1.x API changes under us (newer than Radix) | low | Only ThemeToggle uses it now; wrapper keeps Base UI behind our own props; ADR-01 names React Aria as fallback |
 | `stylelint-declaration-strict-value` too strict (e.g. `1px` borders, `50%` opacity, `100%` widths) and blocks normal CSS | med | Rule scoped to color/spacing/type/radius props only; allowed keywords listed; enforcement test pins behavior |
 | No-flash script and atom disagree on storage format/key | med | Shared key constant + test asserting `index.html` contains it; both use JSON |
-| Input README says "no glow or outer ring", while global `:focus-visible` outline is needed for keyboard users on other controls | med | Input overrides to border-only focus per README (border color change is visible: `accent` vs `border-subtle`); Buttons/toggle keep a 2px accent outline. Flagged for ui-reviewer contrast check |
+| Input README says "no glow or outer ring", while global `:focus-visible` outline is needed for keyboard users on other controls | med | Input overrides to border-only focus per README (border color change is visible: `accent` vs `border-strong`); Buttons/toggle keep a 2px accent outline. Flagged for ui-reviewer contrast check |
 | Deleting old `src/` loses useful logic (password strength, year lists) | low | User chose clear-out; all of it is in git history (`d4325b2a` and earlier) for later REQs to reuse |
 | React 19 / Vite 8 / Vitest 5 combination has a rough edge in jsdom | low | TASK-003 lands the harness alone with a smoke test before anything depends on it |
 | Light-theme contrast below 4.5:1 for accent text | high (measured) | Usage fixes for Tag/helper text; accent is a gate decision; `contrast.test.ts` locks the result |
