@@ -17,6 +17,14 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] ship-gate-cleared | REQ-002-auth-login-register
+## [2026-10-05] req-ready-to-merge | REQ-002-auth-login-register | login, sign-up, session + 401 handling, header user menu, signed-in home
+## [2026-10-05] lesson | L-REQ-002-1..7 — token-matched 401s, pure snapshot + expiry timer, must-succeed steps in mutationFn, one guard navigates, redirect-back from state only, docs task lists folder READMEs, focus after failed submit
+## [2026-10-05] gotcha | G08–G12 — react-router/dom RouterProvider, Base UI menu, lint spellings, axios test adapter, session test traps
+## [2026-10-05] concept | session-and-401 — first captured
+## [2026-10-05] adr-accepted | ADR-03 status corrected to accepted in decisions.md
+## [2026-10-05] verify-gate-cleared | REQ-002-auth-login-register | findings: C0/M0/m8 (4 resolved)
+## [2026-10-05] implement-gate-cleared | REQ-002-auth-login-register
 ## [2026-10-05] adr-accepted | ADR-03 frontend session + 401 handler, ADR-04 forms without a library
 ## [2026-10-05] architect-gate-cleared | REQ-002-auth-login-register
 ## [2026-10-05] work-path-set | REQ-002-auth-login-register | branch at /Users/munifmubtashim/Alumni_System
@@ -40,7 +48,3 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 ## [2026-10-04] init-import | README.md → context/architecture.md
 ## [2026-10-04] init-import | tsconfig.json → context/conventions.md
 ## [2026-10-04] init-import | packages/frontend/eslint.config.js → context/conventions.md
-
-## [2026-10-05] implement-gate-cleared | REQ-002-auth-login-register
-
-## [2026-10-05] verify-gate-cleared | REQ-002-auth-login-register | findings: C0/M0/m8 (4 resolved)

@@ -17,6 +17,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ | Title | Status | Path |
 |---|---|---|---|
 | REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
+| REQ-002 | Login, sign-up and session handling on the new frontend | ready to merge 2026-10-05 | specs/2026-10/m/REQ-002-auth-login-register |
 
 ## ADRs
 
@@ -24,6 +25,8 @@ _(REQ pages by id, with a one-line summary)_
 |---|---|---|---|
 | [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] | UI layer: Base UI headless + CSS Modules on generated tokens | accepted | 2026-10-04 |
 | [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 |
+| [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] | Frontend session: token store + ['me'] Query; global 401 via registered handler | accepted | 2026-10-05 |
+| [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library for now | accepted | 2026-10-05 |
 
 ## Concepts
 
@@ -32,6 +35,7 @@ Patterns, rules that must always hold, domain models.
 | Page | One-line summary |
 |---|---|
 | [[knowledge/concepts/design-tokens]] | tokens.json → generated CSS variables; tokens-only enforced by lint; contrast pinned by test |
+| [[knowledge/concepts/session-and-401]] | token store + `['me']` Query; registered 401 handler; one expire path (401 or timer); guards own navigation |
 
 ## Components
 

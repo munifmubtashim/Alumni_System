@@ -198,3 +198,50 @@
 **Claim:** To test a token-expiry timer, call `vi.useFakeTimers({ shouldAdvanceTime: true })` before making any token, so `Date.now` (used for `exp`) and `setTimeout` share one fake clock and Testing Library's `findBy` still polls.
 **Saw it in:** `packages/frontend/src/features/auth/session.test.tsx:624`
 **Context:** Real-time expiry tests would need a token a second from death and race the /me load.
+
+## Candidate verdicts
+
+Dedup basis: `ls knowledge/lessons/` and `origin/redesign` (fetched 4 hours before wrap-up) — both hold only LESSON-REQ-001-1..9; no REQ-002 candidate duplicates them.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-T1-1 | demote-to-gotcha | ^g10 (lint spellings, item 3) |
+| CAND-T1-2 | demote-to-gotcha | ^g11 |
+| CAND-T1-3 | demote-to-gotcha | ^g11 (merged) |
+| CAND-T2-1 | demote-to-gotcha | ^g10 (item 2) |
+| CAND-T2-2 | discard | already covered by G04 (`:where()` for state rules over focus) |
+| CAND-T2-3 | discard | one-off; only ButtonLink shares Button's classes |
+| CAND-T3-1 | demote-to-gotcha | ^g10 (item 5) and ^g09 |
+| CAND-T3-2 | demote-to-gotcha | ^g09 |
+| CAND-T3-3 | demote-to-gotcha | ^g09 (merged) |
+| CAND-T4-1 | demote-to-gotcha | ^g08 |
+| CAND-T4-2 | promote | LESSON-REQ-002-5 (merged with CAND-005) |
+| CAND-T4-3 | demote-to-gotcha | ^g12 (item 1) |
+| CAND-T4-4 | demote-to-gotcha | ^g12 (item 2) |
+| CAND-T5-1 | demote-to-gotcha | ^g10 (item 1) |
+| CAND-T5-2 | demote-to-gotcha | ^g10 (item 4) |
+| CAND-T5-3 | discard | one-off from an interrupted run; the lint-before-commit rule is in G10's "Don't" |
+| CAND-T6-1 | demote-to-gotcha | ^g08 (merged — the pinning test) |
+| CAND-T6-2 | discard | trivial; one-off test retargeting |
+| CAND-T6-3 | discard | follow-up (route code-splitting), not a lesson |
+| CAND-T7-1 | discard | local-machine state, not codebase behaviour |
+| CAND-T7-2 | promote | LESSON-REQ-002-6 |
+| CAND-022 | promote | LESSON-REQ-002-6 (merged) |
+| CAND-023 | discard | open decision m10 (shared validation limits) — follow-up |
+| CAND-Q-001 | discard | generic naming advice; follow-up m7 |
+| CAND-Q-002 | discard | follow-up m9; revisit if a second feature barrel repeats it |
+| CAND-Q-003 | discard | follow-up m6; the one-test-file convention already exists |
+| CAND-Q-004 | promote | LESSON-REQ-002-6 (merged) |
+| CAND-Q-005 | discard | follow-up m8 — extract at the third form |
+| CAND-001 | discard | captured in concept page [[knowledge/concepts/session-and-401]] |
+| CAND-002 | promote | LESSON-REQ-002-2 (merged with CAND-025) |
+| CAND-003 | promote | LESSON-REQ-002-1 |
+| CAND-004 | promote | LESSON-REQ-002-4 |
+| CAND-005 | promote | LESSON-REQ-002-5 |
+| CAND-006 | demote-to-gotcha | ^g08 (duplicate of CAND-T4-1) |
+| CAND-007 | promote | LESSON-REQ-002-6 (merged) |
+| CAND-024 | promote | LESSON-REQ-002-3 (merged with CAND-026) |
+| CAND-025 | promote | LESSON-REQ-002-2 (merged) |
+| (unnumbered, ui-review: busy button drops focus) | promote | LESSON-REQ-002-7 |
+| CAND-026 | promote | LESSON-REQ-002-3 (merged) |
+| CAND-027 | demote-to-gotcha | ^g12 (item 3) |
