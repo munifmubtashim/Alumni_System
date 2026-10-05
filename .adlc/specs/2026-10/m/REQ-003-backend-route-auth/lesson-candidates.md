@@ -115,3 +115,35 @@
 **Claim:** Vitest strips types without checking them; give any package tested through a source alias a `typecheck` script that includes tests and uses the same alias.
 **Saw it in:** `packages/backend/tsconfig.test.json`, `packages/backend/package.json` (`typecheck`)
 **Context:** Round 2 added it after round 1 changed manager signatures with a green suite and no type check.
+
+## Candidate verdicts
+
+Dedup basis: `origin/redesign` lessons as of 4 hours ago (16 lessons, none from REQ-003).
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g02 rewritten (vitest now hoisted to root; run both workspaces' tests) |
+| CAND-002 | demote-to-gotcha | ^g13 (pool mocked by resolved path) |
+| CAND-003 | demote-to-gotcha | ^g13 (silent run proves the mock) |
+| CAND-004 | discard | fixed in code; covered by L-REQ-003-4 |
+| CAND-005 | demote-to-gotcha | ^g14 (requireId → 404) |
+| CAND-006 | promote | LESSON-REQ-003-1 (partial mocks) |
+| CAND-007 | discard | duplicate of CAND-004 |
+| CAND-008 | promote | merged into LESSON-REQ-003-1 |
+| CAND-009 | demote-to-gotcha | ^g15 (constraints only in db/backups) |
+| CAND-010 | promote | LESSON-REQ-003-2 (router.use + app walker) |
+| CAND-011 | promote | merged into LESSON-REQ-003-1 |
+| CAND-012 | promote | merged into LESSON-REQ-003-2 |
+| CAND-013 [qual] | discard | fixed in code; covered by L-REQ-003-4 |
+| CAND-014 [qual] | discard | done: conventions.md Response format filled in |
+| CAND-015 [qual] | promote | merged into LESSON-REQ-003-3 |
+| CAND-016 [qual] | promote | merged into LESSON-REQ-003-2 |
+| CAND-013 [arch] | discard | fixed in code; CLAUDE.md says UserManager owns passwords |
+| CAND-014 [arch] | promote | LESSON-REQ-003-4 (source alias needs typecheck) |
+| CAND-015 [arch] | promote | merged into LESSON-REQ-003-3 |
+| reflector overflow (4 topics) | split | G02 → ^g02; isUniqueViolation → fixed in code, discard; one sendError → L-REQ-003-3; ownership wording → fixed in docs at wrap-up |
+| CAND-020 | promote | merged into LESSON-REQ-003-3 |
+| CAND-021 | discard | fixed as AC14; one-off, specific to the old full-replace UPDATE |
+| CAND-022 [arch] | promote | LESSON-REQ-003-5 (declare deps where imported) |
+| CAND-022 [reflect] | promote | merged into LESSON-REQ-003-4 |
+| (wrap-up) packet pathspec | demote-to-gotcha | ^g16 (review.packet.exclude needs :(glob)) |

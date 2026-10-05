@@ -18,6 +18,7 @@ _(REQ pages by id, with a one-line summary)_
 |---|---|---|---|
 | REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
 | REQ-002 | Login, sign-up and session handling on the new frontend | merged 2026-10-05 (PR #15) | specs/_archive/2026-10/m/REQ-002-auth-login-register |
+| REQ-003 | Require sign-in on every non-public backend route | ready to merge 2026-10-06 | specs/2026-10/m/REQ-003-backend-route-auth |
 
 ## ADRs
 
@@ -27,6 +28,7 @@ _(REQ pages by id, with a one-line summary)_
 | [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 |
 | [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] | Frontend session: token store + ['me'] Query; global 401 via registered handler | accepted | 2026-10-05 |
 | [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library for now | accepted | 2026-10-05 |
+| [[architecture/adr-05-backend-tests-vitest-supertest\|ADR-05]] | Backend tests: Vitest + supertest, one mocked boundary per level, no DB | accepted | 2026-10-05 |
 
 ## Concepts
 
@@ -44,6 +46,7 @@ One page per major module.
 | Page | Module | Owner |
 |---|---|---|
 | [[knowledge/components/frontend]] | `packages/frontend` | munifmubtashim |
+| [[knowledge/components/backend]] | `packages/backend` (api, businessLogic, dal) | munifmubtashim |
 
 ## Lessons
 

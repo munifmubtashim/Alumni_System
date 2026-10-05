@@ -19,7 +19,7 @@ From `exploration.md`. The route count was corrected to 26, and the claim that `
 |---|---|---|
 | `packages/backend/src/api/server.ts` | exit with a clear message if `JWT_SECRET` is empty | low |
 | `packages/backend/src/api/routes/UserRoutes.ts` | `router.use(authMiddleware)`; admin on `GET /`, `POST /`; drop email + login/logout routes | med |
-| `packages/backend/src/api/routes/AlumniRoutes.ts` | `router.use(authMiddleware)`; drop email route | low |
+| `packages/backend/src/api/routes/AlumniRoutes.ts` | `router.use(authMiddleware)`; `requireRole("alumni")` on `POST /`; drop email route | low |
 | `packages/backend/src/api/routes/PostRoutes.ts` | `router.use(authMiddleware)` | low |
 | `packages/backend/src/api/routes/CommentRoutes.ts` | `router.use(authMiddleware)` (replaces the per-route one) | low |
 | `packages/backend/src/api/Middleware/roleMiddleware.ts` | 401 when `req.user` is missing (AC9) | low |
@@ -58,8 +58,8 @@ flowchart LR
   A -- yes --> P[public handler]
   A -- no --> M[authMiddleware]
   M -- no/bad token --> E401[401]
-  M --> RR{admin-only route?}
-  RR -- yes, not admin --> E403[403]
+  M --> RR{"role-gated route? (admin: users list/create/delete · alumni: POST /api/alumni)"}
+  RR -- wrong role --> E403[403]
   RR -- ok --> C[controller]
   C --> PM[Manager: owner-or-admin check]
   PM -- missing --> E404[404]

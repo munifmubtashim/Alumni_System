@@ -28,3 +28,8 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-002-5 | Take redirect-back targets only from in-app `location.state`, validated to one leading `/` | auth, routing, security | critical | REQ-002 |
 | LESSON-REQ-002-6 | A REQ's docs task must list every folder README, component page and catalog row the code touched | docs, vault, process | guideline | REQ-002 |
 | LESSON-REQ-002-7 | After a failed async submit, move focus to the field or alert — a disabled busy button drops it | forms, a11y | guideline | REQ-002 |
+| LESSON-REQ-003-1 | Mock workspace packages partially — keep AppError, DTOs and validators real | backend, testing, vitest | trap | REQ-003 |
+| LESSON-REQ-003-2 | Protect at the router, and prove it with a test that walks the app | backend, auth, api, testing | guideline | REQ-003 |
+| LESSON-REQ-003-3 | When you change error handling in a controller, move every handler in that file to the shared helper | backend, api, errors | guideline | REQ-003 |
+| LESSON-REQ-003-4 | A package tested through a source alias needs a typecheck that includes its tests | backend, testing, typescript, build | guideline | REQ-003 |
+| LESSON-REQ-003-5 | Declare a dependency in the workspace that imports it, not only at the root | npm-workspaces, dependencies, backend | nice-to-know | REQ-003 |
