@@ -17,7 +17,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ | Title | Status | Path |
 |---|---|---|---|
 | REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
-| REQ-002 | Login, sign-up and session handling on the new frontend | ready to merge 2026-10-05 | specs/2026-10/m/REQ-002-auth-login-register |
+| REQ-002 | Login, sign-up and session handling on the new frontend | merged 2026-10-05 (PR #15) | specs/_archive/2026-10/m/REQ-002-auth-login-register |
 
 ## ADRs
 

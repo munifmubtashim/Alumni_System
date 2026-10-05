@@ -17,6 +17,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] req-archived | REQ-002-auth-login-register
+## [2026-10-05] req-merged | REQ-002-auth-login-register | PR #15 into redesign (0d40e321)
 ## [2026-10-05] ship-gate-cleared | REQ-002-auth-login-register
 ## [2026-10-05] req-ready-to-merge | REQ-002-auth-login-register | login, sign-up, session + 401 handling, header user menu, signed-in home
 ## [2026-10-05] lesson | L-REQ-002-1..7 — token-matched 401s, pure snapshot + expiry timer, must-succeed steps in mutationFn, one guard navigates, redirect-back from state only, docs task lists folder READMEs, focus after failed submit
