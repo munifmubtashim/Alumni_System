@@ -1,4 +1,5 @@
-/* Pill track with a raised segment for the current choice. The raised
+/* Design: docs/design/design-system/components/ThemeToggle (generalised in
+   REQ-002). Pill track with a raised segment for the current choice. The raised
    segment alone is ~1.2:1 against the track, so the checked option is also
    marked by its text: ink-primary and the heavier heading weight. Each option
    reserves the width of its bold label (see ::after) so the pill does not

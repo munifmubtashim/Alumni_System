@@ -4,7 +4,9 @@
      the value stays ink-primary, so a placeholder still reads as a hint;
    - the resting border is border-strong, not border-subtle, so the field's
      edge is easier to find. The hover-to-border-strong step is therefore gone;
-     focus still switches to the accent border and the raised fill. */
+     focus still switches to the accent border and the raised fill.
+   An invalid field (aria-invalid) gets an error border and error text below;
+   focus still wins, so the accent border shows while the user fixes it. */
 
 .field {
   display: flex;
@@ -34,6 +36,11 @@
   color: var(--ink-secondary);
 }
 
+/* :where() keeps this at single-class weight, so the focus rule below wins (G04). */
+.input:where([aria-invalid='true']) {
+  border-color: var(--error);
+}
+
 /* The accent border is the only focus signal (no ring), so it overrides the
    global :focus-visible outline. */
 .input:focus,
@@ -52,4 +59,10 @@
   margin: 0;
   font: var(--text-caption);
   color: var(--ink-secondary);
+}
+
+.error {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--error);
 }

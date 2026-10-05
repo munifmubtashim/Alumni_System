@@ -56,6 +56,11 @@ const PAIRS: Pair[] = [
   { fg: 'accent-ink', bg: 'accent', min: TEXT, use: 'primary Button label' },
   { fg: 'accent-ink', bg: 'accent-strong', min: TEXT, use: 'primary Button label, hover' },
   { fg: 'accent-strong', bg: 'accent-soft', min: TEXT, use: 'accent Tag text' },
+  { fg: 'error', bg: 'surface-page', min: TEXT, use: 'Input error text on the page' },
+  { fg: 'error', bg: 'surface-raised', min: TEXT, use: 'Input error text in a Card' },
+  { fg: 'error', bg: 'surface-sunken', min: TEXT, use: 'Input error text on a sunken panel' },
+  { fg: 'ink-primary', bg: 'surface-sunken', min: TEXT, use: 'Alert text' },
+  { fg: 'ink-primary', bg: 'accent-soft', min: TEXT, use: 'highlighted Menu item' },
   { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'focus outline' },
   { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Input focus border' },
 ];

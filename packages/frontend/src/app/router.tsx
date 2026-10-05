@@ -1,10 +1,26 @@
 import { createBrowserRouter, type DOMRouterOpts, type RouteObject } from 'react-router';
+import { GuestOnly, LoginPage, RegisterPage, RequireAuth } from '@/features/auth';
+import { HomePage } from '@/features/home';
 import { AppShell } from './AppShell';
 import { RouteError } from './RouteError';
 
-/** No feature pages yet: the home path and any unknown path show the empty shell. */
+/**
+ * Guests may open /login and /register; signed-in users are sent on from
+ * there. Home is the first signed-in page. Any unknown path shows the empty
+ * shell.
+ */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
-  { index: true, element: null },
+  {
+    element: <GuestOnly />,
+    children: [
+      { path: 'login', element: <LoginPage /> },
+      { path: 'register', element: <RegisterPage /> },
+    ],
+  },
+  {
+    element: <RequireAuth />,
+    children: [{ index: true, element: <HomePage /> }],
+  },
   { path: '*', element: null },
 ];
 

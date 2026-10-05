@@ -21,3 +21,10 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-001-7 | Put page-level errorElement on a path-less child route, and build routes from a factory | react-router, routing, error-handling | guideline | REQ-001 |
 | LESSON-REQ-001-8 | When an ADR changes a convention, update CLAUDE.md conventions in the same REQ | adr, conventions, docs | guideline | REQ-001 |
 | LESSON-REQ-001-9 | Guard Jotai storage atoms against throwing storage; test reload with resetModules | jotai, state, testing | trap | REQ-001 |
+| LESSON-REQ-002-1 | Act on a 401 only when the failed request's token is the current token | auth, session, http | guideline | REQ-002 |
+| LESSON-REQ-002-2 | Keep session snapshots pure reads, and end time-based expiry with a timer that runs the normal expire path | auth, session, react | trap | REQ-002 |
+| LESSON-REQ-002-3 | Put must-succeed client steps inside `mutationFn` and never swallow a storage write failure | auth, forms, tanstack-query | trap | REQ-002 |
+| LESSON-REQ-002-4 | Login and sign-up mutations only store the token; one guard owns where the user goes next | auth, routing | guideline | REQ-002 |
+| LESSON-REQ-002-5 | Take redirect-back targets only from in-app `location.state`, validated to one leading `/` | auth, routing, security | critical | REQ-002 |
+| LESSON-REQ-002-6 | A REQ's docs task must list every folder README, component page and catalog row the code touched | docs, vault, process | guideline | REQ-002 |
+| LESSON-REQ-002-7 | After a failed async submit, move focus to the field or alert — a disabled busy button drops it | forms, a11y | guideline | REQ-002 |

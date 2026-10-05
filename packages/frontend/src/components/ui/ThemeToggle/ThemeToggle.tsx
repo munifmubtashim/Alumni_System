@@ -1,12 +1,9 @@
-import { Radio } from '@base-ui/react/radio';
-import { RadioGroup } from '@base-ui/react/radio-group';
-import { cx } from '../cx';
-import styles from './ThemeToggle.module.css';
+import { SegmentedControl, type SegmentedControlOption } from '../SegmentedControl';
 
 /** Same union as the store's theme preference; app code maps between them. */
 export type ThemeToggleValue = 'light' | 'dark' | 'system';
 
-const OPTIONS: readonly { value: ThemeToggleValue; label: string }[] = [
+const OPTIONS: readonly SegmentedControlOption<ThemeToggleValue>[] = [
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
   { value: 'system', label: 'System' },
@@ -31,25 +28,12 @@ export function ThemeToggle({
   className,
 }: ThemeToggleProps) {
   return (
-    <RadioGroup<ThemeToggleValue>
-      aria-label={label}
+    <SegmentedControl<ThemeToggleValue>
+      label={label}
+      options={OPTIONS}
       value={value}
-      onValueChange={(next) => {
-        onValueChange(next);
-      }}
-      className={cx(styles.track, className)}
-    >
-      {OPTIONS.map((option) => (
-        <Radio.Root<ThemeToggleValue>
-          key={option.value}
-          value={option.value}
-          className={styles.option}
-          // Read by the CSS ::after that reserves the bold label's width.
-          data-label={option.label}
-        >
-          {option.label}
-        </Radio.Root>
-      ))}
-    </RadioGroup>
+      onValueChange={onValueChange}
+      className={className}
+    />
   );
 }

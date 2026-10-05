@@ -177,3 +177,121 @@ Use both. They serve different purposes.
 **Don't:** Don't switch the fixtures back to type-aware parsing. Don't "fix" the `#feed` flag; use a non-hex anchor or the documented escape. Don't use `fetchQuery`.
 
 **Related:** [[knowledge/components/frontend]] · [[REQ-001]]
+
+## G08 — RouterProvider must come from react-router/dom, or logout redirects twice ^g08
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-05 |
+| REQ | REQ-002 |
+| Component | frontend / routing, auth |
+| Status | confirmed |
+| Severity | trap |
+
+**What:** Navigations that pass `flushSync: true` (logout, session expiry) only flush when `RouterProvider` is imported from `react-router/dom`; from plain `react-router` the flag does nothing.
+
+**Where:** `packages/frontend/src/app/App.tsx` (import), `packages/frontend/src/features/auth/SessionBridge.tsx`, `useLogout.ts`
+
+**Why it's surprising:** Both entry points export a `RouterProvider` that renders the same app. React Router 8 applies route changes in a transition, so without flushSync the token-store change renders first at the old location and `RequireAuth` adds a second `/login` navigation.
+
+**Why it exists:** The plain entry doesn't depend on `react-dom`, so it can't wire `ReactDOM.flushSync`.
+
+**Don't:** Don't "simplify" the import to `react-router`. `AppShell.test.tsx` pins it: two tests (one navigation on logout, two 401s → one redirect) fail if you do.
+
+**Related:** [[architecture/adr-03-frontend-session-and-401-handling|ADR-03]] · [[knowledge/concepts/session-and-401]] · [[REQ-002]]
+
+---
+
+## G09 — Base UI 1.8 Menu: style [data-highlighted]; labels need Menu.Group ^g09
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-05 |
+| REQ | REQ-002 |
+| Component | frontend / components/ui/Menu |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** The active menu item carries `[data-highlighted]` (no `data-focus-visible`), and real focus moves onto it; ArrowDown or Enter on the trigger opens the menu and focuses item 1. A non-clickable label must be `Menu.GroupLabel` inside `Menu.Group`.
+
+**Where:** `packages/frontend/src/components/ui/Menu/Menu.tsx`, `Menu.module.css`; `node_modules/@base-ui/react/menu/item/MenuItemDataAttributes.d.ts`
+
+**Why it's surprising:** Docs for other Base UI parts suggest focus-visible attributes; and a plain `<div>` label looks fine but breaks `role="menu"`, which allows only menuitem/group/separator children.
+
+**Why it exists:** Base UI's menu keyboard model; GroupLabel needs the Group context to wire `aria-labelledby`.
+
+**Don't:** Don't style menu items on `:focus-visible` or `[data-focus-visible]`. Don't put bare elements in the popup. Export parts flat (`MenuItem`, `MenuLabel`), not via `Object.assign(Menu, {...})` — react-refresh lint rejects that.
+
+**Related:** [[knowledge/gotchas#^g05|G05]] (same family, Radio) · [[architecture/adr-01-ui-layer-headless-css-modules|ADR-01]]
+
+---
+
+## G10 — Type-aware ESLint rules that shape everyday frontend code ^g10
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-05 |
+| REQ | REQ-002 |
+| Component | frontend / lint |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** Five lint rules force non-obvious spellings: (1) form handlers take `SubmitEvent<HTMLFormElement>` — `FormEvent` is deprecated in @types/react 19.2 (`no-deprecated`); (2) optional booleans combine as `disabled === true || loading` (`prefer-nullish-coalescing` flags `||`, and `??` would be wrong); (3) axios error interceptors re-`throw` instead of `return Promise.reject(error)` (`prefer-promise-reject-errors`); (4) react-hooks v7 `refs` rejects callback refs writing into a shared `useRef` map — use one `useRef` per field; (5) react-refresh rejects `Object.assign` compound components.
+
+**Where:** `LoginPage.tsx`, `RegisterPage.tsx`, `Button.tsx`, `httpClient.ts`, `Menu.tsx` (all under `packages/frontend/src/`)
+
+**Why it's surprising:** Each "obvious" spelling compiles and works; only `npm run lint` fails.
+
+**Why it exists:** `eslint.config.js` uses typescript-eslint strict-type-checked plus react-hooks v7 and react-refresh.
+
+**Don't:** Don't commit a page before `npm run lint` and `format:check` pass — a mid-task commit in REQ-002 carried two of these failures.
+
+**Related:** [[knowledge/gotchas#^g07|G07]] · [[REQ-002]]
+
+---
+
+## G11 — Testing axios: a custom adapter's 401 doesn't reject ^g11
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-05 |
+| REQ | REQ-002 |
+| Component | frontend / services tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** A test adapter that resolves `{ status: 401 }` is treated as success; to exercise error interceptors, reject with an `AxiosError` carrying a `response`. Swap the adapter on `httpClient.defaults.adapter` and restore it in `afterEach`.
+
+**Where:** `packages/frontend/src/services/httpClient.test.ts` (`failingAdapter`), `authApi.test.ts`
+
+**Why it's surprising:** `validateStatus` looks like part of the request pipeline, but it lives inside axios's built-in adapters, which a custom adapter replaces.
+
+**Why it exists:** axios design.
+
+**Don't:** Don't restore the adapter inline at the end of a test — a failed assertion skips it and the mock leaks into later tests.
+
+**Related:** [[REQ-002]]
+
+---
+
+## G12 — Session tests: three Vitest / TanStack Query traps ^g12
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-05 |
+| REQ | REQ-002 |
+| Component | frontend / features/auth tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** (1) After `queryClient.clear()`, a still-mounted `useQuery` re-creates an empty entry — assert `getQueryData(key)` is `undefined`, not that the cache is empty. (2) A `mutateAsync` promise captured in a click handler and awaited later is reported as an unhandled rejection — attach `.then(ok, err)` when you capture it. (3) For expiry timers, call `vi.useFakeTimers({ shouldAdvanceTime: true })` before creating the token, so `Date.now` (for `exp`) and `setTimeout` share one clock and `findBy*` still polls.
+
+**Where:** `packages/frontend/src/features/auth/session.test.tsx`
+
+**Why it's surprising:** Each looks like a flaky or wrong test, not a library behaviour.
+
+**Why it exists:** Query observers rebuild on re-render; Vitest reports rejections at the tick they occur; fake timers also fake `Date`.
+
+**Don't:** Don't "fix" these by loosening assertions or adding real-time waits.
+
+**Related:** [[knowledge/concepts/session-and-401]] · [[REQ-002]]
