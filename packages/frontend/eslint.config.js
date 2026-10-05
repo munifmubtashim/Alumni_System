@@ -8,13 +8,60 @@ import prettierConfig from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 // Raw colors are only allowed in the token layer (src/styles/**).
-const RAW_COLOR = '/#[0-9a-f]{3,8}\\b|\\b(rgba?|hsla?)\\(/i';
+// Only the valid CSS hex lengths (3, 4, 6, 8) count, and the match must not run
+// on into a word or a dash, so '#feed-list' or '#abcde' are not flagged. A bare
+// '#feed' IS a valid color and is still flagged in ordinary strings; it is
+// allowed only as a JSX href/to value, where it can only be an in-page anchor.
+const RAW_COLOR = '/#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![\\w-])|\\b(rgba?|hsla?)\\(/i';
+const ANCHOR_ATTR = 'JSXAttribute[name.name=/^(href|to)$/] > Literal';
 const RAW_COLOR_MESSAGE = 'Use a design token (var(--…)) instead of a raw color';
 const BOX_SHADOW_MESSAGE = 'Shadows are not part of the design system; do not set boxShadow';
 
+// Import boundaries between src/ layers. ESLint flat config does not merge a
+// rule's options across matching blocks (the last block wins), so each layer
+// gets exactly one no-restricted-imports block for its source files and one
+// for its test files, and no two of these blocks' file globs overlap.
+// Each layer is banned in its alias form and its relative form (ADV-008),
+// including bare-folder imports such as '../services'. Relative globs start
+// with './' or '../' so package sub-paths such as 'firebase/app' never match.
+function layerBan(layer, message) {
+  const forms = [`@/${layer}`, `./**/${layer}`, `../**/${layer}`];
+  return { group: forms.flatMap((form) => [form, `${form}/**`]), message };
+}
+
+// Nothing imports app/ except main.tsx (app/ wires features, so a feature
+// importing app/ would be a cycle). Tests are exempt: rendering a component
+// under test needs the app's providers.
+const NO_APP = layerBan('app', 'Only src/main.tsx may import from app/.');
+
+const TEST_FILES = ['**/*.test.{ts,tsx}'];
+
+/**
+ * The no-restricted-imports blocks for one layer: source files get every ban;
+ * test files get every ban except NO_APP.
+ */
+function layerBoundary({ files, ignores = [], paths = [], patterns }) {
+  const rule = (list) => ['error', { paths, patterns: list }];
+  const testPatterns = patterns.filter((pattern) => pattern !== NO_APP);
+  const blocks = [
+    {
+      files,
+      ignores: [...ignores, ...TEST_FILES],
+      rules: { 'no-restricted-imports': rule(patterns) },
+    },
+  ];
+  if (paths.length > 0 || testPatterns.length > 0) {
+    blocks.push({
+      files: files.map((glob) => glob.replace('*.{ts,tsx}', '*.test.{ts,tsx}')),
+      ignores,
+      rules: { 'no-restricted-imports': rule(testPatterns) },
+    });
+  }
+  return blocks;
+}
+
 // UI primitives must stay presentational: no data, state, or app wiring.
-// Each group lists the alias form and the relative form (ADV-008).
-const UI_FORBIDDEN_LAYERS = ['services', 'store', 'features', 'app'];
+const UI_FORBIDDEN_LAYERS = ['services', 'store', 'features'];
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage']),
@@ -55,7 +102,10 @@ export default defineConfig([
     rules: {
       'no-restricted-syntax': [
         'error',
-        { selector: `Literal[value=${RAW_COLOR}]`, message: RAW_COLOR_MESSAGE },
+        {
+          selector: `Literal[value=${RAW_COLOR}]:not(${ANCHOR_ATTR})`,
+          message: RAW_COLOR_MESSAGE,
+        },
         { selector: `TemplateElement[value.raw=${RAW_COLOR}]`, message: RAW_COLOR_MESSAGE },
         {
           selector: "JSXAttribute[name.name='style'] Property[key.name='boxShadow']",
@@ -68,43 +118,46 @@ export default defineConfig([
       ],
     },
   },
-  {
+  ...layerBoundary({
     files: ['src/components/ui/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            { name: 'axios', message: 'UI primitives must not make HTTP calls.' },
-            {
-              name: '@tanstack/react-query',
-              message: 'UI primitives must not fetch server state.',
-            },
-          ],
-          patterns: UI_FORBIDDEN_LAYERS.map((layer) => ({
-            group: [`@/${layer}`, `@/${layer}/**`, `**/${layer}`, `**/${layer}/**`],
-            message: `UI primitives must not import from ${layer}/ — pass data in through props.`,
-          })),
-        },
-      ],
-    },
-  },
-  {
+    paths: [
+      { name: 'axios', message: 'UI primitives must not make HTTP calls.' },
+      { name: '@tanstack/react-query', message: 'UI primitives must not fetch server state.' },
+    ],
+    patterns: [
+      ...UI_FORBIDDEN_LAYERS.map((layer) =>
+        layerBan(
+          layer,
+          `UI primitives must not import from ${layer}/ — pass data in through props.`,
+        ),
+      ),
+      NO_APP,
+    ],
+  }),
+  ...layerBoundary({
     files: ['src/services/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [{ name: 'react', message: 'Services are framework-free; do not import React.' }],
-          patterns: [
-            {
-              group: ['@/components', '@/components/**', '**/components', '**/components/**'],
-              message: 'Services must not import UI components.',
-            },
-          ],
-        },
-      ],
-    },
-  },
+    paths: [{ name: 'react', message: 'Services are framework-free; do not import React.' }],
+    patterns: [
+      layerBan('components', 'Services must not import UI components.'),
+      layerBan('store', 'Services must not import store/ — return data to the caller.'),
+      layerBan('features', 'Services must not import features/ — features call services.'),
+      NO_APP,
+    ],
+  }),
+  ...layerBoundary({
+    files: ['src/store/**/*.{ts,tsx}'],
+    patterns: [
+      layerBan('services', 'Store atoms must not call services — features wire them.'),
+      layerBan('features', 'Store must not import features/ — features read the store.'),
+      NO_APP,
+    ],
+  }),
+  ...layerBoundary({ files: ['src/features/**/*.{ts,tsx}'], patterns: [NO_APP] }),
+  // components/ui has its own, stricter blocks above.
+  ...layerBoundary({
+    files: ['src/components/**/*.{ts,tsx}'],
+    ignores: ['src/components/ui/**'],
+    patterns: [NO_APP],
+  }),
   prettierConfig,
 ]);

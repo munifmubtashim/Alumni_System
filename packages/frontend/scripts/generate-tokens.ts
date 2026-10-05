@@ -6,9 +6,9 @@
 // renderTokensCss() is pure; scripts/generate-tokens.test.ts calls it and
 // readTokensCss() to check the committed file.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export interface ColorToken {
   name: string;
@@ -30,6 +30,7 @@ export interface TokensJson {
   };
   spacing: { tokens: { name: string; value: string }[] };
   radius: { tokens: { name: string; value: string }[] };
+  motion: { tokens: { name: string; value: string }[] };
 }
 
 const HEADER = [
@@ -53,6 +54,14 @@ function parsePx(value: string, where: string): number {
     throw new Error(`${where}: expected a px value, got "${value}"`);
   }
   return Number(match[1]);
+}
+
+function checkMotion(name: string, value: string): string {
+  // Durations must be ms (one unit everywhere); anything else is a timing function.
+  if (name.startsWith('duration-') && !/^\d+ms$/.test(value)) {
+    throw new Error(`${name}: expected a ms value, got "${value}"`);
+  }
+  return value;
 }
 
 /** px → rem, so spacing and text follow the user's browser font-size setting. */
@@ -85,6 +94,9 @@ export function renderTokensCss(tokens: TokensJson): string {
   for (const { name, value } of tokens.radius.tokens) {
     parsePx(value, name);
     rootLines.push(`--${name}: ${value};`);
+  }
+  for (const { name, value } of tokens.motion.tokens) {
+    rootLines.push(`--${name}: ${checkMotion(name, value)};`);
   }
   for (const [key, family] of Object.entries(tokens.type.families)) {
     rootLines.push(`--font-${key}: ${fontStack(family)};`);
@@ -156,7 +168,14 @@ function runCli(argv: string[]): number {
 }
 
 // Run the CLI only when Node executes this file directly, not when a test imports it.
-const entry = process.argv[1];
-if (entry && pathToFileURL(entry).href === import.meta.url) {
+// Compare real paths: Node resolves symlinks for import.meta.url but not for
+// argv[1], so a symlinked checkout would otherwise skip the CLI and exit 0.
+function isCliEntry(): boolean {
+  const entry = process.argv[1];
+  if (!entry || !existsSync(entry)) return false;
+  return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+}
+
+if (isCliEntry()) {
   process.exitCode = runCli(process.argv);
 }

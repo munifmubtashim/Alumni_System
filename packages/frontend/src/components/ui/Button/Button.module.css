@@ -9,9 +9,9 @@
   padding: var(--space-3) var(--space-4);
   font: var(--text-label);
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+    background-color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
 }
 
 .button[data-variant='primary'] {

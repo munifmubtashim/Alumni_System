@@ -1,5 +1,9 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import tokensJson from '../../../docs/design/design-system/tokens.json';
 import { readTokensCss, renderTokensCss, type TokensJson } from './generate-tokens.ts';
 
@@ -61,6 +65,24 @@ describe('tokens.css', () => {
     }
   });
 
+  it('emits each motion token once, durations in ms', () => {
+    const motion = tokens.motion.tokens.map((t) => t.name);
+    expect(motion).toContain('duration-fast');
+    for (const name of motion) {
+      expect(countDeclarations(rendered, name), name).toBe(1);
+    }
+    expect(rendered).toContain('--duration-fast: 150ms;');
+    expect(rendered).toContain('--easing-standard: ease;');
+  });
+
+  it('rejects a duration that is not ms', () => {
+    const bad: TokensJson = {
+      ...tokens,
+      motion: { tokens: [{ name: 'duration-fast', value: '0.15s' }] },
+    };
+    expect(() => renderTokensCss(bad)).toThrow(/expected a ms value/);
+  });
+
   it('converts spacing and type to rem, keeps radii in px', () => {
     expect(rendered).toContain('--space-4: 1rem;');
     expect(rendered).toContain('--text-body: 400 1rem/1.625rem var(--font-sans);');
@@ -77,5 +99,55 @@ describe('tokens.css', () => {
       spacing: { tokens: [{ name: 'space-1', value: '1rem' }] },
     };
     expect(() => renderTokensCss(bad)).toThrow(/expected a px value/);
+  });
+});
+
+describe('generate-tokens CLI', () => {
+  const scriptPath = path.resolve(import.meta.dirname, 'generate-tokens.ts');
+  const tokensJsonPath = path.resolve(
+    import.meta.dirname,
+    '../../../docs/design/design-system/tokens.json',
+  );
+  const tempDirs: string[] = [];
+
+  function tempDir(): string {
+    const dir = mkdtempSync(path.join(tmpdir(), 'generate-tokens-'));
+    tempDirs.push(dir);
+    return dir;
+  }
+
+  /** Runs `node <symlink to script> --check` from a fresh temp dir. */
+  function checkViaSymlink(target: string) {
+    const link = path.join(tempDir(), 'generate-tokens.ts');
+    symlinkSync(target, link);
+    return spawnSync(process.execPath, [link, '--check'], { encoding: 'utf8' });
+  }
+
+  afterEach(() => {
+    for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('runs the check when started through a symlink', () => {
+    const result = checkViaSymlink(scriptPath);
+    expect(result.stdout).toContain('tokens.css is up to date');
+    expect(result.status).toBe(0);
+  });
+
+  it('exits 1 through a symlink when tokens.css is stale', () => {
+    // A copy of the repo layout in a temp dir, so the real tokens.css is never touched.
+    const root = tempDir();
+    const frontend = path.join(root, 'packages/frontend');
+    const designDir = path.join(root, 'docs/design/design-system');
+    mkdirSync(path.join(frontend, 'scripts'), { recursive: true });
+    mkdirSync(path.join(frontend, 'src/styles'), { recursive: true });
+    mkdirSync(designDir, { recursive: true });
+    writeFileSync(path.join(frontend, 'package.json'), '{ "type": "module" }\n');
+    copyFileSync(scriptPath, path.join(frontend, 'scripts/generate-tokens.ts'));
+    copyFileSync(tokensJsonPath, path.join(designDir, 'tokens.json'));
+    writeFileSync(path.join(frontend, 'src/styles/tokens.css'), ':root {}\n');
+
+    const result = checkViaSymlink(path.join(frontend, 'scripts/generate-tokens.ts'));
+    expect(result.stderr).toContain('tokens.css is stale');
+    expect(result.status).toBe(1);
   });
 });

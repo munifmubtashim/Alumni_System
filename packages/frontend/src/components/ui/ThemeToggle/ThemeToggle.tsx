@@ -1,5 +1,6 @@
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
+import { cx } from '../cx';
 import styles from './ThemeToggle.module.css';
 
 /** Same union as the store's theme preference; app code maps between them. */
@@ -19,10 +20,6 @@ export interface ThemeToggleProps {
   className?: string;
 }
 
-function joinClasses(...names: (string | undefined)[]): string {
-  return names.filter(Boolean).join(' ');
-}
-
 /**
  * Controlled Light / Dark / System switch. Knows nothing about storage or the
  * document theme: the caller owns the value and applies it.
@@ -40,13 +37,15 @@ export function ThemeToggle({
       onValueChange={(next) => {
         onValueChange(next);
       }}
-      className={joinClasses(styles.track, className)}
+      className={cx(styles.track, className)}
     >
       {OPTIONS.map((option) => (
         <Radio.Root<ThemeToggleValue>
           key={option.value}
           value={option.value}
           className={styles.option}
+          // Read by the CSS ::after that reserves the bold label's width.
+          data-label={option.label}
         >
           {option.label}
         </Radio.Root>

@@ -2,7 +2,9 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createStore } from 'jotai';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
+import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
 import { createRoutes, routes } from '../router';
@@ -18,6 +20,10 @@ function renderAt(path: string, routeTree: RouteObject[] = routes) {
 
 function Boom(): never {
   throw new Error('page failed');
+}
+
+function ShellBoom(): never {
+  throw new Error('shell failed');
 }
 
 afterEach(() => {
@@ -53,6 +59,11 @@ describe('AppShell', () => {
 
     expect(screen.getByRole('radio', { name: 'System' })).toHaveAttribute('aria-checked', 'true');
     expect(document.documentElement.dataset.theme).toBe('light');
+
+    act(() => {
+      setPrefersDark(true);
+    });
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('still renders the empty shell at an unknown path', () => {
@@ -77,5 +88,20 @@ describe('AppShell', () => {
       'href',
       '/',
     );
+  });
+
+  it('shows the route error without the shell when the shell itself throws', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // Same route tree, with only the shell element swapped for one that throws,
+    // so the outer errorElement on '/' is the one that must catch it.
+    const [root, ...rest] = createRoutes();
+    if (!root) throw new Error('createRoutes returned no routes');
+    renderAt('/', [{ ...root, element: <ShellBoom /> }, ...rest]);
+
+    expect(screen.getByRole('heading', { name: 'Something went wrong.' })).toBeInTheDocument();
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
+    expect(screen.queryByRole('main')).not.toBeInTheDocument();
+    expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'shell failed' }));
   });
 });

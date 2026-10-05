@@ -32,8 +32,12 @@ beforeAll(async () => {
   await stylelintRules('.warmup {\n  margin: 0;\n}\n');
 }, SETUP_TIMEOUT_MS);
 
-async function eslintMessages(code: string, file = 'Bad.tsx'): Promise<Linter.LintMessage[]> {
-  const [result] = await eslint.lintText(code, { filePath: path.join(fixtureDir, file) });
+async function eslintMessages(
+  code: string,
+  file = 'Bad.tsx',
+  dir = fixtureDir,
+): Promise<Linter.LintMessage[]> {
+  const [result] = await eslint.lintText(code, { filePath: path.join(dir, file) });
   if (!result) throw new Error('ESLint returned no result');
   expect(result.messages.every((m) => !m.fatal)).toBe(true);
   return result.messages;
@@ -97,6 +101,19 @@ describe('ESLint enforcement', () => {
     expect(ids.filter((id) => id === 'no-restricted-imports')).toHaveLength(3);
   });
 
+  it('rejects a 4-digit hex word such as #feed in a plain string (it is a valid color)', async () => {
+    const messages = await eslintMessages("export const tag = '#feed';\n");
+    expect(ruleIds(messages)).toContain('no-restricted-syntax');
+  });
+
+  it.each([
+    ['an in-page href anchor', 'export const A = () => <a href="#feed">Feed</a>;\n'],
+    ['a hex-looking word that runs on with a dash', "export const id = '#feed-list';\n"],
+    ['a 5-letter hex-looking word (not a valid color length)', "export const id = '#faded';\n"],
+  ])('does not flag %s as a raw color', async (_label, code) => {
+    expect(ruleIds(await eslintMessages(code))).not.toContain('no-restricted-syntax');
+  });
+
   it('accepts a clean primitive', async () => {
     const code = [
       "import styles from './Clean.module.css';",
@@ -110,6 +127,108 @@ describe('ESLint enforcement', () => {
   });
 });
 
+// Each layer's banned imports, in alias and relative (incl. bare-folder) form.
+// Fixture files sit one level below the layer folder: src/<layer>/__fixture__/.
+const BOUNDARY_CASES: [layerDir: string, banned: string[]][] = [
+  ['features', ['@/app/providers', '../../app/providers', '../../app']],
+  [
+    'store',
+    [
+      '@/app/queryClient',
+      '../../app',
+      '@/services/x',
+      '../../services',
+      '@/features/x',
+      '../../features/x',
+    ],
+  ],
+  [
+    'services',
+    [
+      '@/app/x',
+      '../../app',
+      '@/store/themeAtom',
+      '../../store',
+      '@/features/x',
+      '../../features',
+      '@/components/ui/Button',
+      '../../components',
+    ],
+  ],
+  ['components', ['@/app/x', '../../app']],
+];
+
+describe('ESLint layer boundaries', () => {
+  it.each(
+    BOUNDARY_CASES.flatMap(([layer, banned]) => banned.map((spec) => [layer, spec] as const)),
+  )('rejects src/%s importing %s', async (layer, spec) => {
+    const code = `import { x } from '${spec}';\nexport const y = x;\n`;
+    const messages = await eslintMessages(code, 'Bad.ts', `src/${layer}/__fixture__`);
+    expect(ruleIds(messages)).toContain('no-restricted-imports');
+  });
+
+  it('rejects a react import from services', async () => {
+    const code = "import { useState } from 'react';\nexport const y = useState;\n";
+    const messages = await eslintMessages(code, 'Bad.ts', 'src/services/__fixture__');
+    expect(ruleIds(messages)).toContain('no-restricted-imports');
+  });
+
+  it.each([
+    ['features', "import { a } from '@/store/themeAtom';\nimport { s } from '@/services/x';"],
+    ['services', "import { t } from './authToken';"],
+    ['store', "import { atom } from 'jotai';"],
+    ['components', "import { Button } from '@/components/ui/Button';"],
+  ])('allows the permitted imports in src/%s', async (layer, imports) => {
+    const code = `${imports}\nexport {};\n`;
+    const messages = await eslintMessages(code, 'Ok.ts', `src/${layer}/__fixture__`);
+    expect(ruleIds(messages)).not.toContain('no-restricted-imports');
+  });
+});
+
+describe('ESLint layer boundaries: package sub-paths and tests', () => {
+  it.each([
+    ['features', 'firebase/app'],
+    ['features', 'some-lib/services'],
+    ['components/ui', 'firebase/app'],
+    ['components/ui', 'some-lib/services'],
+    ['store', 'some-lib/features'],
+    ['services', 'some-lib/components'],
+  ])('allows src/%s importing the package sub-path %s', async (layer, spec) => {
+    const code = `import { x } from '${spec}';\nexport const y = x;\n`;
+    const messages = await eslintMessages(code, 'Ok.ts', `src/${layer}/__fixture__`);
+    expect(ruleIds(messages)).not.toContain('no-restricted-imports');
+  });
+
+  it.each(['features', 'components', 'components/ui', 'store', 'services'])(
+    'allows a test file in src/%s to import @/app/providers',
+    async (layer) => {
+      const code = "import { x } from '@/app/providers';\nexport const y = x;\n";
+      const messages = await eslintMessages(code, 'Ok.test.tsx', `src/${layer}/__fixture__`);
+      expect(ruleIds(messages)).not.toContain('no-restricted-imports');
+    },
+  );
+
+  it.each(['@/app/x', '../../app/x'])(
+    'still rejects a feature source file importing %s',
+    async (spec) => {
+      const code = `import { x } from '${spec}';\nexport const y = x;\n`;
+      const messages = await eslintMessages(code, 'Bad.ts', 'src/features/__fixture__');
+      expect(ruleIds(messages)).toContain('no-restricted-imports');
+    },
+  );
+
+  it.each([
+    ['components/ui', "import axios from 'axios';"],
+    ['components/ui', "import { s } from '@/services/x';"],
+    ['services', "import { useState } from 'react';"],
+    ['store', "import { s } from '../../services/x';"],
+  ])('keeps the other bans for test files in src/%s (%s)', async (layer, imports) => {
+    const code = `${imports}\nexport {};\n`;
+    const messages = await eslintMessages(code, 'Bad.test.tsx', `src/${layer}/__fixture__`);
+    expect(ruleIds(messages)).toContain('no-restricted-imports');
+  });
+});
+
 describe('Stylelint enforcement', () => {
   it.each([
     ['a hex color', '.box {\n  color: #fff;\n}\n', 'color-no-hex'],
@@ -117,6 +236,9 @@ describe('Stylelint enforcement', () => {
     ['a named color', '.box {\n  color: red;\n}\n', 'color-named'],
     ['box-shadow', '.box {\n  box-shadow: none;\n}\n', 'property-disallowed-list'],
     ['raw padding', '.box {\n  padding: 12px;\n}\n', 'scale-unlimited/declaration-strict-value'],
+    ['raw margin', '.box {\n  margin-top: 8px;\n}\n', 'scale-unlimited/declaration-strict-value'],
+    ['raw gap', '.box {\n  gap: 8px;\n}\n', 'scale-unlimited/declaration-strict-value'],
+    ['a non-camelCase class name', '.Bad_Name {\n  margin: 0;\n}\n', 'selector-class-pattern'],
     [
       'raw font-size',
       '.box {\n  font-size: 14px;\n}\n',

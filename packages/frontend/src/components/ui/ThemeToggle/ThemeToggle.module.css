@@ -1,6 +1,8 @@
 /* Pill track with a raised segment for the current choice. The raised
    segment alone is ~1.2:1 against the track, so the checked option is also
-   marked by its text: ink-primary and the heavier heading weight. */
+   marked by its text: ink-primary and the heavier heading weight. Each option
+   reserves the width of its bold label (see ::after) so the pill does not
+   change width when the selection moves. */
 
 .track {
   display: inline-flex;
@@ -12,8 +14,8 @@
 }
 
 .option {
-  display: inline-flex;
-  align-items: center;
+  display: inline-grid;
+  place-items: center;
   padding: var(--space-1) var(--space-3);
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
@@ -23,8 +25,20 @@
   cursor: pointer;
   user-select: none;
   transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+    background-color var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+/* A hidden, zero-height copy of the label at the checked weight, stacked under
+   the real text in the grid: the option is always as wide as its bold label.
+   The empty alt text keeps it out of the accessible name. */
+.option::after {
+  content: attr(data-label) / '';
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: var(--text-heading-sm-weight);
+  pointer-events: none;
 }
 
 .option:hover {

@@ -10,7 +10,9 @@ export default defineConfig(({ mode }) => {
   // Only PORT is read from the root .env, and only here in config, to point the
   // dev proxy at the API. Nothing else from that file (DB credentials,
   // JWT_SECRET) is used or exposed; Vite ships only VITE_* vars to the client.
-  const apiPort = loadEnv(mode, repoRoot, '').PORT ?? '3000';
+  // A blank `PORT=` falls back to 3000 too, not just a missing one.
+  const envPort = loadEnv(mode, repoRoot, '').PORT;
+  const apiPort = envPort === undefined || envPort === '' ? '3000' : envPort;
 
   return {
     plugins: [react()],

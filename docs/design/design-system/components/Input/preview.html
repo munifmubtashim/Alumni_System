@@ -9,14 +9,13 @@
   label { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--ink-secondary); }
   input {
     font-family: inherit; font-size: 16px; color: var(--ink-primary); background: var(--surface-sunken);
-    border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
-    outline: none; transition: border-color .15s ease, background-color .15s ease;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+    outline: none; transition: border-color var(--duration-fast) var(--easing-standard), background-color var(--duration-fast) var(--easing-standard);
   }
-  input::placeholder { color: var(--ink-muted); }
-  input:hover { border-color: var(--border-strong); }
+  input::placeholder { color: var(--ink-secondary); }
   input:focus { border-color: var(--accent); background: var(--surface-raised); }
   input[disabled] { opacity: .5; cursor: not-allowed; }
-  .hint { font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+  .hint { font-size: 12px; line-height: 16px; color: var(--ink-secondary); }
 </style>
 </head>
 <body style="margin:0; background: var(--surface-page);">

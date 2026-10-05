@@ -47,7 +47,12 @@ const PAIRS: Pair[] = [
   { fg: 'ink-secondary', bg: 'surface-page', min: TEXT, use: 'helper text, labels' },
   { fg: 'ink-secondary', bg: 'surface-raised', min: TEXT, use: 'helper text in a Card' },
   { fg: 'ink-secondary', bg: 'surface-sunken', min: TEXT, use: 'neutral/status Tag text' },
-  { fg: 'accent', bg: 'surface-page', min: TEXT, use: 'link text' },
+  { fg: 'ink-secondary', bg: 'surface-sunken', min: TEXT, use: 'Input placeholder, at rest' },
+  { fg: 'ink-secondary', bg: 'surface-raised', min: TEXT, use: 'Input placeholder, focused' },
+  { fg: 'accent', bg: 'surface-page', min: TEXT, use: 'link text, skip link' },
+  { fg: 'accent', bg: 'surface-raised', min: TEXT, use: 'skip link, RouteError link in a Card' },
+  { fg: 'accent-strong', bg: 'surface-raised', min: TEXT, use: 'secondary Button label, hover' },
+  { fg: 'accent-strong', bg: 'surface-sunken', min: TEXT, use: 'ghost Button label, hover' },
   { fg: 'accent-ink', bg: 'accent', min: TEXT, use: 'primary Button label' },
   { fg: 'accent-ink', bg: 'accent-strong', min: TEXT, use: 'primary Button label, hover' },
   { fg: 'accent-strong', bg: 'accent-soft', min: TEXT, use: 'accent Tag text' },
@@ -58,12 +63,23 @@ const PAIRS: Pair[] = [
 // Accepted exceptions: the ratio is the floor recorded in architecture.md;
 // the test fails if a token change makes the pair any worse.
 const EXCEPTIONS: (Pair & { recorded: Record<Theme, number>; reason: string })[] = [
+  // The Input's resting border is border-strong (not the design's
+  // border-subtle) to make the edge easier to find; still under 3:1 on
+  // either side of the line.
   {
-    fg: 'border-subtle',
+    fg: 'border-strong',
     bg: 'surface-sunken',
     min: NON_TEXT,
-    use: 'Input resting border',
-    recorded: { light: 1.14, dark: 1.51 },
+    use: 'Input resting border, against its fill',
+    recorded: { light: 1.44, dark: 1.94 },
+    reason: 'the visible label and the sunken fill identify the field (non-text)',
+  },
+  {
+    fg: 'border-strong',
+    bg: 'surface-page',
+    min: NON_TEXT,
+    use: 'Input resting border, against the page',
+    recorded: { light: 1.6, dark: 1.83 },
     reason: 'the visible label and the sunken fill identify the field (non-text)',
   },
 ];

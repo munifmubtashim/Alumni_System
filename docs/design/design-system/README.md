@@ -62,10 +62,19 @@ Soft, not sharp, and never a full pill unless the control is round by nature:
 - `radius-lg` (14px) — cards, modals
 - `radius-pill` (999px) — the theme toggle track, avatar badges
 
+## Motion
+
+Quiet and short — motion only softens a state change, it never decorates:
+
+- `duration-fast` (150ms) — hover and state-color transitions on controls
+- `easing-standard` (`ease`) — the timing curve for those transitions; no bounce or overshoot
+
+The app turns transitions off under `prefers-reduced-motion: reduce`.
+
 ## Components
 
 - **Button** — primary (solid accent), secondary (bordered), and ghost (text-only) variants, all `radius-md`, `space-4` horizontal padding.
-- **Input** — a labeled text field with a `border-subtle` resting state that deepens to `border-strong`/`accent` on focus — no glow, just a clearer line.
+- **Input** — a labeled text field on `surface-sunken` with a `border-strong` resting border; on focus the border switches to `accent` and the fill to `surface-raised` — no hover step, no glow, just a clearer line. Placeholder and helper text use `ink-secondary` so they reach 4.5:1.
 - **Card** — `surface-raised` on a `border-subtle` hairline, `radius-lg`, generous `space-5` internal padding. No shadow.
 - **Tag** — small `radius-sm` pill-ish chip in neutral, accent-soft (selected), or a status tone.
 - **ThemeToggle** — a three-way light / dark / system switch, `radius-pill` track, that actually flips `data-theme` on the page so you can see every token above respond live.
