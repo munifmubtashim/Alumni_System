@@ -17,6 +17,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] spec-gate-cleared | REQ-002-auth-login-register
 ## [2026-10-05] req-archived | REQ-001-frontend-foundation
 ## [2026-10-05] req-merged | REQ-001-frontend-foundation | PR #14 into redesign (589bfe41)
 ## [2026-10-05] ship-gate-cleared | REQ-001-frontend-foundation
