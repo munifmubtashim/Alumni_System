@@ -1,8 +1,15 @@
 /* Design: docs/design/design-system/components/Button. Hover deepens toward
-   accent-strong; no shadow or glow, only border, fill and text color. */
+   accent-strong; no shadow or glow, only border, fill and text color.
+   Shared by Button and ButtonLink (an <a>), so the base rule also resets
+   link underline and sets the inline-flex box both elements use. */
 
 .button {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
@@ -58,4 +65,37 @@
 
 .button[data-variant='secondary']:disabled {
   border-color: var(--border-subtle);
+}
+
+/* Busy (loading): the button is disabled, so it takes the disabled look above;
+   the cursor says "working", not "not allowed". */
+.button[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* A small dot after the label that pulses while busy. One pulse step is four
+   --duration-fast ticks: a 150ms blink would flicker. */
+.busyDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentcolor;
+  animation: busy-pulse calc(var(--duration-fast) * 4) var(--easing-standard) infinite alternate;
+}
+
+@keyframes busy-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busyDot {
+    animation: none;
+  }
 }

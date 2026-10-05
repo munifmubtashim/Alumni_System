@@ -60,4 +60,34 @@ describe('Input', () => {
     await user.type(input, 'x');
     expect(input).toHaveValue('Locked');
   });
+  it('uses the error as the accessible description and marks the field invalid', () => {
+    render(<Input label="Email" error="Enter a valid email." />);
+    const input = screen.getByLabelText('Email');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toBeInvalid();
+    expect(input).toHaveAccessibleDescription('Enter a valid email.');
+  });
+
+  it('keeps the helper text after the error in the description', () => {
+    render(<Input label="Email" helperText="Work address." error="Required." />);
+    expect(screen.getByLabelText('Email')).toHaveAccessibleDescription('Required. Work address.');
+  });
+
+  it('clears aria-invalid and the error description when the error goes away', () => {
+    const { rerender } = render(
+      <Input label="Email" helperText="Work address." error="Required." />,
+    );
+    rerender(<Input label="Email" helperText="Work address." />);
+    const input = screen.getByLabelText('Email');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).toHaveAccessibleDescription('Work address.');
+    expect(screen.queryByText('Required.')).not.toBeInTheDocument();
+  });
+
+  it('treats an empty error as no error', () => {
+    render(<Input label="Email" error="" />);
+    const input = screen.getByLabelText('Email');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).not.toHaveAttribute('aria-describedby');
+  });
 });

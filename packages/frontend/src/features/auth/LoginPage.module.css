@@ -1,0 +1,11 @@
+/* Login form: fields on the space-5 rhythm, full-width submit. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.submit {
+  align-self: stretch;
+}

@@ -17,6 +17,9 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] adr-accepted | ADR-03 frontend session + 401 handler, ADR-04 forms without a library
+## [2026-10-05] architect-gate-cleared | REQ-002-auth-login-register
+## [2026-10-05] work-path-set | REQ-002-auth-login-register | branch at /Users/munifmubtashim/Alumni_System
 ## [2026-10-05] spec-gate-cleared | REQ-002-auth-login-register
 ## [2026-10-05] req-archived | REQ-001-frontend-foundation
 ## [2026-10-05] req-merged | REQ-001-frontend-foundation | PR #14 into redesign (589bfe41)

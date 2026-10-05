@@ -34,7 +34,20 @@ export interface RegisterInput {
   linkedin_url?: string;
 }
 
+// Kept for compatibility. POST /api/auth/login returns only a token: use
+// LoginResponse for login and RegisterResponse for register.
 export interface AuthResponse {
+  token: string;
+  user: PublicUser;
+}
+
+// POST /api/auth/login.
+export interface LoginResponse {
+  token: string;
+}
+
+// POST /api/auth/register.
+export interface RegisterResponse {
   token: string;
   user: PublicUser;
 }
