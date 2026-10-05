@@ -16,7 +16,7 @@ _(REQ pages by id, with a one-line summary)_
 
 | REQ | Title | Status | Path |
 |---|---|---|---|
-| REQ-001 | Rebuild the frontend foundation on the new design system | review passed; awaiting merge | specs/2026-10/m/REQ-001-frontend-foundation |
+| REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
 
 ## ADRs
 
