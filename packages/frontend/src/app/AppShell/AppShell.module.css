@@ -51,6 +51,30 @@
   font: var(--text-heading-sm);
 }
 
+/* Auth area + theme toggle. Wraps under the brand on narrow widths. */
+.headerActions,
+.authLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.headerActions {
+  gap: var(--space-4);
+}
+
+/* Who is signed in, inside the user menu: name, then role. */
+.menuName {
+  display: block;
+  color: var(--ink-primary);
+  font: var(--text-label);
+}
+
+.menuRole {
+  display: block;
+}
+
 .main {
   flex: 1;
   padding: var(--space-6) var(--space-4);

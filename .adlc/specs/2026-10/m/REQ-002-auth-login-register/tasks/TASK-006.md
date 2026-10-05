@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-002 |
 | Tier | 3 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-005 |
 | Blocks | TASK-007 |
@@ -40,9 +40,20 @@ The app routes guests and signed-in users per the spec, the header shows auth li
 
 ## Acceptance
 
-- [ ] AppShell tests: guest sees Log in/Sign up; signed-in sees the menu with the name; Log out → /login and token cleared; existing AppShell tests that render `/` now hit the RequireAuth guard: update them (seed a token + mock `getMe`, or render a guest route) and list each change in Notes; the theme, skip-link and error-layer behaviour they cover must still be asserted
-- [ ] Full-route tests: guest at `/` → /login → log in → back at `/` with the welcome; signed-in at `/login` → `/`; an expired token at load → /login
-- [ ] HomePage greets by name and role; lint, format:check, typecheck, test, build pass
+- [x] AppShell tests: guest sees Log in/Sign up; signed-in sees the menu with the name; Log out → /login and token cleared; existing AppShell tests that render `/` now hit the RequireAuth guard: update them (seed a token + mock `getMe`, or render a guest route) and list each change in Notes; the theme, skip-link and error-layer behaviour they cover must still be asserted
+- [x] Full-route tests: guest at `/` → /login → log in → back at `/` with the welcome; signed-in at `/login` → `/`; an expired token at load → /login
+- [x] HomePage greets by name and role; lint, format:check, typecheck, test, build pass
+
+## Notes
+
+Implementation notes (2026-10-05):
+- `App.tsx` imports `RouterProvider` from `react-router/dom`. Checked: swapping the AppShell test import to `react-router` makes "Log out → /login" and "two simultaneous 401s" fail (double navigation), so the tests pin it.
+- AppShell test changes (REQ-001 tests that rendered `/`, now behind RequireAuth): "renders the header, theme toggle, main area and skip link", "applies and saves Dark", "starts in System mode" now render the guest route `/login` (no session needed; same assertions). "unknown path" (`/does-not-exist` → `*`), "page throws" (custom `createRoutes`) and "shell throws" (`/` with the shell swapped) are unchanged. The file now uses `react-router/dom` and mocks the axios adapter (`GET /me`, `POST /auth/login`, `GET /posts`).
+- New AppShell tests: guest links; signed-in menu (name, role label, Log out item, `aria-haspopup`); keyboard open (Enter focuses Log out); Log out → /login, one navigation, token cleared, no expired notice; /me 404 → trigger "Account" still logs out. Full-route: guest `/` → /login → log in → `/` with welcome; signed-in `/login` and `/register` → `/`; expired token at load → /login, token dropped, no /me call; two 401s → one navigation + notice.
+- HeaderAuth: guest links sit in `<nav aria-label="Account">`. The menu uses `align="end"` (it sits at the right edge). MenuLabel shows the name (`ink-primary`, label type) over the role ("Student" / "Alumni" / "Admin").
+- HomePage: role line ends with a full stop; `admin` reads "an admin" (spec only names student/alumnus; `MyProfile.role` also allows admin). Returns null if `['me']` has no data (RequireAuth guarantees it does).
+- guards.tsx: besides the class, removed the `{' '}` spacer between Retry and Log out (the flex gap replaces it).
+- Checks (packages/frontend): lint, format:check, typecheck, `npm test` (27 files, 392 tests), `npm run build` all pass. Build now warns the single JS chunk is ~565 kB (> 500 kB); follow-up: route-level code splitting.
 
 ## Related
 

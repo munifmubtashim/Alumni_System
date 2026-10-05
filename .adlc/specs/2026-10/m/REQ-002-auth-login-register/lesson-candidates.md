@@ -64,3 +64,43 @@
 **Claim:** Wrap `mutateAsync` promises captured from a test's click handler in `.then(ok, err)` at capture time; a rejection awaited later counts as unhandled in Vitest.
 **Saw it in:** `packages/frontend/src/features/auth/session.test.tsx` (`track`)
 **Context:** The test awaited `expect(p).rejects` only after `findByText`, so the rejection had already been reported.
+
+## CAND-T5-1 [implement-task]
+**Claim:** Type form submit handlers as React `SubmitEvent<HTMLFormElement>`, not `FormEvent`; `FormEvent` is deprecated in @types/react 19.2 and fails lint (`no-deprecated`).
+**Saw it in:** `packages/frontend/src/features/auth/LoginPage.tsx:59`
+**Context:** The committed LoginPage used FormEvent and failed `npm run lint`.
+
+## CAND-T5-2 [implement-task]
+**Claim:** Don't collect field elements via callback refs that write into a shared `useRef` map; react-hooks v7 `refs` rule flags it. Use one `useRef` per field and build the field→ref map inside the event handler.
+**Saw it in:** `packages/frontend/src/features/auth/RegisterPage.tsx:73`
+**Context:** Needed "focus first invalid field" across six inputs.
+
+## CAND-T5-3 [implement-task]
+**Claim:** Commit only after `lint` and `format:check` pass: a page committed mid-task (LoginPage) failed both, and nothing caught it until the next run.
+**Saw it in:** `packages/frontend/src/features/auth/LoginPage.tsx:92`
+**Context:** Resumed TASK-005 after an interrupted run whose partial output had been committed.
+
+## CAND-T6-1 [implement-task]
+**Claim:** Pin the `react-router/dom` RouterProvider with a behaviour test (one navigation on logout / two 401s); swapping the import to `react-router` makes exactly those tests fail.
+**Saw it in:** `packages/frontend/src/app/AppShell/AppShell.test.tsx:14`
+**Context:** Checked by temporarily swapping the import: 2 of 16 AppShell tests failed (double navigation).
+
+## CAND-T6-2 [implement-task]
+**Claim:** When a route moves behind a guard, retarget shell-only tests (theme, skip link) to a guest route like `/login` instead of seeding a session they don't need.
+**Saw it in:** `packages/frontend/src/app/AppShell/AppShell.test.tsx:130`
+**Context:** `/` became RequireAuth; the REQ-001 shell tests rendered `/`.
+
+## CAND-T6-3 [implement-task]
+**Claim:** Wiring pages into the router pushed the single JS chunk to ~565 kB, over Vite's 500 kB warning; plan route-level code splitting before more pages land.
+**Saw it in:** `packages/frontend/src/app/router.tsx:2`
+**Context:** `npm run build` passes but warns since TASK-006.
+
+## CAND-T7-1 [implement-task]
+**Claim:** Before a smoke test, check whether port 3000 already has an API running; reuse it rather than start a second one or kill a process you didn't start.
+**Saw it in:** `packages/backend/src/api/server.ts` (PORT from root `.env`)
+**Context:** A plain `tsx server.ts` (no watch) was already listening; it may run older code than the checkout.
+
+## CAND-T7-2 [implement-task]
+**Claim:** Folder READMEs outside a task's file list go stale silently; the docs task should name every `src/*/README.md` the REQ's code touched.
+**Saw it in:** `packages/frontend/src/services/README.md:3`
+**Context:** services/ and store/ READMEs still omit authApi and sessionNoticeAtom; not in TASK-007's list, so left alone.

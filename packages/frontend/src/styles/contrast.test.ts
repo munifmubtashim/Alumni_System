@@ -60,6 +60,7 @@ const PAIRS: Pair[] = [
   { fg: 'error', bg: 'surface-raised', min: TEXT, use: 'Input error text in a Card' },
   { fg: 'error', bg: 'surface-sunken', min: TEXT, use: 'Input error text on a sunken panel' },
   { fg: 'ink-primary', bg: 'surface-sunken', min: TEXT, use: 'Alert text' },
+  { fg: 'ink-primary', bg: 'accent-soft', min: TEXT, use: 'highlighted Menu item' },
   { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'focus outline' },
   { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Input focus border' },
 ];

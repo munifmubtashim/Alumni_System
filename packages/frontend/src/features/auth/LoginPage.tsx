@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import { flushSync } from 'react-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -56,7 +56,7 @@ export function LoginPage() {
     };
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (login.isPending) return;
 
@@ -89,7 +89,10 @@ export function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Log in" footer={{ prompt: 'No account?', linkLabel: 'Sign up', to: '/register' }}>
+    <AuthLayout
+      title="Log in"
+      footer={{ prompt: 'No account?', linkLabel: 'Sign up', to: '/register' }}
+    >
       {notice === 'expired' && <Alert tone="info">{SESSION_EXPIRED_MESSAGE}</Alert>}
       <form noValidate className={styles.form} onSubmit={handleSubmit}>
         {formError !== null && <Alert tone="error">{formError}</Alert>}

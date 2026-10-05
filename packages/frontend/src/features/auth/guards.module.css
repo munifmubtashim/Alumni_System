@@ -1,0 +1,7 @@
+/* RequireAuth's error box: Retry and Log out side by side, wrapping when narrow. */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

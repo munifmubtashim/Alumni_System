@@ -6,6 +6,7 @@ import { resolveFrom } from './redirect';
 import { useCurrentUser } from './useCurrentUser';
 import { useLiveToken } from './useHasSession';
 import { useLogout } from './useLogout';
+import styles from './guards.module.css';
 
 function isUnauthorized(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 401;
@@ -41,14 +42,14 @@ export function RequireAuth() {
     return (
       <Alert tone="error" title="Couldn't load your account">
         <p>Check your connection and try again, or log out.</p>
-        <div>
+        <div className={styles.actions}>
           <Button
             variant="primary"
             loading={currentUser.isFetching}
             onClick={() => void currentUser.refetch()}
           >
             Retry
-          </Button>{' '}
+          </Button>
           <Button variant="ghost" onClick={logout}>
             Log out
           </Button>

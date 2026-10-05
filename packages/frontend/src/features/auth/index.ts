@@ -18,3 +18,7 @@ export {
 export type { AuthFormError } from './authErrors';
 export { toRegisterInput, validateLogin, validateRegister } from './validation';
 export type { LoginErrors, LoginValues, RegisterErrors, RegisterValues } from './validation';
+export { AuthLayout } from './AuthLayout';
+export type { AuthLayoutFooter, AuthLayoutProps } from './AuthLayout';
+export { LoginPage, SESSION_EXPIRED_MESSAGE } from './LoginPage';
+export { RegisterPage } from './RegisterPage';

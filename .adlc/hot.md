@@ -40,3 +40,5 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 ## [2026-10-04] init-import | README.md → context/architecture.md
 ## [2026-10-04] init-import | tsconfig.json → context/conventions.md
 ## [2026-10-04] init-import | packages/frontend/eslint.config.js → context/conventions.md
+
+## [2026-10-05] implement-gate-cleared | REQ-002-auth-login-register

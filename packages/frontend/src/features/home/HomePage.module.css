@@ -1,0 +1,23 @@
+/* Signed-in home: a heading and two short lines on tokens only. */
+
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+}
+
+.title {
+  font: var(--text-heading-lg);
+  color: var(--ink-primary);
+}
+
+.role {
+  font: var(--text-body);
+  color: var(--ink-primary);
+}
+
+.soon {
+  font: var(--text-body);
+  color: var(--ink-secondary);
+}

@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-002 |
 | Tier | 2 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-002, TASK-003, TASK-004 |
 | Blocks | TASK-006 |
@@ -31,8 +31,20 @@
 
 ## Acceptance
 
-- [ ] Tests for both pages (memory router with GuestOnly + mocked authApi): success → token stored and GuestOnly navigated to `from` or `/`; notice shown once, then gone on return; 401 / 409 / 400 / network messages; validation messages and focus on the first invalid field; busy button can't double-submit; role switch shows/hides student fields and the payload matches the role
-- [ ] No raw values in CSS (Stylelint), no inline styles; lint, format:check, typecheck, test pass
+- [x] Tests for both pages (memory router with GuestOnly + mocked authApi): success → token stored and GuestOnly navigated to `from` or `/`; notice shown once, then gone on return; 401 / 409 / 400 / network messages; validation messages and focus on the first invalid field; busy button can't double-submit; role switch shows/hides student fields and the payload matches the role
+- [x] No raw values in CSS (Stylelint), no inline styles; lint, format:check, typecheck, test pass
+
+## Notes
+
+Implementation notes (2026-10-05, resumed run):
+- AuthLayout and LoginPage (committed in HEAD by the earlier run) matched the Approach, but LoginPage failed lint (`FormEvent` is deprecated in @types/react 19.2; now `SubmitEvent`) and Prettier (one long JSX line). Both fixed; no behaviour change.
+- RegisterPage: the "I am a…" label is shown as visible text (aria-hidden) above the SegmentedControl, whose `aria-label` carries the same text, because SegmentedControl only takes a string `label` (no `aria-labelledby`). This keeps "every field has a visible label" without editing the primitive.
+- 409: Input's `error` prop is a string, so the link to /login is passed as the email field's `helperText` ("Log in instead"), shown only while the 409 message is up and cleared when the email is edited. Focus moves to the email field.
+- Switching role clears the department/year errors so they don't reappear stale; their values are kept. `toRegisterInput` (TASK-004) leaves them out for alumni.
+- Focus on the first invalid field: one `useRef` per field; a callback-ref map was rejected by the react-hooks v7 `refs` lint rule.
+- University input uses `autoComplete="organization"` (not in the Approach; harmless hint).
+- Tests mock the axios adapter (REQ-001 policy), not `authApi`, and render the page under the real `GuestOnly` in a memory router with `react-router/dom`'s RouterProvider. The session-notice test runs with and without StrictMode.
+- Checks (packages/frontend, 2026-10-05): lint (ESLint + Stylelint), format:check, typecheck, `npm test`: 26 files, 379 tests, all pass, no console warnings.
 
 ## Related
 

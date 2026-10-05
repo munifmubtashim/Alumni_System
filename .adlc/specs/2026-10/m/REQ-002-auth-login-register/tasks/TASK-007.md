@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-002 |
 | Tier | 4 |
-| Status | pending |
+| Status | complete |
 | Repo | alumni-system |
 | Depends on | TASK-006 |
 | Blocks | — |
@@ -33,13 +33,19 @@ Docs describe the session and forms patterns, and every check passes from a clea
 
 ## Acceptance
 
-- [ ] All six commands exit 0; smoke results recorded
-- [ ] Docs mention: services/authApi, setUnauthorizedHandler + SessionBridge, guards, redirect-back via state only, forms rule and the revisit trigger, new primitives
-- [ ] CLAUDE.md change limited to the Frontend architecture subsection
+- [x] All six commands exit 0; smoke results recorded
+- [x] Docs mention: services/authApi, setUnauthorizedHandler + SessionBridge, guards, redirect-back via state only, forms rule and the revisit trigger, new primitives
+- [x] CLAUDE.md change limited to the Frontend architecture subsection
 
 ## Notes
 
 The smoke test creates a real test account in the local dev DB (approved for local dev only). Name it e.g. `smoke+<timestamp>@example.test`.
+
+Implementation notes (2026-10-05):
+- Docs: `packages/frontend/README.md` gains "Auth and session", "Forms" and "Primitives added in REQ-002" sections, plus updated intro, stack row and folder map. `CLAUDE.md` edits are only in Architecture → Frontend (structure, HTTP, new "Session and 401s" bullet, routing, UI/forms line). `conventions.md` Frontend gains "401 handling (ADR-03)" and "Forms (ADR-04)" bullets; services and Base UI lines updated. `components/ui/README.md` gains a primitive table (Menu, SegmentedControl rows from TASK-003). Contrast test adds `ink-primary` on `accent-soft` (highlighted Menu item); passes both themes.
+- Clean verification (packages/frontend, after `rm -rf dist`): typecheck exit 0; lint (ESLint + Stylelint) exit 0; format:check "All matched files use Prettier code style!"; `npx vitest run` twice: 27 files, 394 tests passed each time; tokens:check "tokens.css is up to date"; build exit 0 (565.04 kB JS chunk, known >500 kB warning, follow-up). A loop typo ran each command twice; every run passed.
+- Smoke (2026-10-05): port 3000 already had an API (`tsx server.ts`, started 18:46, not by this task), so it was reused and left running; Postgres accepting connections. Started Vite on 5173. Through the proxy: POST /api/auth/register (`smoke+1791215098@example.test`, alumni) → 201 with `token` + `user`; POST /api/auth/login → 200, token present (not printed); GET /api/me with it → 200, email matches, role alumni; GET /api/me without token → 401. `/`, `/login`, `/register` → 200 (SPA). Vite stopped; 5173 free. 3000 still held by the pre-existing API.
+- Not touched (not in the file list, now stale): `src/services/README.md` (no authApi), `src/store/README.md` (no sessionNoticeAtom), `src/app/README.md`. Follow-up.
 
 ## Related
 
