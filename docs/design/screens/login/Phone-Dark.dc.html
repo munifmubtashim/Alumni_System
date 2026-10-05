@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Login — Phone, Dark</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#d08a66;text-decoration:none}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  label{font-size:12px;font-weight:600;color:#b7afa5;}
+  input{background:#1d1a17;border:1px solid #3a352f;border-radius:8px;padding:12px 14px;font-family:inherit;font-size:15px;color:#f1ece4;outline:none;width:100%;box-sizing:border-box;}
+  .pw-wrap{position:relative;}
+  .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);appearance:none;cursor:pointer;background:transparent;border:none;color:#837b72;padding:0;display:flex;}
+  .checkbox{width:16px;height:16px;border-radius:4px;border:1px solid #d08a66;background:#d08a66;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+</style></helmet>
+<div style="width:100%;min-height:844px;box-sizing:border-box;background:#1d1a17;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f1ece4;padding:56px 24px 32px;display:flex;flex-direction:column;gap:32px;">
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <svg width="40" height="40" viewBox="0 0 52 52">
+      <rect x="0" y="0" width="52" height="52" rx="14" fill="#d08a66"></rect>
+      <path d="M14 38 L26 14 L38 38" stroke="#1d1a17" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </svg>
+    <span style="font-size:17px;font-weight:600;">Alma</span>
+  </div>
+
+  <div>
+    <h1 style="margin:0 0 6px;font-size:22px;font-weight:600;text-align:center;">Log in</h1>
+    <p style="margin:0;font-size:13px;color:#b7afa5;text-align:center;">New here? <a href="#">Create an account</a></p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="field">
+      <label>Email</label>
+      <input type="text" value="sophia.martins@proton.me">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" value="HarborTrail42" style="padding-right:40px;">
+        <button class="pw-toggle" aria-label="Show password">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="checkbox">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1d1a17" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <span style="font-size:13px;color:#f1ece4;">Remember me</span>
+      </div>
+      <a href="#" style="font-size:13px;font-weight:500;">Forgot password?</a>
+    </div>
+
+    <button style="appearance:none;cursor:pointer;background:#d08a66;border:1px solid #d08a66;color:#1d1a17;border-radius:8px;padding:13px;font-size:15px;font-weight:600;font-family:inherit;margin-top:4px;">Log in</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
