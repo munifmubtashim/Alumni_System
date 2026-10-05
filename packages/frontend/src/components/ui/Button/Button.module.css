@@ -1,0 +1,61 @@
+/* Design: docs/design/design-system/components/Button. Hover deepens toward
+   accent-strong; no shadow or glow, only border, fill and text color. */
+
+.button {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font: var(--text-label);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.button[data-variant='primary'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.button[data-variant='primary']:hover:where(:not(:disabled)) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.button[data-variant='secondary'] {
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+  color: var(--ink-primary);
+}
+
+.button[data-variant='secondary']:hover:where(:not(:disabled)) {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+}
+
+.button[data-variant='ghost'] {
+  background: transparent;
+  color: var(--ink-primary);
+}
+
+.button[data-variant='ghost']:hover:where(:not(:disabled)) {
+  background: var(--surface-sunken);
+  color: var(--accent-strong);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  color: var(--ink-muted);
+}
+
+.button[data-variant='primary']:disabled {
+  background: var(--surface-sunken);
+  border-color: var(--border-subtle);
+}
+
+.button[data-variant='secondary']:disabled {
+  border-color: var(--border-subtle);
+}

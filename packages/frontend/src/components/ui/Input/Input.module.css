@@ -1,0 +1,55 @@
+/* Design: docs/design/design-system/components/Input. Helper text uses
+   ink-secondary, not the README's ink-muted, for 4.5:1 contrast
+   (architecture.md -> Contrast). */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+.input {
+  font: var(--text-body);
+  color: var(--ink-primary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.input::placeholder {
+  color: var(--ink-muted);
+}
+
+.input:hover:where(:not(:disabled, :focus)) {
+  border-color: var(--border-strong);
+}
+
+/* The accent border is the only focus signal (no ring), so it overrides the
+   global :focus-visible outline. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.helper {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--ink-secondary);
+}

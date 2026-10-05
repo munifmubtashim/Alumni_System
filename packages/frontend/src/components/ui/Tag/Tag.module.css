@@ -1,0 +1,39 @@
+/* Design: docs/design/design-system/components/Tag. Status tones color only
+   the dot; text stays ink-secondary (architecture.md -> Contrast). */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-label);
+  background: var(--surface-sunken);
+  color: var(--ink-secondary);
+}
+
+.tag[data-tone='accent'] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+}
+
+.tag[data-tone='success'] .dot {
+  background: var(--success);
+}
+
+.tag[data-tone='warning'] .dot {
+  background: var(--warning);
+}
+
+.tag[data-tone='error'] .dot {
+  background: var(--error);
+}

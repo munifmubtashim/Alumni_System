@@ -24,8 +24,8 @@ Two themes, one accent. Light is warm off-white and charcoal ink; dark is warm c
 | `ink-primary` | `#2b2724` | `#f1ece4` | Primary text |
 | `ink-secondary` | `#6b6560` | `#b7afa5` | Secondary text, labels |
 | `ink-muted` | `#948c84` | `#837b72` | Placeholder, disabled |
-| `accent` | `#ad6a4d` | `#d08a66` | The one accent — buttons, links, active state |
-| `accent-strong` | `#8f5540` | `#e4a07c` | Hover/pressed accent |
+| `accent` | `#975c43` | `#d08a66` | The one accent — buttons, links, active state |
+| `accent-strong` | `#7a4734` | `#e4a07c` | Hover/pressed accent |
 | `accent-ink` | `#fdf8f3` | `#1d1a17` | Text on a solid accent fill |
 | `accent-soft` | `#f3e4d9` | `#3a2c23` | Accent tint — selected tags, highlighted rows |
 | `success` | `#5f7a56` | `#93b188` | Positive status |

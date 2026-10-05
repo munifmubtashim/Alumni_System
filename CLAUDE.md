@@ -29,11 +29,18 @@ Run from the repo root unless noted.
 
 - `npm run dev` — runs both the API and frontend concurrently (dev only).
 - `npm run dev:api` — runs the API alone (`tsx watch server.ts` inside `packages/backend/src/api`), auto-reloads on change.
-- `npm run dev:frontend` — runs the Vite dev server alone (`packages/frontend`).
-- `npm run build` (inside `packages/frontend`) — `tsc && vite build`.
-- `npm run preview` (inside `packages/frontend`) — preview the frontend production build.
-- No test suite exists in this repo yet (no test runner configured).
-- No lint script is wired at the root; frontend has an ESLint flat config (`packages/frontend/eslint.config.js`) — run `npx eslint .` from `packages/frontend` if needed.
+- `npm run dev:frontend` — runs the Vite dev server alone (`packages/frontend`, port 5173; `/api` is proxied to the API, so start the API too).
+
+Frontend scripts, run inside `packages/frontend` (full list and details in `packages/frontend/README.md`):
+
+- `npm run build` — `npm run typecheck && vite build`. `npm run preview` serves the result.
+- `npm run typecheck` — `tsc` on `tsconfig.app.json` and `tsconfig.node.json` (both `noEmit`).
+- `npm run lint` / `lint:fix` — ESLint (type-aware) on TS/JS, then Stylelint on `src/**/*.css`.
+- `npm run format` / `format:check` — Prettier.
+- `npm test` — Vitest single run (`test:watch`, `test:coverage` also exist). Tests are co-located `*.test.ts(x)`.
+- `npm run tokens` — regenerate `src/styles/tokens.css` from `docs/design/design-system/tokens.json`; `tokens:check` exits 1 if it is stale.
+
+The backend and `@alumni/shared` have no test, lint or format scripts yet.
 
 ### Rebuilding businessLogic/dal after editing them
 
@@ -68,12 +75,15 @@ Each backend sub-package is its own workspace with its own `package.json`/`tscon
 
 ### Frontend
 
-`packages/frontend/src`, React + Vite + TypeScript, routed with `react-router-dom`, styled via `antd`, state via `jotai` atoms (`store/*Atom.ts`, e.g. `postsAtom`, `postsLoadingAtom`, `currentUserAtom`).
+`packages/frontend` was rebuilt from scratch in REQ-001 (this subsection describes the new code, not the pre-redesign one). React 19 + Vite 8 + TypeScript 6 (own strict tsconfigs, not extending the root), ESM package. Details: `packages/frontend/README.md`.
 
-- `services/*Api.ts` wrap `axios` calls to the backend (e.g. `authApi.ts`, `postsApi.ts`); authenticated calls manually attach `Authorization: Bearer <token>` read from `localStorage` (no axios interceptor — each call site builds its own headers).
-- `authApi.ts` decodes the JWT client-side (`atob` on the payload segment) to get `{ id, role }` for `getCurrentUser()` (used for nav/ownership checks; it does not check expiry). Profile data for the logged-in user comes from `GET/PUT /api/me` (`services/meApi.ts`), which identifies the user only from the verified JWT — never from params or body.
-- `pages/` are route-level components (`LoginPage`, `DashboardPage`, `PostFeedPage`); `components/` are reusable pieces used by pages (`LoginForm`, `Dashboard`, `PostFeed`).
-- Vite dev server has no API proxy configured (`vite.config.ts` is default) — API calls use relative paths like `/api/auth/login`, so confirm how requests actually reach the backend port before assuming same-origin dev works out of the box.
+- **Structure** (`src/`, each folder has a README with its import rules): `app/` (App, providers, router, `queryClient.ts`, `AppShell` layout, `RouteError`), `features/` (one folder per domain; `theme/` is the first), `components/ui/` (primitives: Button, Input, Card, Tag, ThemeToggle), `store/` (Jotai atoms), `services/` (`httpClient.ts`, `authToken.ts`), `styles/` (generated `tokens.css`, `global.css`), `test/` (Vitest setup). Path alias `@/` → `src/`. Today the app renders only the shell: header with "Alumni Network" and the theme toggle; there are no feature routes yet.
+- **Import boundaries** are lint-enforced: `components/ui/` may not import services, store, features, app, axios or TanStack Query; `services/` may not import React or UI; only `main.tsx` imports `app/`.
+- **HTTP:** one axios instance, `services/httpClient.ts` (`baseURL: '/api'`). Its single request interceptor adds `Authorization: Bearer <token>` from `services/authToken.ts` (`localStorage['token']`, the only home of the token). Call sites never build auth headers. 401 handling is not built yet (auth REQ).
+- **State (ADR-02):** server data goes through TanStack Query (shared `QueryClient` in `app/queryClient.ts`); Jotai atoms in `store/` hold client-only state (e.g. `themePreferenceAtom`, persisted under `localStorage['alumni.theme']`).
+- **UI (ADR-01):** no third-party component library. Primitives are our own components styled with CSS Modules that may use only design tokens (`var(--…)`), enforced by Stylelint and ESLint. Base UI (headless) supplies behavior where needed; only `ThemeToggle` uses it so far. Tokens are generated from `docs/design/design-system/tokens.json` by `npm run tokens`.
+- **Routing:** React Router 8 data router (`react-router`). Two `errorElement` layers: the outer one on the `/` layout catches shell crashes; an inner pathless route shows `RouteError` inside the shell for page errors.
+- **Dev proxy:** `vite.config.ts` proxies `/api` to `http://localhost:<PORT>` (`PORT` read from the root `.env`, default 3000; nothing else from that file reaches the client). Run the API alongside Vite (root `npm run dev`).
 
 ## Conventions (redesign)
 
