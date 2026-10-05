@@ -1,0 +1,21 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-06T00:00:00Z" },
+  "title": "Alumni Network — Sign Up",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 900, "title": "Desktop — Light · Filled", "expand": "fill", "is_interactive": true },
+    "Desktop-Dark.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 900, "title": "Desktop — Dark · Filled", "expand": "fill", "is_interactive": true },
+    "Phone-Light.dc.html": { "x": 0, "y": 1020, "w": 390, "h": 940, "title": "Phone — Light · Filled", "expand": "fill", "is_interactive": true },
+    "Phone-Dark.dc.html": { "x": 470, "y": 1020, "w": 390, "h": 940, "title": "Phone — Dark · Filled", "expand": "fill", "is_interactive": true },
+    "Desktop-Light-Empty.dc.html": { "x": 0, "y": 2080, "w": 1440, "h": 900, "title": "Desktop — Light · Empty (Student)", "expand": "fill" },
+    "Desktop-Light-Loading.dc.html": { "x": 1520, "y": 2080, "w": 1440, "h": 900, "title": "Desktop — Light · Loading", "expand": "fill" },
+    "Desktop-Light-Error.dc.html": { "x": 3040, "y": 2080, "w": 1440, "h": 900, "title": "Desktop — Light · Error", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "Desktop-Dark.dc.html", "Phone-Light.dc.html", "Phone-Dark.dc.html", "Desktop-Light-Empty.dc.html", "Desktop-Light-Loading.dc.html", "Desktop-Light-Error.dc.html"],
+  "notes": {},
+  "designSystems": [
+    { "title": "Alumni Network", "namespace": "alumni-network", "artifact": "https://claude.ai/artifact/N7AifxP2ab3Ginp2bLoRYh", "version": null, "copiedAt": "2026-10-06T00:00:00Z" }
+  ]
+}

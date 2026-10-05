@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feed — Phone, Dark</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#d08a66;text-decoration:none}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#837b72;flex:1;padding:8px 0;}
+  .tab.active{color:#d08a66;}
+  .comment{display:flex;gap:8px;}
+</style></helmet>
+<div style="width:100%;min-height:1500px;background:#1d1a17;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f1ece4;box-sizing:border-box;display:flex;flex-direction:column;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#272320;border-bottom:1px solid #3a352f;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#d08a66;color:#1d1a17;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">A</div>
+      <span style="font-size:14px;font-weight:600;">Alumni Network</span>
+    </div>
+    <div style="width:30px;height:30px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;">SM</div>
+  </div>
+
+  <div style="flex-grow:1;padding:16px;display:flex;flex-direction:column;gap:16px;">
+    <h1 style="margin:0;font-size:18px;font-weight:600;">Feed</h1>
+
+    <div style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+      <textarea placeholder="What's on your mind?" rows="2" style="resize:none;background:#1d1a17;border:1px solid #3a352f;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;color:#f1ece4;outline:none;"></textarea>
+      <div style="display:flex;justify-content:flex-end;">
+        <button style="appearance:none;cursor:pointer;background:#d08a66;border:1px solid #d08a66;color:#1d1a17;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:inherit;">Post</button>
+      </div>
+    </div>
+
+    <div style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;">AM</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;">Amira Mendes</div>
+          <div style="font-size:11px;color:#837b72;">3 days ago</div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;">Hiring a product designer on my team at Terra Climate — fully remote, 4+ years experience.</p>
+      <span style="font-size:12px;font-weight:500;color:#d08a66;">14 comments</span>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-top:4px;border-top:1px solid #312c27;">
+        <div class="comment">
+          <div style="width:24px;height:24px;border-radius:999px;background:#2e2a25;color:#b7afa5;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;flex-shrink:0;">JK</div>
+          <div style="font-size:12px;"><span style="font-weight:600;">Jonas</span> Would love an intro.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="width:24px;height:24px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;flex-shrink:0;">SM</div>
+          <input type="text" placeholder="Write a reply…" style="flex-grow:1;background:#1d1a17;border:1px solid #3a352f;border-radius:999px;padding:7px 12px;font-family:inherit;font-size:12px;color:#f1ece4;outline:none;">
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;">JK</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;">Jonas Kessler</div>
+          <div style="font-size:11px;color:#837b72;">1 week ago</div>
+        </div>
+      </div>
+      <p style="margin:0;font-size:13px;line-height:1.6;">Our team just open-sourced a rate-limiting library — feedback welcome.</p>
+      <span style="font-size:12px;color:#b7afa5;">6 comments</span>
+    </div>
+  </div>
+
+  <nav style="display:flex;background:#272320;border-top:1px solid #3a352f;padding:4px 8px 10px;">
+    <div class="tab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>Directory</div>
+    <div class="tab active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>Feed</div>
+    <div class="tab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg>Profile</div>
+    <div class="tab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>Admin</div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

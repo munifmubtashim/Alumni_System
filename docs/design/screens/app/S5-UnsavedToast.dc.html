@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My Profile — Saved (success toast)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#ad6a4d;text-decoration:none}
+  .nav-link{font-size:14px;font-weight:500;color:#6b6560;padding:22px 0}
+  .nav-link.active{color:#2b2724;border-bottom:2px solid #ad6a4d}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  label{font-size:12px;font-weight:600;color:#6b6560;}
+  input{border:1px solid #e4dcd0;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;color:#2b2724;outline:none;background:#ffffff;}
+  .section-card{background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  .toast{animation:toastIn 0.25s ease-out;}
+</style></helmet>
+<div style="width:100%;min-height:1000px;background:#faf7f2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2b2724;position:relative;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 32px;height:64px;background:#ffffff;border-bottom:1px solid #e4dcd0;">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">A</div>
+        <span style="font-size:15px;font-weight:600;">Alumni Network</span>
+      </div>
+      <nav style="display:flex;gap:24px;">
+        <a href="S2-Desktop-Light.dc.html" class="nav-link">Directory</a>
+        <a href="S4-Desktop-Light.dc.html" class="nav-link">Feed</a>
+        <a href="S5-Desktop-Light.dc.html" class="nav-link active">My Profile</a>
+        <a href="S6-Desktop-Light.dc.html" class="nav-link">Admin</a>
+      </nav>
+    </div>
+    <div style="width:32px;height:32px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">SM</div>
+  </header>
+
+  <div class="toast" style="position:absolute;top:24px;right:32px;background:#2b2724;color:#fdf8f3;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 24px rgba(43,39,36,0.25);z-index:5;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9fd19a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span style="font-size:13px;font-weight:500;">Profile updated successfully</span>
+  </div>
+
+  <div style="padding:32px;max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
+    <h1 style="margin:0;font-size:22px;font-weight:600;">My Profile</h1>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Personal</h2>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:56px;height:56px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;">SM</div>
+        <button style="appearance:none;cursor:pointer;background:#ffffff;border:1px solid #e4dcd0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;font-family:inherit;color:#2b2724;">Change photo</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Full name</label><input type="text" value="Sophia Martins"></div>
+        <div class="field"><label>Headline</label><input type="text" value="Senior Product Manager at Meridian Health"></div>
+      </div>
+      <div class="field"><label>Location</label><input type="text" value="Toronto, Canada"></div>
+    </div>
+
+    <p style="margin:0;font-size:13px;color:#6b6560;text-align:center;">All sections saved — no unsaved changes.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

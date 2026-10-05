@@ -1,0 +1,69 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-06T00:00:00Z" },
+  "title": "Alumni Network — App Screens",
+  "launch": { "view": "canvas" },
+  "pages": [
+    { "id": "p1", "name": "1. App shell" },
+    { "id": "p2", "name": "2. Directory" },
+    { "id": "p3", "name": "3. Profile" },
+    { "id": "p4", "name": "4. Feed" },
+    { "id": "p5", "name": "5. My Profile" },
+    { "id": "p6", "name": "6. Admin" },
+    { "id": "p7", "name": "7. About" }
+  ],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 800, "title": "Shell — Desktop Light", "page": "p1", "expand": "fill", "is_interactive": true },
+    "S1-Desktop-Dark.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 800, "title": "Shell — Desktop Dark", "page": "p1", "expand": "fill" },
+    "S1-Phone-Light.dc.html": { "x": 3040, "y": 0, "w": 390, "h": 844, "title": "Shell — Phone Light", "page": "p1", "expand": "fill" },
+    "S1-Phone-Dark.dc.html": { "x": 3510, "y": 0, "w": 390, "h": 844, "title": "Shell — Phone Dark", "page": "p1", "expand": "fill" },
+
+    "S2-Desktop-Light.dc.html": { "x": 0, "y": 1500, "w": 1440, "h": 1000, "title": "Directory — Desktop Light", "page": "p2", "expand": "fill" },
+    "S2-Desktop-Dark.dc.html": { "x": 1520, "y": 1500, "w": 1440, "h": 1000, "title": "Directory — Desktop Dark", "page": "p2", "expand": "fill" },
+    "S2-Phone-Light.dc.html": { "x": 3040, "y": 1500, "w": 390, "h": 1400, "title": "Directory — Phone Light", "page": "p2", "expand": "fill" },
+    "S2-Phone-Dark.dc.html": { "x": 3510, "y": 1500, "w": 390, "h": 1400, "title": "Directory — Phone Dark", "page": "p2", "expand": "fill" },
+    "S2-NoResults.dc.html": { "x": 3980, "y": 1500, "w": 1440, "h": 1000, "title": "Directory — No results", "page": "p2", "expand": "fill" },
+
+    "S3-Desktop-Light.dc.html": { "x": 0, "y": 3000, "w": 1440, "h": 1150, "title": "Profile — Desktop Light", "page": "p3", "expand": "fill" },
+    "S3-Desktop-Dark.dc.html": { "x": 1520, "y": 3000, "w": 1440, "h": 1150, "title": "Profile — Desktop Dark", "page": "p3", "expand": "fill" },
+    "S3-Phone-Light.dc.html": { "x": 3040, "y": 3000, "w": 390, "h": 1600, "title": "Profile — Phone Light", "page": "p3", "expand": "fill" },
+    "S3-Phone-Dark.dc.html": { "x": 3510, "y": 3000, "w": 390, "h": 1600, "title": "Profile — Phone Dark", "page": "p3", "expand": "fill" },
+
+    "S4-Desktop-Light.dc.html": { "x": 0, "y": 4500, "w": 1440, "h": 1200, "title": "Feed — Desktop Light", "page": "p4", "expand": "fill", "is_interactive": true },
+    "S4-Desktop-Dark.dc.html": { "x": 1520, "y": 4500, "w": 1440, "h": 1200, "title": "Feed — Desktop Dark", "page": "p4", "expand": "fill" },
+    "S4-Phone-Light.dc.html": { "x": 3040, "y": 4500, "w": 390, "h": 1500, "title": "Feed — Phone Light", "page": "p4", "expand": "fill" },
+    "S4-Phone-Dark.dc.html": { "x": 3510, "y": 4500, "w": 390, "h": 1500, "title": "Feed — Phone Dark", "page": "p4", "expand": "fill" },
+    "S4-EmptyFeed.dc.html": { "x": 3980, "y": 4500, "w": 1440, "h": 1200, "title": "Feed — Empty state", "page": "p4", "expand": "fill" },
+
+    "S5-Desktop-Light.dc.html": { "x": 0, "y": 6000, "w": 1440, "h": 1250, "title": "My Profile — Desktop Light", "page": "p5", "expand": "fill" },
+    "S5-Desktop-Dark.dc.html": { "x": 1520, "y": 6000, "w": 1440, "h": 1250, "title": "My Profile — Desktop Dark", "page": "p5", "expand": "fill" },
+    "S5-Phone-Light.dc.html": { "x": 3040, "y": 6000, "w": 390, "h": 1700, "title": "My Profile — Phone Light", "page": "p5", "expand": "fill" },
+    "S5-Phone-Dark.dc.html": { "x": 3510, "y": 6000, "w": 390, "h": 1700, "title": "My Profile — Phone Dark", "page": "p5", "expand": "fill" },
+    "S5-UnsavedToast.dc.html": { "x": 3980, "y": 6000, "w": 1440, "h": 1250, "title": "My Profile — Unsaved changes + toast", "page": "p5", "expand": "fill" },
+
+    "S6-Desktop-Light.dc.html": { "x": 0, "y": 7500, "w": 1440, "h": 1300, "title": "Admin — Desktop Light", "page": "p6", "expand": "fill" },
+    "S6-Desktop-Dark.dc.html": { "x": 1520, "y": 7500, "w": 1440, "h": 1300, "title": "Admin — Desktop Dark", "page": "p6", "expand": "fill" },
+    "S6-Phone-Light.dc.html": { "x": 3040, "y": 7500, "w": 390, "h": 1600, "title": "Admin — Phone Light", "page": "p6", "expand": "fill" },
+    "S6-Phone-Dark.dc.html": { "x": 3510, "y": 7500, "w": 390, "h": 1600, "title": "Admin — Phone Dark", "page": "p6", "expand": "fill" },
+    "S6-DeleteConfirm.dc.html": { "x": 3980, "y": 7500, "w": 1440, "h": 1300, "title": "Admin — Delete confirmation", "page": "p6", "expand": "fill" },
+    "S6-AddDrawer.dc.html": { "x": 5500, "y": 7500, "w": 1440, "h": 1300, "title": "Admin — Add alumni drawer", "page": "p6", "expand": "fill" },
+
+    "S7-Desktop-Light.dc.html": { "x": 0, "y": 9000, "w": 1440, "h": 1000, "title": "About — Desktop Light", "page": "p7", "expand": "fill" },
+    "S7-Desktop-Dark.dc.html": { "x": 1520, "y": 9000, "w": 1440, "h": 1000, "title": "About — Desktop Dark", "page": "p7", "expand": "fill" },
+    "S7-Phone-Light.dc.html": { "x": 3040, "y": 9000, "w": 390, "h": 1400, "title": "About — Phone Light", "page": "p7", "expand": "fill" },
+    "S7-Phone-Dark.dc.html": { "x": 3510, "y": 9000, "w": 390, "h": 1400, "title": "About — Phone Dark", "page": "p7", "expand": "fill" }
+  },
+  "order": [
+    "Main.dc.html", "S1-Desktop-Dark.dc.html", "S1-Phone-Light.dc.html", "S1-Phone-Dark.dc.html",
+    "S2-Desktop-Light.dc.html", "S2-Desktop-Dark.dc.html", "S2-Phone-Light.dc.html", "S2-Phone-Dark.dc.html", "S2-NoResults.dc.html",
+    "S3-Desktop-Light.dc.html", "S3-Desktop-Dark.dc.html", "S3-Phone-Light.dc.html", "S3-Phone-Dark.dc.html",
+    "S4-Desktop-Light.dc.html", "S4-Desktop-Dark.dc.html", "S4-Phone-Light.dc.html", "S4-Phone-Dark.dc.html", "S4-EmptyFeed.dc.html",
+    "S5-Desktop-Light.dc.html", "S5-Desktop-Dark.dc.html", "S5-Phone-Light.dc.html", "S5-Phone-Dark.dc.html", "S5-UnsavedToast.dc.html",
+    "S6-Desktop-Light.dc.html", "S6-Desktop-Dark.dc.html", "S6-Phone-Light.dc.html", "S6-Phone-Dark.dc.html", "S6-DeleteConfirm.dc.html", "S6-AddDrawer.dc.html",
+    "S7-Desktop-Light.dc.html", "S7-Desktop-Dark.dc.html", "S7-Phone-Light.dc.html", "S7-Phone-Dark.dc.html"
+  ],
+  "notes": {},
+  "designSystems": [
+    { "title": "Alumni Network", "namespace": "alumni-network", "artifact": "https://claude.ai/artifact/N7AifxP2ab3Ginp2bLoRYh", "version": null, "copiedAt": "2026-10-06T00:00:00Z" }
+  ]
+}
