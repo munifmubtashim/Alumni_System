@@ -17,6 +17,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-06] req-archived | REQ-003-backend-route-auth
+## [2026-10-06] req-merged | REQ-003-backend-route-auth | PR #16 into redesign (374891a9)
 ## [2026-10-06] ship-gate-cleared | REQ-003-backend-route-auth
 ## [2026-10-06] req-ready-to-merge | REQ-003-backend-route-auth | token on every non-public route, post ownership + partial edit, no password in responses, shared sendError, first backend test suite
 ## [2026-10-06] lesson | L-REQ-003-1..5 — partial workspace mocks, protect at router + app walker, migrate every handler to sendError, source alias needs typecheck, declare deps where imported
