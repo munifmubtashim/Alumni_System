@@ -8,16 +8,16 @@
   "scripts": {
     "dev:api": "npm run dev --workspace=packages/backend/src/api",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
-    "dev": "npm run dev:api & npm run dev:frontend"
+    "dev": "npm run dev:api & npm run dev:frontend",
+    "test:backend": "npm test --workspace=packages/backend",
+    "typecheck:backend": "npm run typecheck --workspace=packages/backend"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "concurrently": "^10.0.5"
   }

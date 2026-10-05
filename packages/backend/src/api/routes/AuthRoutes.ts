@@ -1,4 +1,5 @@
 import { login, register } from "../controllers/UserController";
+import { sendError } from "../controllers/sendError";
 import { Router } from "express";
 
 
@@ -9,8 +10,9 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const result = await login(email, password);
     res.json(result);
-  } catch (err: any) {
-    res.status(err.status || 500).json({ message: err.message });
+  } catch (err) {
+    // Wrong email/password is an AppError(401, "Invalid"); anything else becomes a plain 500.
+    sendError(res, err);
   }
 });
 router.post("/register", register);

@@ -97,8 +97,11 @@ export function validateAlumniFields(body: Record<string, unknown>): AlumniEdita
   };
 }
 
+// Largest Postgres `integer` (int4); a bigger id can't match a row and would make the query error.
+export const MAX_DB_ID = 2147483647;
+
 export function requireId(value: unknown, what: string): number {
   const id = Number(value);
-  if (!Number.isInteger(id) || id <= 0) throw new AppError(404, `${what} not found`);
+  if (!Number.isInteger(id) || id <= 0 || id > MAX_DB_ID) throw new AppError(404, `${what} not found`);
   return id;
 }

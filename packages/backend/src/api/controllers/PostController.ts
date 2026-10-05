@@ -1,17 +1,16 @@
 import { Request, Response } from "express";
 import { PostManager } from "@alumni/businesslogic";
-import { PostDTO } from "@alumni/dal";
+import { sendError } from "./sendError";
 
 const postManager = new PostManager();
 
+// POST /api/posts — the author is the signed-in user, never body.user_id.
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { user_id, caption, media_url } = req.body;
-    const post = new PostDTO(user_id, 0, caption, media_url);
-    const newPost = await postManager.createNewPost(post);
+    const newPost = await postManager.createNewPost(Number(req.user.sub), req.body ?? {});
     res.status(201).json(newPost);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
@@ -22,39 +21,38 @@ export const getAllPosts = async (req: Request, res: Response) => {
     const posts = await postManager.getAllPosts(limit, offset);
     res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
 export const getPostsByUserId = async (req: Request, res: Response) => {
   try {
-    const post = new PostDTO(Number(req.params.id), 0);
-    const posts = await postManager.getPostsByUserId(post);
-    res.status(200).json(posts);
+    res.status(200).json(await postManager.getPostsByUserId(req.params.id));
   } catch (error) {
-    res.status(404).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
+// PUT /api/posts/:id — author or admin only.
 export const updatePost = async (req: Request, res: Response) => {
   try {
-    const { user_id, caption, media_url } = req.body;
-    const post = new PostDTO(user_id, 0, caption, media_url);
-    post.id = Number(req.params.id);
-    const updated = await postManager.updatePost(post);
+    const updated = await postManager.updatePost(
+      { id: Number(req.user.sub), role: req.user.role },
+      req.params.id,
+      req.body ?? {},
+    );
     res.status(200).json(updated);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
+// DELETE /api/posts/:id — author or admin only.
 export const deletePost = async (req: Request, res: Response) => {
   try {
-    const post = new PostDTO(0, 0);
-    post.id = Number(req.params.id);
-    await postManager.deletePost(post);
-    res.status(200).json({ message: 'Post deleted successfully' });
+    await postManager.deletePost({ id: Number(req.user.sub), role: req.user.role }, req.params.id);
+    res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };

@@ -8,13 +8,17 @@ export class UserQuery {
 
     }
 
-    public async createUser(data: UserDTO): Promise<UserDTO> {
-        const info = await pool.query('INSERT INTO users (name , email , password, role) VALUES ($1,$2,$3,$4) RETURNING *',
+    // Admin-created account. Returns public columns only; the password never leaves the DAL.
+    public async createUser(data: Pick<UserDTO, "name" | "email" | "password" | "role">): Promise<PublicUserRow> {
+        const info = await pool.query(
+            `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)
+             RETURNING ${UserQuery.PUBLIC_USER_COLUMNS}`,
             [data.name, data.email, data.password, data.role]
         );
-        return info.rows[0]
-
+        return info.rows[0];
     }
+
+    // Selects the password hash: only for login. Never send this row to a client.
     public async findUserByEmail(email: string): Promise<UserDTO | undefined> {
         const info = await pool.query('SELECT * FROM users WHERE email = $1',
             [email]
@@ -22,33 +26,20 @@ export class UserQuery {
         return info.rows[0];
     }
 
-    public async findUserById(id: number): Promise<UserDTO> {
-        const info = await pool.query('SELECT * FROM users WHERE id = $1',
-            [id]
-        );
+    public async findUserById(id: number): Promise<PublicUserRow | undefined> {
+        const info = await pool.query(`SELECT ${UserQuery.PUBLIC_USER_COLUMNS} FROM users WHERE id = $1`, [id]);
         return info.rows[0];
-
     }
 
-
-    public async getAllUsers(): Promise<UserDTO[]> {
-        const info = await pool.query('SELECT * FROM users');
-        const users: UserDTO[] = [];
-        for (const user of info.rows) {
-            console.log(user);
-            users.push(user);
-        }
-
+    public async getAllUsers(): Promise<PublicUserRow[]> {
+        const info = await pool.query(`SELECT ${UserQuery.PUBLIC_USER_COLUMNS} FROM users`);
         return info.rows;
     }
-    public async deleteUser(id: number): Promise<void> {
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
-    }
-    public async updateLoginTime(id: number): Promise<void> {
-        await pool.query('UPDATE users SET login_at=NOW() WHERE id=$1', [id]);
-    }
-    public async updateLogoutTime(id: number): Promise<void> {
-        await pool.query('UPDATE users SET logout_at=NOW() WHERE id=$1', [id]);
+
+    // Returns false if no user had that id.
+    public async deleteUser(id: number): Promise<boolean> {
+        const info = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        return (info.rowCount ?? 0) > 0;
     }
 
     // Creates the user (role always 'alumni') and their alumni row atomically.

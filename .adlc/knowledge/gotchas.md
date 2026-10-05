@@ -46,27 +46,29 @@ Use both. They serve different purposes.
 
 **Related:** [[knowledge/components/frontend]] · [[REQ-001]]
 
-## G02 — Vitest is nested under packages/frontend, and @vitest/mocker must sit beside it ^g02
+## G02 — vitest/vite are hoisted to the root; @vitest/mocker must land beside vite ^g02
 
 | Field | Value |
 |---|---|
-| Discovered | 2026-10-05 |
-| REQ | REQ-001 |
+| Discovered | 2026-10-05 (rewritten 2026-10-06, REQ-003) |
+| REQ | REQ-001, REQ-003 |
 | Component | npm workspaces |
 | Status | confirmed |
 | Severity | careful |
 
-**What:** Root `@types/node@20` (backend) forces vitest and vite to install under `packages/frontend/node_modules`. If `@vitest/mocker` is hoisted to the root alone, it can't resolve `vite` ("Cannot find package 'vite'").
+**What:** Since REQ-003 added vitest to `packages/backend`, `vitest`, `vite` and `@vitest/*` install once at the root (`node_modules/vitest`), shared by the frontend and the backend. Before that, they were nested under `packages/frontend/node_modules`. Either way, an install can leave `@vitest/mocker` at a level where it can't resolve `vite`. The backend test run then fails with "Cannot find package 'vite'", while the frontend may still pass.
 
-**Where:** `package-lock.json` entries for `vite`, `vitest`, `@vitest/*`
+**Where:** `package-lock.json` entries for `vite`, `vitest`, `@vitest/*`. Triggered by any workspace install that touches vitest (`npm install -D vitest --workspace=…`).
 
-**Why it's surprising:** Workspace hoisting usually just works.
+**Why it's surprising:** Workspace hoisting usually just works, and `npm ls vitest` looks healthy.
 
-**Why it exists:** Peer-range conflicts between the backend's and the frontend's toolchains.
+**Why it exists:** Peer-range differences between the workspaces' toolchains decide where npm places each package.
 
-**Don't:** Don't hand-edit those lock entries. If vitest breaks after an install, delete the vite/vitest/@vitest lock entries and reinstall.
+**Don't:** Don't hand-edit those lock entries. After any vitest-related install, run **both** workspaces' tests. If one fails to find `vite`, delete the vite/vitest/@vitest lock entries and reinstall.
 
-**Related:** [[knowledge/components/frontend]] · [[REQ-001]]
+**Related:** [[knowledge/components/frontend]] · [[knowledge/components/backend]] · [[REQ-001]] · [[REQ-003]]
+
+---
 
 ## G03 — Frontend tsconfigs stand alone: no extending root, no baseUrl ^g03
 
@@ -295,3 +297,99 @@ Use both. They serve different purposes.
 **Don't:** Don't "fix" these by loosening assertions or adding real-time waits.
 
 **Related:** [[knowledge/concepts/session-and-401]] · [[REQ-002]]
+
+---
+
+## G13 — Backend tests mock the pg pool by its resolved source path; a silent run proves it ^g13
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-003 |
+| Component | backend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `packages/backend/src/test/setup.ts` mocks `dal/config/db.ts` by its resolved path. That one mock covers query files importing `../config/db.js` and those importing `../config/db` without an extension.
+
+**Where:** `packages/backend/src/test/setup.ts`; `packages/backend/src/dal/config/db.ts` (logs on connection success *and* failure)
+
+**Why it's surprising:** Mocking a specifier string looks like it should only match that exact spelling.
+
+**Why it exists:** Vitest resolves the id before matching. `db.ts` calls `verifyConnection()` at import time, so the mock must apply before any query module loads.
+
+**Don't:** Don't add a per-file pool mock or remove the setup mock. If a DB log line ever appears in a test run, a real Pool was built: find the import that escaped the mock.
+
+**Related:** [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]] · [[knowledge/lessons/LESSON-REQ-003-1-partial-mocks-of-workspace-packages|L-REQ-003-1]]
+
+---
+
+## G14 — `requireId` answers 404 (not 400) for a malformed or out-of-range id ^g14
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-003 |
+| Component | backend (businessLogic) |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `requireId(value, "Post")` throws `AppError(404, "Post not found")` for `abc`, `0`, `-1`, `12abc` and anything above 2147483647 (`MAX_DB_ID`, the Postgres `integer` max). It accepts anything `Number()` turns into a positive integer, so `"1e3"` and `" 5 "` pass.
+
+**Where:** `packages/backend/src/businessLogic/src/validation.ts` (`requireId`, `MAX_DB_ID`)
+
+**Why it's surprising:** Most APIs return 400 for a malformed id. Two task files in REQ-003 asked for 400 before the code was read.
+
+**Why it exists:** A malformed id can never match a row. Treating it as "not found" keeps one code path, and the user confirmed it at the REQ-003 implement gate.
+
+**Don't:** Don't write specs or tests expecting 400 for bad ids. Don't change `requireId` per-route; it's shared by every Manager.
+
+**Related:** [[REQ-003]]
+
+---
+
+## G15 — The base schema isn't in `db/migrations/`; constraints live only in `db/backups/` ^g15
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-003 |
+| Component | database |
+| Status | `STATUS: needs verification` (the cascade behaviour of `posts`/`comments` → `users` is unconfirmed) |
+| Severity | trap |
+
+**What:** `db/migrations/` holds only changes on top of an existing schema. Constraints such as `alumni_profile_user_id_key` (`UNIQUE (user_id)`) and the foreign keys from `posts`/`comments` to `users` appear only in `db/backups/*.sql`.
+
+**Where:** `db/migrations/001_university_and_students.sql` (the only migration), `db/backups/`
+
+**Why it's surprising:** You'd expect migrations to describe the whole schema.
+
+**Why it exists:** The schema predates the migrations folder. `STATUS: needs verification`.
+
+**Don't:** Don't assume a constraint is absent because migrations don't mention it. Code that inserts or deletes must still handle 23505 (unique → 409) and 23503 (foreign key → 409), as `AlumniManager.createAlumni` and `UserManager.deleteUser` do.
+
+**Related:** [[REQ-003]] · `isUniqueViolation` / `isForeignKeyViolation` in `businessLogic/src/errors.ts`
+
+---
+
+## G16 — `review.packet.exclude` globs need git's glob mode to match root files ^g16
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-003 |
+| Component | ADLC vault config |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** As a plain git pathspec, `':!**/package-lock.json'` does not match the root `package-lock.json`. Only `':(exclude,glob)**/package-lock.json'` does, because there `**/` may match zero directories. The first REQ-003 review packet pulled in the whole lockfile and came out at 496KB instead of 163KB.
+
+**Where:** `.adlc/config.yml` → `review.packet.exclude`, consumed by `/review` step 1.5
+
+**Why it's surprising:** The same pattern works in `.gitignore`, where `**/` matches zero directories by default.
+
+**Why it exists:** Git pathspecs use fnmatch unless `:(glob)` magic is given.
+
+**Don't:** Don't build the review-packet diff with bare `:!<glob>` pathspecs. Use `:(exclude,glob)<glob>`, and check the packet size before dispatching reviewers.
+
+**Related:** [[REQ-003]]

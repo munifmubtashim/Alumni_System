@@ -17,6 +17,17 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-06] ship-gate-cleared | REQ-003-backend-route-auth
+## [2026-10-06] req-ready-to-merge | REQ-003-backend-route-auth | token on every non-public route, post ownership + partial edit, no password in responses, shared sendError, first backend test suite
+## [2026-10-06] lesson | L-REQ-003-1..5 — partial workspace mocks, protect at router + app walker, migrate every handler to sendError, source alias needs typecheck, declare deps where imported
+## [2026-10-06] gotcha | G02 rewritten (vitest hoisted to root); G13–G16 — pool mock path, requireId → 404, schema only in backups, packet exclude globs
+## [2026-10-06] component | backend — first filled in
+## [2026-10-06] verify-gate-cleared | REQ-003-backend-route-auth | findings: C0/M1/m2 open (vault) + t6 follow-up; 5 rounds, 19 fixed
+## [2026-10-05] implement-gate-cleared | REQ-003-backend-route-auth
+## [2026-10-05] adr-accepted | ADR-05 backend tests: Vitest + supertest, no DB
+## [2026-10-05] architect-gate-cleared | REQ-003-backend-route-auth
+## [2026-10-05] work-path-set | REQ-003-backend-route-auth | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-05] spec-gate-cleared | REQ-003-backend-route-auth
 ## [2026-10-05] req-archived | REQ-002-auth-login-register
 ## [2026-10-05] req-merged | REQ-002-auth-login-register | PR #15 into redesign (0d40e321)
 ## [2026-10-05] ship-gate-cleared | REQ-002-auth-login-register

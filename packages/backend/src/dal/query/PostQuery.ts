@@ -1,7 +1,9 @@
 import pool from "../config/db.js";
 import { PostDTO } from "../dto/PostDTO.js";
 
-
+// The post columns an edit may change.
+const POST_PATCH_COLUMNS = ["caption", "media_url"] as const;
+export type PostPatch = { caption?: string | null; media_url?: string | null };
 
 export class PostQuery {
     constructor() {
@@ -45,15 +47,28 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
         return info.rows;
     }
 
-    public async updatePost(post: PostDTO): Promise<PostDTO> {
+    public async findPostById(id: number): Promise<PostDTO | undefined> {
+        const info = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
+        return info.rows[0];
+    }
+
+    // Sets only the columns present in the patch (AC14); omitted ones keep their value.
+    // Column names come from a fixed allowlist and values are parameters. Never sets
+    // user_id: an admin editing someone's post keeps the original author.
+    public async updatePost(id: number, patch: PostPatch): Promise<PostDTO> {
+        const sets: string[] = [];
+        const params: unknown[] = [];
+        for (const column of POST_PATCH_COLUMNS) {
+            if (Object.prototype.hasOwnProperty.call(patch, column)) {
+                params.push(patch[column]);
+                sets.push(`${column}=$${params.length}`);
+            }
+        }
+        params.push(id);
         const info = await pool.query(
-            `UPDATE posts SET caption=$1, media_url=$2, updated_at=NOW()
-            WHERE id=$3 RETURNING *`,
-            [
-                post.caption,
-                post.media_url,
-                post.id
-            ]
+            `UPDATE posts SET ${[...sets, 'updated_at=NOW()'].join(', ')}
+            WHERE id=$${params.length} RETURNING *`,
+            params
         );
         return info.rows[0];
     }
