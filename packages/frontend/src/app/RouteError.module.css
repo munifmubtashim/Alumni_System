@@ -1,0 +1,10 @@
+/* Route error fallback: heading and home link, tokens only. */
+
+.title {
+  font: var(--text-heading-md);
+}
+
+.link {
+  color: var(--accent);
+  font: var(--text-label);
+}

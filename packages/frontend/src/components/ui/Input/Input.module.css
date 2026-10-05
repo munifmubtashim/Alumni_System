@@ -1,0 +1,55 @@
+/* Design: docs/design/design-system/components/Input. Two deliberate
+   departures from the README, both for contrast (architecture.md -> Contrast):
+   - helper text and placeholder use ink-secondary, not ink-muted (4.5:1);
+     the value stays ink-primary, so a placeholder still reads as a hint;
+   - the resting border is border-strong, not border-subtle, so the field's
+     edge is easier to find. The hover-to-border-strong step is therefore gone;
+     focus still switches to the accent border and the raised fill. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+.input {
+  font: var(--text-body);
+  color: var(--ink-primary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+.input::placeholder {
+  color: var(--ink-secondary);
+}
+
+/* The accent border is the only focus signal (no ring), so it overrides the
+   global :focus-visible outline. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.helper {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--ink-secondary);
+}

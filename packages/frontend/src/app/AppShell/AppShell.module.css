@@ -1,0 +1,71 @@
+/* App frame: full-width header with a hairline, content in a centered column.
+   Gutters are space-4 on small screens and space-6 from 48rem up. Everything
+   wraps rather than overflowing, down to 360px and at 200% zoom. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Off-screen until focused, then shown in the top-left corner. */
+.skipLink {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-raised);
+  color: var(--accent);
+  font: var(--text-label);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-4);
+}
+
+.headerInner,
+.main {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+}
+
+.headerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.brand {
+  color: var(--ink-primary);
+  font: var(--text-heading-sm);
+}
+
+.main {
+  flex: 1;
+  padding: var(--space-6) var(--space-4);
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (width >= 48rem) {
+  .header {
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .main {
+    padding: var(--space-7) var(--space-6);
+  }
+}

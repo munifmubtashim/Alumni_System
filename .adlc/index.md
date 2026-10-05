@@ -16,13 +16,14 @@ _(REQ pages by id, with a one-line summary)_
 
 | REQ | Title | Status | Path |
 |---|---|---|---|
-| _(empty)_ | | | |
+| REQ-001 | Rebuild the frontend foundation on the new design system | review passed; awaiting merge | specs/2026-10/m/REQ-001-frontend-foundation |
 
 ## ADRs
 
 | ID | Title | Status | Decided |
 |---|---|---|---|
-| _(empty)_ | | | |
+| [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] | UI layer: Base UI headless + CSS Modules on generated tokens | accepted | 2026-10-04 |
+| [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 |
 
 ## Concepts
 
@@ -30,7 +31,7 @@ Patterns, rules that must always hold, domain models.
 
 | Page | One-line summary |
 |---|---|
-| _(empty)_ | |
+| [[knowledge/concepts/design-tokens]] | tokens.json → generated CSS variables; tokens-only enforced by lint; contrast pinned by test |
 
 ## Components
 
@@ -38,7 +39,7 @@ One page per major module.
 
 | Page | Module | Owner |
 |---|---|---|
-| _(empty)_ | | |
+| [[knowledge/components/frontend]] | `packages/frontend` | munifmubtashim |
 
 ## Lessons
 

@@ -20,12 +20,12 @@ Two themes, one accent. Light is warm off-white and charcoal ink; dark is warm c
 | `surface-raised` | `#ffffff` | `#272320` | Cards, modals, menus |
 | `surface-sunken` | `#f0ebe3` | `#171412` | Inset wells, input backgrounds |
 | `border-subtle` | `#e4dcd0` | `#3a352f` | Default hairline border |
-| `border-strong` | `#cfc4b4` | `#4c453c` | Hover/focus borders, control resting border |
+| `border-strong` | `#cfc4b4` | `#4c453c` | Resting border on controls (Input, secondary Button), hover borders; focus uses `accent` |
 | `ink-primary` | `#2b2724` | `#f1ece4` | Primary text |
 | `ink-secondary` | `#6b6560` | `#b7afa5` | Secondary text, labels |
-| `ink-muted` | `#948c84` | `#837b72` | Placeholder, disabled |
-| `accent` | `#ad6a4d` | `#d08a66` | The one accent — buttons, links, active state |
-| `accent-strong` | `#8f5540` | `#e4a07c` | Hover/pressed accent |
+| `ink-muted` | `#948c84` | `#837b72` | Disabled text |
+| `accent` | `#975c43` | `#d08a66` | The one accent — buttons, links, active state |
+| `accent-strong` | `#7a4734` | `#e4a07c` | Hover/pressed accent |
 | `accent-ink` | `#fdf8f3` | `#1d1a17` | Text on a solid accent fill |
 | `accent-soft` | `#f3e4d9` | `#3a2c23` | Accent tint — selected tags, highlighted rows |
 | `success` | `#5f7a56` | `#93b188` | Positive status |
@@ -62,10 +62,19 @@ Soft, not sharp, and never a full pill unless the control is round by nature:
 - `radius-lg` (14px) — cards, modals
 - `radius-pill` (999px) — the theme toggle track, avatar badges
 
+## Motion
+
+Quiet and short — motion only softens a state change, it never decorates:
+
+- `duration-fast` (150ms) — hover and state-color transitions on controls
+- `easing-standard` (`ease`) — the timing curve for those transitions; no bounce or overshoot
+
+The app turns transitions off under `prefers-reduced-motion: reduce`.
+
 ## Components
 
 - **Button** — primary (solid accent), secondary (bordered), and ghost (text-only) variants, all `radius-md`, `space-4` horizontal padding.
-- **Input** — a labeled text field with a `border-subtle` resting state that deepens to `border-strong`/`accent` on focus — no glow, just a clearer line.
+- **Input** — a labeled text field on `surface-sunken` with a `border-strong` resting border; on focus the border switches to `accent` and the fill to `surface-raised` — no hover step, no glow, just a clearer line. Placeholder and helper text use `ink-secondary` so they reach 4.5:1.
 - **Card** — `surface-raised` on a `border-subtle` hairline, `radius-lg`, generous `space-5` internal padding. No shadow.
 - **Tag** — small `radius-sm` pill-ish chip in neutral, accent-soft (selected), or a status tone.
 - **ThemeToggle** — a three-way light / dark / system switch, `radius-pill` track, that actually flips `data-theme` on the page so you can see every token above respond live.
