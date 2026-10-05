@@ -4,7 +4,8 @@ Catalog of all ADRs (architecture decision records). Updated by `/wrapup` when a
 
 | ID | Title | Status | Decided | Supersedes | Superseded by |
 |---|---|---|---|---|---|
-| _(empty)_ | | | | | |
+| [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] | UI layer: Base UI headless + CSS Modules on generated tokens | accepted | 2026-10-04 | — | — |
+| [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 | — | — |
 
 ## Status legend
 

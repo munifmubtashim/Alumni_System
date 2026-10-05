@@ -13,8 +13,8 @@ alumni-system: an alumni network for universities — sign-up, profiles, a direc
 > **STATUS: needs verification** — synthesized from `README.md` on 2026-10-04. The README is a folder tree only; roles below are read from folder and file names. Review and edit; remove this banner when confirmed.
 
 ```
-packages/frontend (React + Vite)
-        │  HTTP (services/authApi.ts)
+packages/frontend (React 19 + Vite)
+        │  HTTP (services/httpClient.ts → /api; Vite proxies /api in dev)
         ▼
 packages/backend/src/api        Express: routes → Middleware (auth, role) → controllers
         ▼
@@ -33,7 +33,7 @@ packages/shared — TypeScript types (alumni, comment, post, user) used across p
 
 | Component | Responsibility | Tech |
 |---|---|---|
-| `packages/frontend` | UI: pages (Login, Dashboard), components, API service calls | React 18, Vite, react-router |
+| `packages/frontend` | UI. Rebuilt in REQ-001: `src/app/` (providers, router, AppShell), `features/` (per domain; `theme/`), `components/ui/` (Button, Input, Card, Tag, ThemeToggle), `store/` (Jotai), `services/` (one axios client + token store), `styles/` (tokens generated from `docs/design/design-system/tokens.json`). Renders only the shell so far | React 19, Vite 8, TypeScript 6, React Router 8, TanStack Query 5 (server state) + Jotai 3 (client state) — ADR-02, CSS Modules + design tokens + Base UI — ADR-01, Vitest 5 |
 | `packages/backend/src/api` | HTTP layer: routes (Alumni, Auth, Comment, Post, User), controllers, auth + role middleware | Express |
 | `packages/backend/src/businessLogic` | Business rules: AlumniManager, CommentManager, PostManager, UserManager | TypeScript |
 | `packages/backend/src/dal` | Data access: SQL query modules, DTOs, DB connection config | `pg` |

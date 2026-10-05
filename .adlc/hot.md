@@ -17,6 +17,10 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] implement-gate-cleared | REQ-001-frontend-foundation
+## [2026-10-04] adr-accepted | ADR-01 UI layer (Base UI + CSS Modules on tokens), ADR-02 TanStack Query + Jotai
+## [2026-10-04] architect-gate-cleared | REQ-001-frontend-foundation
+## [2026-10-04] work-path-set | REQ-001-frontend-foundation | branch at /Users/munifmubtashim/Alumni_System
 ## [2026-10-04] spec-gate-cleared | REQ-001-frontend-foundation
 
 ## [2026-10-04] init | Vault initialized
