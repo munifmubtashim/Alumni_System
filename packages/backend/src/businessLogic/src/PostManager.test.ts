@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AppError } from './errors';
 import { PostManager } from './PostManager';
+import { expectAppError } from '../../test/expectAppError';
 
 // A fake PostQuery: every PostManager gets this same object. The real PostDTO is kept.
 const query = vi.hoisted(() => ({
@@ -25,22 +25,13 @@ const ADMIN = { id: 1, role: 'admin' };
 const OTHER = { id: 8, role: 'student' };
 const STORED_POST = { id: 42, user_id: 7, caption: 'old', media_url: null, comment_count: 3 };
 
-async function expectAppError(promise: Promise<unknown>, status: number) {
-  const error = await promise.then(
-    () => undefined,
-    (e: unknown) => e,
-  );
-  expect(error).toBeInstanceOf(AppError);
-  expect((error as AppError).status).toBe(status);
-}
-
 describe('PostManager', () => {
   let manager: PostManager;
 
   beforeEach(() => {
     Object.values(query).forEach((fn) => fn.mockReset());
     query.findPostById.mockResolvedValue({ ...STORED_POST });
-    query.updatePost.mockImplementation(async (post) => ({ ...post }));
+    query.updatePost.mockImplementation(async (id, patch) => ({ ...STORED_POST, ...patch, id }));
     manager = new PostManager();
   });
 
@@ -63,18 +54,58 @@ describe('PostManager', () => {
       const updated = await manager.updatePost(AUTHOR, '42', { caption: 'new', media_url: 'https://x.test/b.png' });
 
       expect(query.findPostById).toHaveBeenCalledWith(42);
-      const sent = query.updatePost.mock.calls[0]![0];
-      expect(sent).toMatchObject({ id: 42, user_id: 7, caption: 'new', media_url: 'https://x.test/b.png' });
-      expect(updated).toMatchObject({ id: 42, caption: 'new' });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: 'new', media_url: 'https://x.test/b.png' });
+      expect(updated).toMatchObject({ id: 42, user_id: 7, caption: 'new' });
     });
 
     it("lets an admin edit someone else's post without changing its author", async () => {
       await manager.updatePost(ADMIN, 42, { caption: 'moderated', user_id: 1 });
 
-      const sent = query.updatePost.mock.calls[0]![0];
-      expect(sent.id).toBe(42);
-      expect(sent.user_id).toBe(7);
-      expect(sent.caption).toBe('moderated');
+      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: 'moderated' });
+    });
+
+    // AC14: only the fields sent change.
+    it('keeps an omitted field: sends only the keys present', async () => {
+      await manager.updatePost(AUTHOR, 42, { media_url: 'https://x.test/c.png' });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { media_url: 'https://x.test/c.png' });
+    });
+
+    it('clears a field sent as null', async () => {
+      await manager.updatePost(AUTHOR, 42, { caption: null });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: null });
+    });
+
+    it('stores text as sent, like create (no trimming)', async () => {
+      await manager.updatePost(AUTHOR, 42, { caption: '  hi  ', media_url: '' });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: '  hi  ', media_url: '' });
+    });
+
+    it.each([
+      ['caption', 5],
+      ['caption', { a: 1 }],
+      ['caption', true],
+      ['media_url', 0],
+      ['media_url', ['x']],
+      ['media_url', false],
+    ])('returns 400 when %s is %j', async (key, value) => {
+      await expectAppError(manager.updatePost(AUTHOR, 42, { [key]: value }), 400);
+      expect(query.updatePost).not.toHaveBeenCalled();
+    });
+
+    it.each([{}, { user_id: 1 }])('returns 400 "Nothing to update" for %j', async (body) => {
+      const error = await expectAppError(manager.updatePost(AUTHOR, 42, body), 400);
+      expect(error.message).toBe('Nothing to update');
+      expect(query.updatePost).not.toHaveBeenCalled();
+    });
+
+    it('checks 404 before validating the body', async () => {
+      query.findPostById.mockResolvedValue(undefined);
+      await expectAppError(manager.updatePost(AUTHOR, 999, { caption: 5 }), 404);
+    });
+
+    it('checks 403 before validating the body', async () => {
+      await expectAppError(manager.updatePost(OTHER, 42, {}), 403);
+      await expectAppError(manager.updatePost(OTHER, 42, { caption: 5 }), 403);
     });
 
     it('returns 403 for another user and does not update', async () => {

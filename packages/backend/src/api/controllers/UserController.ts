@@ -1,16 +1,13 @@
 import { Request, Response } from "express";
 import { AppError, UserManager } from "@alumni/businesslogic";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendError } from "./sendError";
 
 const userManager = new UserManager();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 export async function login(email: string, password: string) {
-  const user = await userManager.findUserByEmail(email);
-  if (!user) throw { status: 401, message: "Invalid" };
-
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) throw { status: 401, message: "Invalid" };
+  const user = await userManager.verifyLogin(email, password);
+  if (!user) throw new AppError(401, "Invalid");
 
   return { token: signToken(user) };
 }
@@ -23,14 +20,10 @@ function signToken(user: { id: number; role: string }) {
 export const register = async (req: Request, res: Response) => {
   try {
     const input = userManager.validateRegistration(req.body ?? {});
-    const passwordHash = await bcrypt.hash(input.password, 10);
-    const user = await userManager.register(input, passwordHash);
+    const user = await userManager.register(input);
     res.status(201).json({ token: signToken(user), user });
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-    res.status(500).json({ message: "Registration failed" });
+    sendError(res, error);
   }
 };
 
@@ -38,20 +31,14 @@ export function verifyToken(token: string) {
   return jwt.verify(token, JWT_SECRET) as unknown as { sub: number; role: string };
 }
 
-
-
 // Admin-only: creates an account of any role. Validates before hashing; returns no password.
 export const createUser = async (req: Request, res: Response) => {
   try {
     const input = userManager.validateNewUser(req.body ?? {});
-    const passwordHash = await bcrypt.hash(input.password, 10);
-    const newUser = await userManager.createUser(input, passwordHash);
+    const newUser = await userManager.createUser(input);
     res.status(201).json(newUser);
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-    res.status(500).json({ message: "Something went wrong" });
+    sendError(res, error);
   }
 };
 
@@ -60,16 +47,15 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const users = await userManager.getAllUsers();
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
 export const findUserById = async (req: Request, res: Response) => {
   try {
-    const user = await userManager.findUserById(Number(req.params.id));
-    res.status(200).json(user);
+    res.status(200).json(await userManager.findUserById(req.params.id));
   } catch (error) {
-    res.status(404).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };
 
@@ -79,18 +65,15 @@ export const updateUser = async (req: Request, res: Response) => {
     const updated = await userManager.updateOwnUser(Number(req.user.sub), req.params.id, req.body ?? {});
     res.status(200).json(updated);
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-    res.status(500).json({ message: "Something went wrong" });
+    sendError(res, error);
   }
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    await userManager.deleteUser(Number(req.params.id));
+    await userManager.deleteUser(req.params.id);
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    sendError(res, error);
   }
 };

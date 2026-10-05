@@ -58,7 +58,7 @@ export class AlumniQuery {
     return info.rows[0];
   }
 
-  public async getAllAlumnil(): Promise<AlumniDTO[]> {
+  public async getAllAlumni(): Promise<AlumniDTO[]> {
     const info = await pool.query(
       `SELECT ${LIST_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id ORDER BY u.name`
     );

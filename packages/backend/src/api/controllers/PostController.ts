@@ -1,14 +1,8 @@
 import { Request, Response } from "express";
-import { AppError, PostManager } from "@alumni/businesslogic";
+import { PostManager } from "@alumni/businesslogic";
+import { sendError } from "./sendError";
 
 const postManager = new PostManager();
-
-function sendError(res: Response, error: unknown) {
-  if (error instanceof AppError) {
-    return res.status(error.status).json({ message: error.message });
-  }
-  res.status(500).json({ message: "Something went wrong" });
-}
 
 // POST /api/posts — the author is the signed-in user, never body.user_id.
 export const createPost = async (req: Request, res: Response) => {

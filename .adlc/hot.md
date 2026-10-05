@@ -17,6 +17,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-06] verify-gate-cleared | REQ-003-backend-route-auth | findings: C0/M1/m2 open (vault) + t6 follow-up; 5 rounds, 19 fixed
 ## [2026-10-05] implement-gate-cleared | REQ-003-backend-route-auth
 ## [2026-10-05] adr-accepted | ADR-05 backend tests: Vitest + supertest, no DB
 ## [2026-10-05] architect-gate-cleared | REQ-003-backend-route-auth

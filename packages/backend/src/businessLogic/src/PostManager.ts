@@ -19,16 +19,21 @@ export class PostManager {
   }
 
   // Only the post's author or an admin may edit it. The author stays the same.
+  // Ownership is checked before the body, so a non-owner never sees validation errors.
+  // Only the fields sent change (AC14): omitted keeps, null clears, text is stored as sent (like create).
   public async updatePost(requester: Requester, postId: unknown, body: Record<string, unknown>) {
     const existing = await this.findOwnedPost(requester, postId);
-    const post = new PostDTO(
-      existing.user_id,
-      existing.comment_count,
-      body.caption as string | undefined,
-      body.media_url as string | undefined,
-    );
-    post.id = existing.id;
-    return this.postQuery.updatePost(post);
+    const patch: { caption?: string | null; media_url?: string | null } = {};
+    for (const key of ["caption", "media_url"] as const) {
+      if (!Object.prototype.hasOwnProperty.call(body, key)) continue;
+      const value = body[key];
+      if (value !== null && typeof value !== "string") {
+        throw new AppError(400, `${key === "caption" ? "Caption" : "Media URL"} must be text or null`);
+      }
+      patch[key] = value;
+    }
+    if (Object.keys(patch).length === 0) throw new AppError(400, "Nothing to update");
+    return this.postQuery.updatePost(existing.id, patch);
   }
 
   // Only the post's author or an admin may delete it.

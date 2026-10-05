@@ -1,14 +1,8 @@
 import { Request, Response } from "express";
-import { AppError, CommentManager } from "@alumni/businesslogic";
+import { CommentManager } from "@alumni/businesslogic";
+import { sendError } from "./sendError";
 
 const commentManager = new CommentManager();
-
-function sendError(res: Response, error: unknown) {
-  if (error instanceof AppError) {
-    return res.status(error.status).json({ message: error.message });
-  }
-  res.status(500).json({ message: "Something went wrong" });
-}
 
 // GET /api/posts/:id/comments
 export const getPostComments = async (req: Request, res: Response) => {

@@ -36,8 +36,10 @@ export class UserQuery {
         return info.rows;
     }
 
-    public async deleteUser(id: number): Promise<void> {
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    // Returns false if no user had that id.
+    public async deleteUser(id: number): Promise<boolean> {
+        const info = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        return (info.rowCount ?? 0) > 0;
     }
 
     // Creates the user (role always 'alumni') and their alumni row atomically.

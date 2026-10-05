@@ -6,9 +6,11 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@alumni/dal": "*",
-    "@alumni/shared": "*"
+    "@alumni/shared": "*",
+    "bcrypt": "^6.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/pg": "^8.20.0",
     "dotenv": "^16.3.1"
   }

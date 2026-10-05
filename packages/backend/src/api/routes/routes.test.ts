@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -12,6 +11,7 @@ import {
 import app from '../app';
 import { requireRole } from '../Middleware/roleMiddleware';
 import { badSignatureToken, bearer, expiredToken, tokenFor } from '../test/authHelpers';
+import { guardedRoutes, toRequest, type RouteMethod } from '../test/routeList';
 
 // Managers become fakes: every async method is a vi.fn(), while the pure validate* methods
 // stay real so controllers that validate before calling the manager behave as in production.
@@ -38,7 +38,7 @@ vi.mock('@alumni/businesslogic', async (importOriginal) => {
   };
 });
 
-type Method = 'get' | 'post' | 'put' | 'delete';
+type Method = RouteMethod;
 interface Route {
   method: Method;
   path: string;
@@ -59,29 +59,12 @@ const PUBLIC_USER = {
   created_at: '2026-10-05T00:00:00.000Z',
 };
 
-// Mirrors the spec's route table (REQ-003). Every route here needs a valid token.
-const PROTECTED: Route[] = [
-  { method: 'get', path: '/api/users' },
-  { method: 'post', path: '/api/users' },
-  { method: 'get', path: '/api/users/1' },
-  { method: 'put', path: '/api/users/1' },
-  { method: 'delete', path: '/api/users/1' },
-  { method: 'get', path: '/api/alumni' },
-  { method: 'post', path: '/api/alumni' },
-  { method: 'get', path: '/api/alumni/1' },
-  { method: 'put', path: '/api/alumni/1' },
-  { method: 'get', path: '/api/posts' },
-  { method: 'post', path: '/api/posts' },
-  { method: 'get', path: '/api/posts/user/1' },
-  { method: 'put', path: '/api/posts/1' },
-  { method: 'delete', path: '/api/posts/1' },
-  { method: 'get', path: '/api/posts/1/comments' },
-  { method: 'post', path: '/api/posts/1/comments' },
-  { method: 'delete', path: '/api/comments/1' },
-  { method: 'get', path: '/api/me' },
-  { method: 'put', path: '/api/me' },
-  { method: 'put', path: '/api/me/password' },
-];
+// Every route outside the public allowlist, read from the app itself (../test/routeList.ts),
+// so a new route is covered here without editing a list. Path params are filled with 1.
+const PROTECTED: Route[] = guardedRoutes(app).map((r) => {
+  const { method, url } = toRequest(r);
+  return { method, path: url };
+});
 
 const REMOVED: Route[] = [
   { method: 'get', path: '/api/users/email/sam@example.com' },
@@ -103,12 +86,15 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
+// "No token → 401" for every route is routeGuard.test.ts's job; this block covers bad tokens.
 describe('AC2: every non-public route needs a valid token', () => {
-  describe.each(PROTECTED.map((r) => [label(r), r] as const))('%s', (_name, route) => {
-    it('no token → 401', async () => {
-      expect((await call(route)).status).toBe(401);
-    });
+  it('derives the protected routes from the app', () => {
+    expect(PROTECTED.length).toBeGreaterThanOrEqual(20);
+    expect(PROTECTED).toContainEqual({ method: 'put', path: '/api/me/password' });
+    expect(PROTECTED).not.toContainEqual({ method: 'get', path: '/api/health' });
+  });
 
+  describe.each(PROTECTED.map((r) => [label(r), r] as const))('%s', (_name, route) => {
     it('expired token → 401', async () => {
       expect((await call(route, expiredToken())).status).toBe(401);
     });
@@ -130,18 +116,40 @@ describe('AC1: public routes work without a token', () => {
   });
 
   it('POST /api/auth/login → 200 with a token', async () => {
-    const hash = await bcrypt.hash('correct horse', 4);
-    vi.mocked(UserManager.prototype.findUserByEmail).mockResolvedValue({
-      ...PUBLIC_USER,
-      password: hash,
-    } as never);
+    vi.mocked(UserManager.prototype.verifyLogin).mockResolvedValue(PUBLIC_USER as never);
 
     const res = await request(app)
       .post('/api/auth/login')
       .send({ email: PUBLIC_USER.email, password: 'correct horse' });
 
     expect(res.status).toBe(200);
+    expect(Object.keys(res.body)).toEqual(['token']);
     expect(typeof res.body.token).toBe('string');
+  });
+
+  it('POST /api/auth/login with a wrong email or password → 401 "Invalid"', async () => {
+    vi.mocked(UserManager.prototype.verifyLogin).mockResolvedValue(null);
+
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: PUBLIC_USER.email, password: 'wrong horse' });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ message: 'Invalid' });
+  });
+
+  it('POST /api/auth/login when the database fails → 500 without the raw error text', async () => {
+    vi.mocked(UserManager.prototype.verifyLogin).mockRejectedValue(
+      new Error('pg: connection refused'),
+    );
+
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: PUBLIC_USER.email, password: 'correct horse' });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ message: 'Something went wrong' });
+    expect(res.text).not.toContain('pg');
   });
 
   it('POST /api/auth/register → 201', async () => {
@@ -244,6 +252,22 @@ describe('routes any signed-in user may call', () => {
     const res = await call(route, tokenFor(STUDENT));
     expect(res.status).toBeGreaterThanOrEqual(200);
     expect(res.status).toBeLessThan(300);
+  });
+
+  // Routes that act as the caller must pass the token's sub (7), never an id from the body.
+  const BODY = { user_id: 999, id: 999, caption: 'hi', content: 'hi', name: 'Sam' };
+  const IDENTITY: Array<[string, Route, () => ReturnType<typeof vi.fn>, unknown[]]> = [
+    ['POST /api/posts', { method: 'post', path: '/api/posts' }, () => vi.mocked(PostManager.prototype.createNewPost), [STUDENT.sub, BODY]],
+    ['POST /api/posts/1/comments', { method: 'post', path: '/api/posts/1/comments' }, () => vi.mocked(CommentManager.prototype.addComment), [STUDENT.sub, '1', BODY]],
+    ['GET /api/me', { method: 'get', path: '/api/me' }, () => vi.mocked(UserManager.prototype.getMe), [STUDENT.sub]],
+    ['PUT /api/me', { method: 'put', path: '/api/me' }, () => vi.mocked(UserManager.prototype.updateMe), [STUDENT.sub, BODY]],
+    ['PUT /api/me/password', { method: 'put', path: '/api/me/password' }, () => vi.mocked(UserManager.prototype.changeMyPassword), [STUDENT.sub, BODY]],
+  ];
+
+  it.each(IDENTITY)('%s hands the manager the token’s user id', async (_n, route, manager, args) => {
+    await call(route, tokenFor(STUDENT), BODY);
+    expect(manager()).toHaveBeenCalledTimes(1);
+    expect(manager()).toHaveBeenCalledWith(...args);
   });
 });
 
@@ -405,5 +429,33 @@ describe('AC9: requireRole without a signed-in user', () => {
     const { res, next } = run({ sub: 1, role: 'admin' });
     expect(res.status).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('error bodies use { message } and never leak raw error text', () => {
+  it('GET /api/users/:id: manager 404 → 404 { message }', async () => {
+    vi.mocked(UserManager.prototype.findUserById).mockRejectedValue(new AppError(404, 'User not found'));
+    const res = await call({ method: 'get', path: '/api/users/999' }, tokenFor(STUDENT));
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ message: 'User not found' });
+  });
+
+  it('DELETE /api/users/:id: manager 404 → 404 { message }', async () => {
+    vi.mocked(UserManager.prototype.deleteUser).mockRejectedValue(new AppError(404, 'User not found'));
+    const res = await call({ method: 'delete', path: '/api/users/999' }, tokenFor(ADMIN));
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ message: 'User not found' });
+  });
+
+  it.each([
+    ['GET /api/users', { method: 'get', path: '/api/users' } as Route, () => vi.mocked(UserManager.prototype.getAllUsers), ADMIN],
+    ['GET /api/users/1', { method: 'get', path: '/api/users/1' } as Route, () => vi.mocked(UserManager.prototype.findUserById), STUDENT],
+    ['GET /api/alumni', { method: 'get', path: '/api/alumni' } as Route, () => vi.mocked(AlumniManager.prototype.getAllAlumni), STUDENT],
+    ['GET /api/alumni/1', { method: 'get', path: '/api/alumni/1' } as Route, () => vi.mocked(AlumniManager.prototype.findAlumniById), STUDENT],
+  ])('%s: DB failure → 500 with a generic message', async (_n, route, manager, user) => {
+    manager().mockRejectedValue(new Error('connection terminated unexpectedly'));
+    const res = await call(route, tokenFor(user));
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ message: 'Something went wrong' });
   });
 });

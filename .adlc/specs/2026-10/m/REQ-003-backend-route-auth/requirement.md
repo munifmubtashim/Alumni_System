@@ -29,7 +29,7 @@ Every backend route except `POST /api/auth/login`, `POST /api/auth/register` and
 ## Non-goals
 
 - Turning controllers into classes and adding the shared error middleware from the redesign conventions. Separate REQ; this one changes who may call what, not how errors are mapped.
-- Post content rules. Create and update keep today's behaviour (no new required fields or length limits); only who may call them changes.
+- Post content rules on create (no new required fields or length limits). Update rules were pulled in at the review gate as AC14.
 - Rate limiting, refresh tokens, token revocation, or changing the 1-hour token lifetime.
 - Any frontend change. The frontend only calls `/auth/login`, `/auth/register` and `/me`, all of which keep working as today.
 - Recording login/logout times some other way. The routes are removed; nothing replaces them in this REQ.
@@ -73,6 +73,7 @@ Status codes: no or invalid token → **401**; signed in but not allowed → **4
 - [ ] AC8. No response body from any endpoint includes a `password` field (checked at least for every `/api/users` route and `POST /api/users`).
 - [ ] AC8b. `POST /api/users` validates name, email, password and `role` (one of `admin`, `alumni`, `student`) with the same rules as sign-up, and returns 400 on bad input.
 - [ ] AC9. `requireRole` returns 401 instead of throwing when it runs on a request with no signed-in user.
+- [ ] AC14. `PUT /api/posts/:id` changes only the fields sent: an omitted `caption` or `media_url` keeps its value, `null` clears it, a non-string value → 400, and a body with neither field → 400. (Added at the review gate, 2026-10-06; was finding m4.)
 
 **Tests**
 - [ ] AC10. The backend has a test command (`npm test` in the backend package, or from the root) that runs without a live Postgres database.

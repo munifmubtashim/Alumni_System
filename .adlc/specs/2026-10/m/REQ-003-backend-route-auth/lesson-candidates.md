@@ -58,3 +58,60 @@
 **Claim:** A new top-level `app.use(...)` in `app.ts` must be added to the guard's known-middleware list on purpose, or the guard test fails.
 **Saw it in:** `packages/backend/src/api/routes/routeGuard.test.ts:13`
 **Context:** The walker can't probe non-route middleware, so it refuses unknown ones rather than letting them through unchecked.
+
+## CAND-013 [review-qual]
+**Claim:** Add `exclude: **/*.test.ts` to every sub-package tsconfig the moment a test runner lands, not just the one that emits dist.
+**Saw it in:** `packages/backend/src/api/tsconfig.json:7`
+**Context:** Only businessLogic's tsconfig was updated in REQ-003; api and dal still include tests.
+
+## CAND-014 [review-qual]
+**Claim:** Write the API error-body shape into conventions.md; otherwise half-migrated controllers mix `{message}` and `{error}`.
+**Saw it in:** `packages/backend/src/api/controllers/AlumniController.ts:35`
+**Context:** Touched handlers use `{message}`, untouched siblings in the same file use `{error}`.
+
+## CAND-015 [review-qual]
+**Claim:** Extract a shared `sendError(res, err)` helper before copying an AppError catch block into a second controller.
+**Saw it in:** `packages/backend/src/api/controllers/PostController.ts:6`
+**Context:** One controller got a helper; five other controller sites inline the same block.
+
+## CAND-016 [review-qual]
+**Claim:** A route-guard test that derives routes from the app makes a hand-written per-route list redundant; keep hand lists only for role cases.
+**Saw it in:** `packages/backend/src/api/routes/routes.test.ts:1156`
+**Context:** `PROTECTED` repeats what `routeGuard.test.ts` enumerates.
+
+## CAND-013 [review-arch]
+**Claim:** Hash passwords in one layer only (the Manager), never split between controller and manager.
+**Saw it in:** `packages/backend/src/api/controllers/UserController.ts:35`
+**Context:** register/createUser hash in the controller, changeMyPassword hashes in UserManager.
+
+## CAND-014 [review-arch]
+**Claim:** When tests alias a compiled workspace package to source, add a typecheck/build step so signature changes across the boundary are still caught.
+**Saw it in:** `packages/backend/vitest.config.ts:8`
+**Context:** Vitest does not type-check and the alias hides a stale `dist/`.
+
+## CAND-015 [review-arch]
+**Claim:** Deferring a shared error middleware still needs one shared helper, or each REQ adds another copy of the AppError mapping.
+**Saw it in:** `packages/backend/src/api/controllers/PostController.ts:6`
+**Context:** Three controllers now map AppError three different ways, with two body shapes (`error` vs `message`).
+
+(reflector, review-reflect: cap of 12 already reached by implement-task; 4 more not listed: G02 rewrite for root-hoisted vitest; share `isUniqueViolation` across Managers; one `sendError` for all controllers before the error-middleware REQ; ownership rule wording "owner-or-admin" differs per entity)
+
+## CAND-020 [review-corr]
+**Claim:** When locking down a router, also route every handler's "not found" and bad-id path through AppError; auth work leaves old catch blocks that leak pg text.
+**Saw it in:** `packages/backend/src/api/controllers/UserController.ts` (`findUserById`, `deleteUser`)
+**Context:** Handlers untouched by the auth change still return 200/empty for a missing row and raw pg messages for NaN ids.
+
+## CAND-021 [review-corr]
+**Claim:** Cast request-body fields only after a validator; `as string | undefined` lets non-strings and omitted fields reach SQL as JSON or NULL.
+**Saw it in:** `packages/backend/src/businessLogic/src/PostManager.ts` (`updatePost`)
+**Context:** Full-replace UPDATE wipes any field the client omits.
+
+## CAND-022 [review-arch]
+**Claim:** When a package starts importing a third-party library, declare it in that package's own package.json, not only the repo root.
+**Saw it in:** `packages/backend/src/businessLogic/src/UserManager.ts:1`
+**Context:** bcrypt moved into businessLogic but is declared only in root package.json; hoisting hides it.
+
+## CAND-022 [review-reflect]
+**Claim:** Vitest strips types without checking them; give any package tested through a source alias a `typecheck` script that includes tests and uses the same alias.
+**Saw it in:** `packages/backend/tsconfig.test.json`, `packages/backend/package.json` (`typecheck`)
+**Context:** Round 2 added it after round 1 changed manager signatures with a green suite and no type check.

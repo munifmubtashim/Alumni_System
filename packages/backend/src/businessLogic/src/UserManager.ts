@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { UserQuery } from "@alumni/dal";
-import type { MyProfileRow, PublicUserRow } from "@alumni/dal";
-import { AppError } from "./errors.js";
+import type { MyProfileRow, PublicUserRow, UserDTO } from "@alumni/dal";
+import { AppError, isForeignKeyViolation, isUniqueViolation } from "./errors.js";
 import {
   optionalText,
   optionalWebUrl,
@@ -16,6 +16,8 @@ import {
   validateUserBasics,
 } from "./validation.js";
 
+const BCRYPT_ROUNDS = 10;
+
 export const SIGNUP_ROLES = ["alumni", "student"] as const;
 export type SignupRole = (typeof SIGNUP_ROLES)[number];
 
@@ -29,8 +31,6 @@ export interface NewUserInput {
   email: string;
   password: string;
 }
-
-const isUniqueViolation = (error: unknown) => (error as { code?: string }).code === "23505";
 
 export interface RegistrationInput {
   role: SignupRole;
@@ -67,8 +67,9 @@ export class UserManager {
     };
   }
 
-  // `passwordHash` must already be a bcrypt hash. Returns the public columns only.
-  public async createUser(input: NewUserInput, passwordHash: string): Promise<PublicUserRow> {
+  // Hashes `input.password` (from validateNewUser) before storing it. Returns the public columns only.
+  public async createUser(input: NewUserInput): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     try {
       return await this.userQuery.createUser({ ...input, password: passwordHash });
     } catch (error) {
@@ -84,8 +85,19 @@ export class UserManager {
     return user;
   }
 
-  public async findUserById(id: number): Promise<PublicUserRow | undefined> {
-    const user = await this.userQuery.findUserById(id);
+  // POST /api/auth/login: the user (without the password hash) if email and password match, else null.
+  public async verifyLogin(email: string, password: string): Promise<Omit<UserDTO, "password"> | null> {
+    const user = await this.userQuery.findUserByEmail(email);
+    if (!user) return null;
+    if (!(await bcrypt.compare(password, user.password))) return null;
+    const { password: _hash, ...rest } = user;
+    return rest;
+  }
+
+  // GET /api/users/:id. A malformed or unknown id is 404.
+  public async findUserById(id: unknown): Promise<PublicUserRow> {
+    const user = await this.userQuery.findUserById(requireId(id, "User"));
+    if (!user) throw new AppError(404, "User not found");
     return user;
   }
 
@@ -94,9 +106,16 @@ export class UserManager {
     return allUsers;
   }
 
-  public async deleteUser(id: number) {
-    const deletedUser = await this.userQuery.deleteUser(id);
-    return deletedUser;
+  // DELETE /api/users/:id (admin). A malformed or unknown id is 404; a user other rows still point at is 409.
+  public async deleteUser(id: unknown): Promise<void> {
+    let deleted: boolean;
+    try {
+      deleted = await this.userQuery.deleteUser(requireId(id, "User"));
+    } catch (error) {
+      if (isForeignKeyViolation(error)) throw new AppError(409, "This user still has posts or comments");
+      throw error;
+    }
+    if (!deleted) throw new AppError(404, "User not found");
   }
 
   // Validates a public sign-up body. `role` must be "student" or "alumni" (never admin).
@@ -136,7 +155,9 @@ export class UserManager {
   }
 
   // Creates a student (user + students row) or alumni (user + alumni row) account in one transaction.
-  public async register(input: RegistrationInput, passwordHash: string): Promise<PublicUserRow> {
+  // Hashes `input.password` (from validateRegistration) before storing it.
+  public async register(input: RegistrationInput): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     const user = { name: input.name, email: input.email, password: passwordHash, university: input.university };
     try {
       if (input.role === "student") {
@@ -204,7 +225,7 @@ export class UserManager {
     if (newPassword === currentPassword) {
       throw new AppError(400, "New password must be different from the current one");
     }
-    const changed = await this.userQuery.updatePassword(userId, await bcrypt.hash(newPassword, 10));
+    const changed = await this.userQuery.updatePassword(userId, await bcrypt.hash(newPassword, BCRYPT_ROUNDS));
     if (!changed) throw new AppError(404, "Account not found");
   }
 

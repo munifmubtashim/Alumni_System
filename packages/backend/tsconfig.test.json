@@ -1,0 +1,15 @@
+{
+  // Type-checks all backend code INCLUDING tests (Vitest strips types without checking).
+  // Not a build config: noEmit only. Mirrors vitest.config.ts by resolving
+  // @alumni/businesslogic to its TypeScript source instead of the compiled dist/.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@alumni/businesslogic": ["./src/businessLogic/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "**/node_modules", "**/dist"]
+}
