@@ -224,3 +224,35 @@
 **Claim:** Do not write tests that rely on the previous test leaking state to prove a reset.
 **Saw it in:** `packages/frontend/src/test/smoke.test.tsx:36`
 **Context:** Reset check passes only under sequential order.
+
+## Candidate verdicts
+
+IDs CAND-029–033 were minted twice by reviewers running in parallel; the source tag disambiguates them (a = architecture, c = correctness, r = reflector, q = quality). Cross-branch dedup: `origin/main` has no `knowledge/lessons/` (as of 15 hours ago), so there was nothing to match.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001, CAND-026 | promote | LESSON-REQ-001-2 |
+| CAND-002 | demote-to-gotcha | ^g02 |
+| CAND-003, CAND-032r | promote | LESSON-REQ-001-1 |
+| CAND-004 | demote-to-gotcha | ^g03 |
+| CAND-005, CAND-006, CAND-014 | promote | LESSON-REQ-001-3 |
+| CAND-007 | discard | fixed in `.gitignore`/ignores; no recurring rule |
+| CAND-008, CAND-011, CAND-012, CAND-035q | demote-to-gotcha | ^g07 |
+| CAND-009, CAND-018 | demote-to-gotcha | ^g04 |
+| CAND-010, CAND-029a, CAND-033q | promote | LESSON-REQ-001-4 |
+| CAND-013, CAND-029c | demote-to-gotcha | ^g06 |
+| CAND-015, CAND-UI-001, CAND-034q | promote | LESSON-REQ-001-6 |
+| CAND-016, CAND-017 | demote-to-gotcha | ^g05 |
+| CAND-019 | discard | generic Testing Library behaviour, documented upstream |
+| CAND-020, CAND-021 | promote | LESSON-REQ-001-9 |
+| CAND-022, CAND-031r | demote-to-gotcha | ^g01 |
+| CAND-023, CAND-024 | promote | LESSON-REQ-001-7 |
+| CAND-025, CAND-027, CAND-028 | discard | agent/tooling operating notes, not project knowledge |
+| CAND-030a, CAND-033r | promote | LESSON-REQ-001-5 |
+| CAND-030c | discard | superseded: lint bans `\|\|`; empty PORT handled explicitly |
+| CAND-031a | promote | LESSON-REQ-001-8 |
+| CAND-029r | discard | covered by the filled component page (shared helpers listed) |
+| CAND-030r | discard | recorded as a follow-up (ADR or concept for the router layout and standalone tsconfigs) |
+| CAND-032q | discard | handled in this wrap-up (conventions Naming/Git filled, marked needs verification) |
+| CAND-036q | discard | resolved: motion tokens added, layout literals recorded in conventions |
+| CAND-037q | discard | trivial, single test |

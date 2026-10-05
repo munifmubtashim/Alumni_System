@@ -17,6 +17,11 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] ship-gate-cleared | REQ-001-frontend-foundation
+## [2026-10-05] req-ready-to-merge | REQ-001-frontend-foundation | React 19 frontend foundation on the design system; antd removed
+## [2026-10-05] lesson | L-REQ-001-1..9 — toolchain pins, duplicate React, Vitest 5 node tests, boundary lint, CSS Modules only, contrast sweeps, route error layers, ADR→CLAUDE.md, Jotai storage atoms
+## [2026-10-05] gotcha | G01–G07 — theme key dup, vitest nesting, standalone tsconfigs, Stylelint numbers/:where, Base UI radio, token script, lint self-test
+## [2026-10-05] concept | design-tokens — first captured
 ## [2026-10-05] verify-gate-cleared | REQ-001-frontend-foundation | findings: C0/M0/m1 open (3 rounds; 1 major + 15 minor fixed)
 ## [2026-10-05] implement-gate-cleared | REQ-001-frontend-foundation
 ## [2026-10-04] adr-accepted | ADR-01 UI layer (Base UI + CSS Modules on tokens), ADR-02 TanStack Query + Jotai

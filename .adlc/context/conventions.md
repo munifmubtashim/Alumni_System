@@ -4,10 +4,12 @@ Project-specific rules. The reviewer agents (`quality-reviewer`, `architecture-r
 
 ## Naming
 
-- **Files:** _(e.g., kebab-case for .ts, PascalCase for .tsx components)_
-- **Variables:** _(e.g., camelCase, no single-letter except for loop indices)_
-- **Constants:** _(e.g., SCREAMING_SNAKE_CASE)_
-- **Types/interfaces:** _(e.g., PascalCase, no `I` prefix)_
+> **STATUS: needs verification** — read from the frontend as built in REQ-001 (2026-10-05); confirm these are the rules you want enforced.
+
+- **Files (frontend):** one folder per UI component in PascalCase (`components/ui/Button/`) with `Button.tsx`, `Button.module.css`, `Button.test.tsx`, `index.ts`; other modules camelCase (`httpClient.ts`, `themeAtom.ts`, `useApplyTheme.ts`); tests co-located as `*.test.ts(x)`.
+- **Variables / functions:** camelCase; hooks start with `use`; Jotai atoms end with `Atom`.
+- **Constants:** SCREAMING_SNAKE_CASE for module-level constants (`THEME_STORAGE_KEY`, `TOKEN_STORAGE_KEY`).
+- **Types/interfaces:** PascalCase, no `I` prefix (`ThemePreference`, `ButtonProps`).
 
 ## Logging
 
@@ -56,9 +58,11 @@ Frontend only (`packages/frontend`). The backend and `@alumni/shared` have no te
 
 ## Git
 
-- **Commit message format:** _(e.g., conventional commits: `feat(scope): description`)_
-- **Branch naming:** _(e.g., `feat/REQ-xxx-slug`, `bugfix/BUG-xx`)_
-- **PR title format:** _(typically matches the commit format)_
+> **STATUS: needs verification** — the pattern used in REQ-001 (2026-10-05).
+
+- **Commit message format:** Conventional Commits with the REQ tag: `feat(frontend): … [REQ-001]`, `fix(…)`, `docs(adlc): …`.
+- **Branch naming:** `feat/REQ-NNN-<slug>` (bugs: `bugfix/BUG-NNN-<slug>`).
+- **PR title format:** same as the commit format.
 
 ## TypeScript
 
