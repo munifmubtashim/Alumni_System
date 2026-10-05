@@ -11,9 +11,10 @@ import { createStore } from 'jotai';
 import { StrictMode, type ReactNode } from 'react';
 import { createMemoryRouter, Outlet, type InitialEntry, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppProviders } from '@/app/providers';
 import { createQueryClient } from '@/app/queryClient';
+import { routes as appRoutes } from '@/app/router';
 import { getToken, setToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
 import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { sessionNoticeAtom } from '@/store/sessionNoticeAtom';
@@ -409,6 +410,33 @@ describe('logout', () => {
     expect(store.get(sessionNoticeAtom)).toBeNull();
     expect(router.state.location.pathname).toBe('/login');
   });
+
+  it('from the header menu on "/" leaves no `from`, so the next login lands on "/"', async () => {
+    mockApi({ 'GET /me': ok(profile('Amina')), 'POST /auth/login': ok({ token: makeToken() }) });
+    setToken(makeToken());
+    const user = userEvent.setup();
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/'] });
+    render(
+      <AppProviders queryClient={testQueryClient()} store={createStore()}>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    );
+    await screen.findByRole('heading', { name: 'Welcome, Amina' });
+
+    await user.click(screen.getByRole('button', { name: 'Amina' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
+    await screen.findByRole('textbox', { name: 'Email' });
+
+    expect(router.state.location.pathname).toBe('/login');
+    expect(router.state.location.state ?? {}).not.toHaveProperty('from');
+
+    await user.type(screen.getByRole('textbox', { name: 'Email' }), 'amina@example.com');
+    await user.type(screen.getByLabelText('Password'), 'correct-horse');
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+    expect(await screen.findByRole('heading', { name: 'Welcome, Amina' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/');
+  });
 });
 
 describe('SessionBridge', () => {
@@ -586,6 +614,68 @@ describe('SessionBridge', () => {
 
       expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument();
       expect(queryClient.getQueryData(CURRENT_USER_QUERY_KEY)).toBeUndefined();
+      expect(store.get(sessionNoticeAtom)).toBeNull();
+    });
+  });
+
+  describe('ends the session when the token expires while signed in', () => {
+    // Faked before any token is made, so Date.now and the timer share one clock.
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    /** Moves the clock forward by `ms` and runs the timers that fall due. */
+    function advance(ms: number): void {
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
+    }
+
+    // makeToken() expires in 3600 s; the 10 s leeway makes it dead at 3590 s.
+    const LIVE_FOR_MS = 3_590_000;
+
+    it('like a 401: clears the token, sets the notice, goes to /login with `from`', async () => {
+      const { router, queryClient, store } = await renderSignedIn('/page');
+
+      advance(LIVE_FOR_MS - 5_000);
+      expect(screen.getByRole('heading', { name: 'Page' })).toBeInTheDocument();
+      advance(5_000);
+
+      expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument();
+      expect(getToken()).toBeNull();
+      expect(store.get(sessionNoticeAtom)).toBe('expired');
+      expect(queryClient.getQueryCache().getAll()).toEqual([]);
+      expect(router.state.location.state).toMatchObject({ from: { pathname: '/page' } });
+    });
+
+    it("follows a new token: the old token's expiry no longer ends the session", async () => {
+      const { store } = await renderSignedIn('/page');
+      advance(1_800_000);
+      act(() => {
+        setToken(makeToken());
+      });
+      await screen.findByText('Signed in as Amina');
+
+      advance(LIVE_FOR_MS - 1_800_000);
+      expect(screen.getByRole('heading', { name: 'Page' })).toBeInTheDocument();
+      expect(store.get(sessionNoticeAtom)).toBeNull();
+
+      advance(1_800_000);
+      expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument();
+      expect(store.get(sessionNoticeAtom)).toBe('expired');
+    });
+
+    it('does nothing once unmounted', async () => {
+      const { store, token, unmount } = await renderSignedIn('/page');
+      unmount();
+
+      advance(LIVE_FOR_MS);
+
+      expect(getToken()).toBe(token);
       expect(store.get(sessionNoticeAtom)).toBeNull();
     });
   });

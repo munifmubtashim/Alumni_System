@@ -66,6 +66,7 @@ export function RegisterPage() {
   const universityRef = useRef<HTMLInputElement>(null);
   const departmentRef = useRef<HTMLInputElement>(null);
   const yearRef = useRef<HTMLInputElement>(null);
+  const formErrorRef = useRef<HTMLDivElement>(null);
 
   const isStudent = values.role === 'student';
   const thisYear = new Date().getFullYear();
@@ -127,7 +128,11 @@ export function RegisterPage() {
           focusField('email');
           return;
         }
-        setFormError(mapped.form ?? UNEXPECTED_MESSAGE);
+        flushSync(() => {
+          setFormError(mapped.form ?? UNEXPECTED_MESSAGE);
+        });
+        // The busy button was disabled, which dropped focus to the page (UI-001).
+        formErrorRef.current?.focus();
       },
     });
   }
@@ -138,7 +143,11 @@ export function RegisterPage() {
       footer={{ prompt: 'Already have an account?', linkLabel: 'Log in', to: '/login' }}
     >
       <form noValidate className={styles.form} onSubmit={handleSubmit}>
-        {formError !== null && <Alert tone="error">{formError}</Alert>}
+        {formError !== null && (
+          <Alert ref={formErrorRef} tabIndex={-1} tone="error">
+            {formError}
+          </Alert>
+        )}
         <div className={styles.role}>
           {/* The radiogroup carries the same text as its accessible name. */}
           <span aria-hidden="true" className={styles.roleLabel}>

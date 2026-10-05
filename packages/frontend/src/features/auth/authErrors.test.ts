@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   EMAIL_TAKEN_MESSAGE,
   INVALID_CREDENTIALS_MESSAGE,
+  LOGIN_NOT_SAVED_MESSAGE,
+  REGISTER_NOT_SAVED_MESSAGE,
+  TokenNotSavedError,
   UNEXPECTED_MESSAGE,
   UNREACHABLE_MESSAGE,
   mapLoginError,
@@ -91,5 +94,16 @@ describe('fallbacks', () => {
   it('uses the generic message for an error that is not from axios', () => {
     expect(mapLoginError(new Error('bug'))).toEqual({ form: UNEXPECTED_MESSAGE });
     expect(mapRegisterError('nope')).toEqual({ form: UNEXPECTED_MESSAGE });
+  });
+});
+
+describe('a token the browser would not store', () => {
+  it('asks the user to allow site storage, and on sign-up says the account exists', () => {
+    expect(mapLoginError(new TokenNotSavedError())).toEqual({ form: LOGIN_NOT_SAVED_MESSAGE });
+    expect(mapRegisterError(new TokenNotSavedError())).toEqual({
+      form: REGISTER_NOT_SAVED_MESSAGE,
+    });
+    expect(LOGIN_NOT_SAVED_MESSAGE).toMatch(/allows site storage/);
+    expect(REGISTER_NOT_SAVED_MESSAGE).toMatch(/account was created/);
   });
 });

@@ -9,11 +9,12 @@ import {
 import { createStore } from 'jotai';
 import { createMemoryRouter, type InitialEntry, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppProviders } from '@/app/providers';
 import { createQueryClient } from '@/app/queryClient';
-import { getToken } from '@/services/authToken';
+import { getToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
+import { REGISTER_NOT_SAVED_MESSAGE } from './authErrors';
 import { GuestOnly } from './guards';
 import { RegisterPage, ROLE_LABEL } from './RegisterPage';
 
@@ -78,6 +79,15 @@ afterEach(() => {
   httpClient.defaults.adapter = originalAdapter;
   registerBodies.length = 0;
 });
+
+/** Makes the browser refuse to store the token, as with blocked site storage. */
+function blockTokenStorage(): void {
+  const realSetItem = Storage.prototype.setItem.bind(window.localStorage);
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key: string, value: string) => {
+    if (key === TOKEN_STORAGE_KEY) throw new DOMException('denied', 'SecurityError');
+    realSetItem(key, value);
+  });
+}
 
 // ---- the page behind the real GuestOnly guard ----
 
@@ -326,6 +336,22 @@ describe('RegisterPage', () => {
     expect(screen.queryByRole('link', { name: 'Log in instead' })).not.toBeInTheDocument();
   });
 
+  it('says the account exists but the sign-in was not saved when storage is blocked', async () => {
+    mockRegister(created);
+    blockTokenStorage();
+    const { router, user } = renderRegister();
+
+    await fillStudent(user);
+    await user.click(submitButton());
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(REGISTER_NOT_SAVED_MESSAGE);
+    expect(alert).toHaveFocus();
+    expect(router.state.location.pathname).toBe('/register');
+    expect(getToken()).toBeNull();
+    expect(submitButton()).toBeEnabled();
+  });
+
   it('shows a 400 message from the server on the form', async () => {
     mockRegister(fail(400, 'University is required'));
     const { user } = renderRegister();
@@ -333,7 +359,10 @@ describe('RegisterPage', () => {
     await fillStudent(user);
     await user.click(submitButton());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('University is required');
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('University is required');
+    // Focus goes to the message, not to the page (UI-001).
+    expect(alert).toHaveFocus();
     expect(submitButton()).toBeEnabled();
   });
 
@@ -347,9 +376,9 @@ describe('RegisterPage', () => {
     await fillStudent(user);
     await user.click(submitButton());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      "Couldn't reach the server, try again",
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent("Couldn't reach the server, try again");
+    expect(alert).toHaveFocus();
     expect(field('Password')).toHaveValue('correct horse');
     expect(submitButton()).toBeEnabled();
   });

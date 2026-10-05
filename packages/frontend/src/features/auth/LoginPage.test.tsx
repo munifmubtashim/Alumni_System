@@ -10,12 +10,13 @@ import { createStore } from 'jotai';
 import { StrictMode } from 'react';
 import { createMemoryRouter, type InitialEntry, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppProviders } from '@/app/providers';
 import { createQueryClient } from '@/app/queryClient';
-import { getToken } from '@/services/authToken';
+import { getToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
 import { sessionNoticeAtom } from '@/store/sessionNoticeAtom';
+import { LOGIN_NOT_SAVED_MESSAGE } from './authErrors';
 import { GuestOnly } from './guards';
 import { LoginPage, SESSION_EXPIRED_MESSAGE } from './LoginPage';
 
@@ -80,6 +81,15 @@ afterEach(() => {
   httpClient.defaults.adapter = originalAdapter;
   loginBodies.length = 0;
 });
+
+/** Makes the browser refuse to store the token, as with blocked site storage. */
+function blockTokenStorage(): void {
+  const realSetItem = Storage.prototype.setItem.bind(window.localStorage);
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key: string, value: string) => {
+    if (key === TOKEN_STORAGE_KEY) throw new DOMException('denied', 'SecurityError');
+    realSetItem(key, value);
+  });
+}
 
 // ---- the page behind the real GuestOnly guard ----
 
@@ -180,6 +190,8 @@ describe('LoginPage', () => {
     expect(emailField()).toHaveValue('amina@example.com');
     expect(passwordField()).toHaveValue('');
     expect(getToken()).toBeNull();
+    // Focus goes to the cleared password, not to the page (UI-001).
+    expect(passwordField()).toHaveFocus();
   });
 
   it.each([
@@ -193,9 +205,9 @@ describe('LoginPage', () => {
     await user.type(passwordField(), 'correct horse');
     await user.click(submitButton());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      "Couldn't reach the server, try again",
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent("Couldn't reach the server, try again");
+    expect(alert).toHaveFocus();
     expect(passwordField()).toHaveValue('correct horse');
     expect(submitButton()).toBeEnabled();
 
@@ -203,6 +215,24 @@ describe('LoginPage', () => {
     mockLogin(ok);
     await user.click(submitButton());
     expect(await screen.findByRole('heading', { name: 'Home page' })).toBeInTheDocument();
+  });
+
+  it('says so when the browser will not store the sign-in, and stays on the form', async () => {
+    mockLogin(ok);
+    blockTokenStorage();
+    const { router, user } = renderLogin();
+
+    await user.type(emailField(), 'amina@example.com');
+    await user.type(passwordField(), 'correct horse');
+    await user.click(submitButton());
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(LOGIN_NOT_SAVED_MESSAGE);
+    expect(alert).toHaveFocus();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(getToken()).toBeNull();
+    expect(passwordField()).toHaveValue('correct horse');
+    expect(submitButton()).toBeEnabled();
   });
 
   it('shows a 400 message from the server on the form', async () => {
@@ -213,7 +243,9 @@ describe('LoginPage', () => {
     await user.type(passwordField(), 'pw');
     await user.click(submitButton());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Email is not valid');
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Email is not valid');
+    expect(alert).toHaveFocus();
   });
 
   it('catches an empty form before submit and focuses the first invalid field', async () => {

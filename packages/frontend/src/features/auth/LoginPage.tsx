@@ -43,6 +43,7 @@ export function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const formErrorRef = useRef<HTMLDivElement>(null);
 
   function focusField(field: LoginField) {
     (field === 'email' ? emailRef : passwordRef).current?.focus();
@@ -78,11 +79,16 @@ export function LoginPage() {
       {
         onError: (error) => {
           const message = mapLoginError(error).form ?? UNEXPECTED_MESSAGE;
-          setFormError(message);
-          // Wrong credentials: keep the email, clear the password.
-          if (message === INVALID_CREDENTIALS_MESSAGE) {
-            setValues((prev) => ({ ...prev, password: '' }));
-          }
+          const wrongCredentials = message === INVALID_CREDENTIALS_MESSAGE;
+          flushSync(() => {
+            setFormError(message);
+            // Wrong credentials: keep the email, clear the password.
+            if (wrongCredentials) setValues((prev) => ({ ...prev, password: '' }));
+          });
+          // The busy button was disabled, which dropped focus to the page;
+          // put it where the user acts next (UI-001).
+          if (wrongCredentials) focusField('password');
+          else formErrorRef.current?.focus();
         },
       },
     );
@@ -95,7 +101,11 @@ export function LoginPage() {
     >
       {notice === 'expired' && <Alert tone="info">{SESSION_EXPIRED_MESSAGE}</Alert>}
       <form noValidate className={styles.form} onSubmit={handleSubmit}>
-        {formError !== null && <Alert tone="error">{formError}</Alert>}
+        {formError !== null && (
+          <Alert ref={formErrorRef} tabIndex={-1} tone="error">
+            {formError}
+          </Alert>
+        )}
         <Input
           ref={emailRef}
           label="Email"

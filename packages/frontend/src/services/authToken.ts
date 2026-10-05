@@ -21,13 +21,19 @@ export function getToken(): string | null {
   }
 }
 
-export function setToken(token: string): void {
+/**
+ * Stores the token and notifies listeners. Returns false, and changes nothing,
+ * when storage refuses the write (blocked, private mode, quota): the caller
+ * must tell the user, since without a stored token there is no session.
+ */
+export function setToken(token: string): boolean {
   try {
     window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
   } catch {
-    // Storage unavailable (private mode, quota, disabled): the token is not persisted.
+    return false;
   }
   notify();
+  return true;
 }
 
 export function clearToken(): void {
@@ -68,21 +74,30 @@ function decodePayload(token: string): unknown {
 }
 
 /**
- * True when the token can't be trusted as live: malformed payload, missing or
- * non-numeric `exp`, or `exp` within EXPIRY_LEEWAY_MS of `nowMs`.
- * Reads the claim only; the signature is the server's job.
+ * The moment (ms since epoch) from which the token counts as expired: its
+ * `exp` minus EXPIRY_LEEWAY_MS. Null for a malformed payload or a missing or
+ * non-numeric `exp`. Reads the claim only; the signature is the server's job.
  */
-export function isTokenExpired(token: string, nowMs: number = Date.now()): boolean {
+export function getTokenExpiresAt(token: string): number | null {
   let payload: unknown;
   try {
     payload = decodePayload(token);
   } catch {
-    return true;
+    return null;
   }
-  if (typeof payload !== 'object' || payload === null) return true;
+  if (typeof payload !== 'object' || payload === null) return null;
   const exp = (payload as { exp?: unknown }).exp;
-  if (typeof exp !== 'number' || !Number.isFinite(exp)) return true;
-  return exp * 1000 <= nowMs + EXPIRY_LEEWAY_MS;
+  if (typeof exp !== 'number' || !Number.isFinite(exp)) return null;
+  return exp * 1000 - EXPIRY_LEEWAY_MS;
+}
+
+/**
+ * True when the token can't be trusted as live: malformed payload, missing or
+ * non-numeric `exp`, or `exp` within EXPIRY_LEEWAY_MS of `nowMs`.
+ */
+export function isTokenExpired(token: string, nowMs: number = Date.now()): boolean {
+  const expiresAt = getTokenExpiresAt(token);
+  return expiresAt === null || expiresAt <= nowMs;
 }
 
 /**

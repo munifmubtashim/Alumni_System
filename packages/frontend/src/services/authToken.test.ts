@@ -4,6 +4,7 @@ import {
   clearToken,
   getLiveToken,
   getToken,
+  getTokenExpiresAt,
   isTokenExpired,
   setToken,
   subscribe,
@@ -31,7 +32,7 @@ describe('authToken', () => {
   });
 
   it('stores, reads and clears the token in localStorage', () => {
-    setToken('abc');
+    expect(setToken('abc')).toBe(true);
     expect(getToken()).toBe('abc');
     expect(window.localStorage.getItem('token')).toBe('abc');
 
@@ -39,17 +40,19 @@ describe('authToken', () => {
     expect(getToken()).toBeNull();
   });
 
-  it('does not throw when storage is unavailable', () => {
+  it('does not throw when storage is unavailable, and reports the failed write', () => {
     const fail = () => {
       throw new DOMException('denied', 'SecurityError');
     };
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(fail);
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(fail);
     vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(fail);
+    const listener = vi.fn();
+    const unsubscribe = subscribe(listener);
 
-    expect(() => {
-      setToken('abc');
-    }).not.toThrow();
+    expect(setToken('abc')).toBe(false);
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribe();
     expect(getToken()).toBeNull();
     expect(() => {
       clearToken();
@@ -154,6 +157,17 @@ describe('isTokenExpired', () => {
     const realNowSec = Math.floor(Date.now() / 1000);
     expect(isTokenExpired(makeToken({ exp: realNowSec + 3600 }))).toBe(false);
     expect(isTokenExpired(makeToken({ exp: realNowSec - 3600 }))).toBe(true);
+  });
+});
+
+describe('getTokenExpiresAt', () => {
+  it('is exp minus the 10 s leeway, in milliseconds', () => {
+    expect(getTokenExpiresAt(makeToken({ exp: nowSec + 3600 }))).toBe(NOW + 3_590_000);
+  });
+
+  it('is null for a malformed token or a missing exp', () => {
+    expect(getTokenExpiresAt('not-a-jwt')).toBeNull();
+    expect(getTokenExpiresAt(makeToken({ sub: 1 }))).toBeNull();
   });
 });
 

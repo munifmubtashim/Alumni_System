@@ -104,3 +104,97 @@
 **Claim:** Folder READMEs outside a task's file list go stale silently; the docs task should name every `src/*/README.md` the REQ's code touched.
 **Saw it in:** `packages/frontend/src/services/README.md:3`
 **Context:** services/ and store/ READMEs still omit authApi and sessionNoticeAtom; not in TASK-007's list, so left alone.
+
+## CAND-022 [review-arch]
+**Claim:** When a task adds a service-level hook or store, list every folder README in that layer in the docs task, not only the new files.
+**Saw it in:** `packages/frontend/src/services/README.md`
+**Context:** authApi, the 401 hook and sessionNoticeAtom are missing from services/ and store/ READMEs.
+
+## CAND-023 [review-arch]
+**Claim:** Validation limits mirrored from the backend should come from one shared constant source, or drift is invisible to tests.
+**Saw it in:** `packages/frontend/src/features/auth/validation.ts`
+**Context:** Frontend rules are a hand copy of backend rules; shared has no runtime code today.
+
+## CAND-Q-001 [review-qual]
+**Claim:** Name constants by meaning; do not reuse one name (`ROLE_LABEL`) for different things in two files.
+**Saw it in:** `packages/frontend/src/features/auth/RegisterPage.tsx:21`, `packages/frontend/src/app/AppShell/HeaderAuth.tsx:7`
+**Context:** One is a form label string, the other a role-to-name map.
+
+## CAND-Q-002 [review-qual]
+**Claim:** A feature barrel (`index.ts`) should export only what other folders import; keep tests importing internals directly.
+**Saw it in:** `packages/frontend/src/features/auth/index.ts:1`
+**Context:** Auth barrel re-exports validators, error mappers and layout nobody outside uses.
+
+## CAND-Q-003 [review-qual]
+**Claim:** When a new primitive shares a folder with another (ButtonLink in Button/), give it its own co-located test file.
+**Saw it in:** `packages/frontend/src/components/ui/Button/ButtonLink.tsx:1`
+**Context:** Convention is one test file per component file; ButtonLink has none.
+
+## CAND-Q-004 [review-qual]
+**Claim:** When adding files to a folder, update that folder's README in the same task, not only the headline docs.
+**Saw it in:** `packages/frontend/src/services/README.md:3`
+**Context:** Same root as CAND-T7-2; seen again from the quality lens.
+
+## CAND-Q-005 [review-qual]
+**Claim:** The submit flow (flushSync errors, focus first invalid, map server error) is repeating across forms; extract a helper at the third form.
+**Saw it in:** `packages/frontend/src/features/auth/LoginPage.tsx:57`, `packages/frontend/src/features/auth/RegisterPage.tsx:94`
+**Context:** Two forms already duplicate it.
+
+## CAND-001 [review-reflect]
+**Claim:** To let a lint-isolated layer (services) trigger app behavior, expose a `setXHandler(fn | null)` registration and register it from one feature component; never import upward.
+**Saw it in:** `packages/frontend/src/services/httpClient.ts` (setUnauthorizedHandler), `features/auth/SessionBridge.tsx`
+**Context:** Covered by ADR-03 for 401s; the general pattern has no concept page.
+
+## CAND-002 [review-reflect]
+**Claim:** A useSyncExternalStore snapshot must be a pure read; do expiry cleanup in a mount effect, not in getSnapshot.
+**Saw it in:** `packages/frontend/src/services/authToken.ts` (getLiveToken), `SessionBridge.tsx` boot cleanup
+**Context:** Side effects in a snapshot loop or warn; ADV-002 caught it at architect time.
+
+## CAND-003 [review-reflect]
+**Claim:** Ignore a 401 unless the failed request's token equals the current token; this replaces any burst or debounce guard.
+**Saw it in:** `packages/frontend/src/features/auth/SessionBridge.tsx:44`
+**Context:** Late 401s after logout or re-login must not end the new session.
+
+## CAND-004 [review-reflect]
+**Claim:** Login and register mutations only store the token; one guard component (GuestOnly) owns post-login navigation.
+**Saw it in:** `packages/frontend/src/features/auth/guards.tsx` (GuestOnly), `useLogin.ts`
+**Context:** Two navigators race and a /me failure after sign-up would look like a form error.
+
+## CAND-005 [review-reflect]
+**Claim:** Redirect-back must come only from in-app `location.state`, validated to start with a single `/` (not `//` or `/\`), never from a URL parameter.
+**Saw it in:** `packages/frontend/src/features/auth/redirect.ts:resolveFrom`
+**Context:** Prevents open redirect; recurs for every future guard.
+
+## CAND-006 [review-reflect]
+**Claim:** Import RouterProvider from `react-router/dom` when navigations use `flushSync`; the plain entry does not wire ReactDOM.flushSync.
+**Saw it in:** `packages/frontend/src/app/App.tsx:24`
+**Context:** Likely a gotcha (silent behavior difference, easy to "fix" back).
+
+## CAND-007 [review-reflect]
+**Claim:** When a REQ adds a new feature folder or services/store files, the doc sweep must include the component page, concept pages and every folder README.
+**Saw it in:** `.adlc/knowledge/components/frontend.md:8`, `.adlc/decisions.md:11`
+**Context:** Component page and ADR catalog went stale in the same diff that edited conventions and CLAUDE.md.
+
+## CAND-024 [review-corr]
+**Claim:** Never let a storage write failure be swallowed when the app's logged-in state is derived by re-reading storage; surface the failure to the caller.
+**Saw it in:** `packages/frontend/src/services/authToken.ts:5523`
+**Context:** setToken catches and ignores a localStorage error, so login succeeds on the server but the UI never signs in.
+
+## CAND-025 [review-corr]
+**Claim:** A time-based expiry derived inside a pure snapshot read needs a timer or an explicit expire step, or the session ends silently with stale data left behind.
+**Saw it in:** `packages/frontend/src/services/authToken.ts:5592`
+**Context:** getLiveToken returns null after exp but nothing clears storage or sets the expired notice.
+
+- **Claim:** A busy submit button set to `disabled` drops keyboard focus; restore focus to the field or alert after the response. Source: ui-review
+  `packages/frontend/src/components/ui/Button/Button.tsx` (`disabled={disabled === true || loading}`)
+  Seen on login 401 and network error: `document.activeElement` ends up as body.
+
+## CAND-026 [implement-task]
+**Claim:** Put a must-succeed step after the API call (like storing the token) inside `mutationFn` and throw a typed error, so its failure reaches the page's `onError` like any server error.
+**Saw it in:** `packages/frontend/src/features/auth/useLogin.ts:25`
+**Context:** setToken used to sit in `onSuccess` and swallow storage errors, so a blocked-storage login "succeeded" with no message (CORR-001).
+
+## CAND-027 [implement-task]
+**Claim:** To test a token-expiry timer, call `vi.useFakeTimers({ shouldAdvanceTime: true })` before making any token, so `Date.now` (used for `exp`) and `setTimeout` share one fake clock and Testing Library's `findBy` still polls.
+**Saw it in:** `packages/frontend/src/features/auth/session.test.tsx:624`
+**Context:** Real-time expiry tests would need a token a second from death and race the /me load.
