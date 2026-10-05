@@ -35,11 +35,18 @@ Project-specific rules. The reviewer agents (`quality-reviewer`, `architecture-r
 - **Response format:** _(e.g., `{ data, error }`, `{ success, payload }`)_
 - **Pagination:** _(cursor vs offset, page size limits)_
 - **Versioning:** _(URL path vs header vs none)_
-- **Auth:** _(bearer token, session cookie, API key)_
+- **Auth (REQ-003):** bearer JWT in `Authorization: Bearer <token>`, verified by `authMiddleware`, which sets `req.user = { sub, role }`. Public routes are only `POST /api/auth/login`, `POST /api/auth/register` and `GET /api/health`. Every other router starts with `router.use(authMiddleware)` (not per route), so a route added later is protected automatically. Role gates use `requireRole(...)` per route: `requireRole("admin")` on `GET`/`POST /api/users` and `DELETE /api/users/:id`, `requireRole("alumni")` on `POST /api/alumni`; `requireRole` answers 401 if `req.user` is missing.
+  - **Status codes:** 401 = token problem only (missing, malformed, bad signature, expired), because the frontend logs out on any 401 (ADR-03). 403 = signed in but not allowed (wrong role, not the owner). 404 = the thing doesn't exist. Never return 401 for "not allowed".
+  - **Identity comes from the token,** never the body: the author/owner id is `req.user.sub` (a `user_id` in the body is ignored).
+  - **Ownership checks live in Managers** (owner-or-admin, as `PostManager` and `CommentManager` do): load the row, `AppError(404)` if missing, `AppError(403)` unless the requester owns it or is admin. Controllers pass `{ id: req.user.sub, role: req.user.role }` and map `AppError` to its status.
+  - **Guard test:** `packages/backend/src/api/routes/routeGuard.test.ts` walks every route on the Express app and fails if one outside the public list answers without a token. A new public route must be added to its allowlist on purpose; a new top-level `app.use(...)` handler must be added to its known-middleware list.
+  - The role is read from the JWT, so a demoted admin keeps admin rights until the token expires (≤ 1 h). No revocation yet (ADR-05 consequences).
 
 ## Testing
 
-Frontend only (`packages/frontend`). The backend and `@alumni/shared` have no test runner yet.
+Two Vitest suites: frontend (`packages/frontend`) and backend (`packages/backend`, see **Backend** below). `@alumni/shared` has no tests.
+
+### Frontend
 
 - **Frameworks:** Vitest 5 + React Testing Library 16 + `@testing-library/user-event` 14 + `@testing-library/jest-dom`. Run with `npm test` (`vitest run`) inside `packages/frontend`.
 - **Environment:** jsdom 29 by default (pinned: jsdom 30 needs Node ≥ 24.15). Tests under `scripts/` must start with `// @vitest-environment node` — Vitest 5 has no `environmentMatchGlobs`, so without the comment they run in jsdom.
@@ -50,6 +57,23 @@ Frontend only (`packages/frontend`). The backend and `@alumni/shared` have no te
 - **Mock policy:** mock at the boundary only — HTTP via axios's per-request `adapter` option (no extra mocking library), media queries via the setup stub. Test components through roles and visible text, keyboard paths with `user-event`.
 - **Guard tests** that must stay green: `scripts/generate-tokens.test.ts` (tokens.css matches tokens.json), `src/styles/contrast.test.ts` (WCAG pairs), `scripts/enforcement.test.ts` (lint rules still fire), `src/store/themeAtom.test.ts` (no-flash script and atom share the storage key).
 - **Coverage expectations:** none enforced yet. `npm run test:coverage` writes a v8 report to `coverage/` (git-ignored).
+
+### Backend
+
+Decided in [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]] (REQ-003).
+
+- **Frameworks:** Vitest 5 + supertest 7. Run `npm test` (`vitest run`) or `npm run test:watch` inside `packages/backend`, or `npm run test:backend` from the root. No database is needed or touched.
+- **Config (`packages/backend/vitest.config.ts`):** one project for `api`, `businessLogic` and `dal`; `environment: 'node'`; includes `src/**/*.test.ts`; `restoreMocks: true`; globals off (import from `vitest`). `test.env` sets `JWT_SECRET` and dummy `DB_*` values before any module loads (`UserController` reads `JWT_SECRET` at import time, and dotenv never overrides a set variable), so don't set them inside a test.
+- **`@alumni/businesslogic` is aliased to its source** (`src/businessLogic/src/index.ts`), not the compiled `dist/` its `package.json` points at. Tests never need a rebuild, but a green run says nothing about `dist/`; the running API still needs `tsc` in `businessLogic`. `@alumni/dal` and `@alumni/api` resolve through workspace symlinks to source already.
+- **Setup (`src/test/setup.ts`):** mocks `dal/config/db` globally with a fake pool (`query`, `connect`), so no test opens a connection.
+- **Three levels, each mocks exactly one boundary:**
+  - **HTTP** (supertest on the real `app`, no open port): mock `@alumni/businesslogic` managers. Use a factory with `importOriginal` that keeps the real `AppError` (a plain automock replaces it too). Proves middleware, roles, status codes and which identity reaches the manager.
+  - **Manager unit** (`*Manager.test.ts`): mock `@alumni/dal` query classes. Proves business rules (ownership, validation, 409 mapping).
+  - **Query unit** (`*Query.test.ts`): use the setup's fake pool and assert on the recorded SQL and params. Proves SQL shape (e.g. no `password` column, `updatePost` never sets `user_id`).
+- **Tokens:** `src/api/test/authHelpers.ts` gives `tokenFor({ sub, role })`, `expiredToken()`, `badSignatureToken()` and `bearer(token)`, all signed with the test secret.
+- **Test file location:** co-located (`PostManager.ts` → `PostManager.test.ts`); route tests in `src/api/routes/`.
+- **Guard test** that must stay green: `src/api/routes/routeGuard.test.ts` (every non-public route answers 401 without a token). It reads Express 4 internals (`app._router.stack`) and asserts a minimum route count, so an Express 5 upgrade breaks it loudly; fix the walker, don't delete it.
+- **Not covered:** real SQL against Postgres (no migration runner to build a schema). Revisit when one exists.
 
 ## Comments
 

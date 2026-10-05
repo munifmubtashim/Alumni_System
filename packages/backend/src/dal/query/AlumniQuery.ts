@@ -24,11 +24,9 @@ export class AlumniQuery {
     );
     return info.rows[0];
   }
-  public async findAlumniByEmail(email: string): Promise<AlumniDTO | undefined> {
-    const info = await pool.query(
-      `SELECT ${PROFILE_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id WHERE u.email = $1`,
-      [email]
-    );
+  // The caller's own alumni row, if any (one profile per user on create).
+  public async findAlumniByUserId(userId: number): Promise<AlumniDTO | undefined> {
+    const info = await pool.query("SELECT * FROM alumni WHERE user_id = $1 ORDER BY id LIMIT 1", [userId]);
     return info.rows[0];
   }
 

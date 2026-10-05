@@ -1,0 +1,143 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AppError } from './errors';
+import { PostManager } from './PostManager';
+
+// A fake PostQuery: every PostManager gets this same object. The real PostDTO is kept.
+const query = vi.hoisted(() => ({
+  findPostById: vi.fn(),
+  createPost: vi.fn(),
+  updatePost: vi.fn(),
+  deletePost: vi.fn(),
+  getPostsByUserId: vi.fn(),
+}));
+
+vi.mock('@alumni/dal', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@alumni/dal')>()),
+  PostQuery: class {
+    constructor() {
+      return query;
+    }
+  },
+}));
+
+const AUTHOR = { id: 7, role: 'alumni' };
+const ADMIN = { id: 1, role: 'admin' };
+const OTHER = { id: 8, role: 'student' };
+const STORED_POST = { id: 42, user_id: 7, caption: 'old', media_url: null, comment_count: 3 };
+
+async function expectAppError(promise: Promise<unknown>, status: number) {
+  const error = await promise.then(
+    () => undefined,
+    (e: unknown) => e,
+  );
+  expect(error).toBeInstanceOf(AppError);
+  expect((error as AppError).status).toBe(status);
+}
+
+describe('PostManager', () => {
+  let manager: PostManager;
+
+  beforeEach(() => {
+    Object.values(query).forEach((fn) => fn.mockReset());
+    query.findPostById.mockResolvedValue({ ...STORED_POST });
+    query.updatePost.mockImplementation(async (post) => ({ ...post }));
+    manager = new PostManager();
+  });
+
+  describe('createNewPost', () => {
+    it('makes the signed-in user the author and ignores body.user_id', async () => {
+      query.createPost.mockImplementation(async (post) => post);
+
+      await manager.createNewPost(7, { user_id: 99, caption: 'hello', media_url: 'https://x.test/a.png' });
+
+      const stored = query.createPost.mock.calls[0]![0];
+      expect(stored.user_id).toBe(7);
+      expect(stored.caption).toBe('hello');
+      expect(stored.media_url).toBe('https://x.test/a.png');
+      expect(stored.comment_count).toBe(0);
+    });
+  });
+
+  describe('updatePost', () => {
+    it('lets the author edit their post', async () => {
+      const updated = await manager.updatePost(AUTHOR, '42', { caption: 'new', media_url: 'https://x.test/b.png' });
+
+      expect(query.findPostById).toHaveBeenCalledWith(42);
+      const sent = query.updatePost.mock.calls[0]![0];
+      expect(sent).toMatchObject({ id: 42, user_id: 7, caption: 'new', media_url: 'https://x.test/b.png' });
+      expect(updated).toMatchObject({ id: 42, caption: 'new' });
+    });
+
+    it("lets an admin edit someone else's post without changing its author", async () => {
+      await manager.updatePost(ADMIN, 42, { caption: 'moderated', user_id: 1 });
+
+      const sent = query.updatePost.mock.calls[0]![0];
+      expect(sent.id).toBe(42);
+      expect(sent.user_id).toBe(7);
+      expect(sent.caption).toBe('moderated');
+    });
+
+    it('returns 403 for another user and does not update', async () => {
+      await expectAppError(manager.updatePost(OTHER, 42, { caption: 'hijack' }), 403);
+      expect(query.updatePost).not.toHaveBeenCalled();
+    });
+
+    it('returns 404 for a missing post', async () => {
+      query.findPostById.mockResolvedValue(undefined);
+
+      await expectAppError(manager.updatePost(AUTHOR, 999, { caption: 'x' }), 404);
+      expect(query.updatePost).not.toHaveBeenCalled();
+    });
+
+    // requireId treats a malformed id as "not found" (404), same as comments.
+    it.each(['abc', '0', '-1', '1.5', undefined])('rejects bad id %s without a lookup', async (id) => {
+      await expectAppError(manager.updatePost(AUTHOR, id, { caption: 'x' }), 404);
+      expect(query.findPostById).not.toHaveBeenCalled();
+      expect(query.updatePost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deletePost', () => {
+    it('lets the author delete their post', async () => {
+      await manager.deletePost(AUTHOR, '42');
+      expect(query.deletePost).toHaveBeenCalledWith(42);
+    });
+
+    it("lets an admin delete someone else's post", async () => {
+      await manager.deletePost(ADMIN, 42);
+      expect(query.deletePost).toHaveBeenCalledWith(42);
+    });
+
+    it('returns 403 for another user and does not delete', async () => {
+      await expectAppError(manager.deletePost(OTHER, 42), 403);
+      expect(query.deletePost).not.toHaveBeenCalled();
+    });
+
+    it('returns 404 for a missing post', async () => {
+      query.findPostById.mockResolvedValue(undefined);
+
+      await expectAppError(manager.deletePost(AUTHOR, 999), 404);
+      expect(query.deletePost).not.toHaveBeenCalled();
+    });
+
+    it('rejects a bad id without a lookup', async () => {
+      await expectAppError(manager.deletePost(AUTHOR, 'abc'), 404);
+      expect(query.findPostById).not.toHaveBeenCalled();
+      expect(query.deletePost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getPostsByUserId', () => {
+    it('passes a plain numeric id to the query', async () => {
+      query.getPostsByUserId.mockResolvedValue([]);
+
+      await expect(manager.getPostsByUserId('7')).resolves.toEqual([]);
+      expect(query.getPostsByUserId).toHaveBeenCalledWith(7);
+    });
+
+    it('rejects a bad id', async () => {
+      await expectAppError(manager.getPostsByUserId('abc'), 404);
+      expect(query.getPostsByUserId).not.toHaveBeenCalled();
+    });
+  });
+});

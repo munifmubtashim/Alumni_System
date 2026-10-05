@@ -8,7 +8,8 @@
   "scripts": {
     "dev:api": "npm run dev --workspace=packages/backend/src/api",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
-    "dev": "npm run dev:api & npm run dev:frontend"
+    "dev": "npm run dev:api & npm run dev:frontend",
+    "test:backend": "npm test --workspace=packages/backend"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

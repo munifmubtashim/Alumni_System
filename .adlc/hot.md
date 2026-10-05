@@ -17,6 +17,11 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-05] implement-gate-cleared | REQ-003-backend-route-auth
+## [2026-10-05] adr-accepted | ADR-05 backend tests: Vitest + supertest, no DB
+## [2026-10-05] architect-gate-cleared | REQ-003-backend-route-auth
+## [2026-10-05] work-path-set | REQ-003-backend-route-auth | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-05] spec-gate-cleared | REQ-003-backend-route-auth
 ## [2026-10-05] req-archived | REQ-002-auth-login-register
 ## [2026-10-05] req-merged | REQ-002-auth-login-register | PR #15 into redesign (0d40e321)
 ## [2026-10-05] ship-gate-cleared | REQ-002-auth-login-register

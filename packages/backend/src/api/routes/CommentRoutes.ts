@@ -5,6 +5,7 @@ import { authMiddleware } from "../Middleware/authMIddleware";
 // Listing and creating comments live under /api/posts/:id/comments (see PostRoutes).
 const router = Router();
 
-router.delete("/:id", authMiddleware, deleteComment);
+router.use(authMiddleware);
+router.delete("/:id", deleteComment);
 
 export default router;

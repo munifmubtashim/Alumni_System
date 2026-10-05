@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { AppError, UserManager } from "@alumni/businesslogic";
-import { UserDTO } from "@alumni/dal";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -41,15 +40,18 @@ export function verifyToken(token: string) {
 
 
 
+// Admin-only: creates an account of any role. Validates before hashing; returns no password.
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role, photo_url } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new UserDTO(name, email, hashedPassword, role, photo_url);
-    const newUser = await userManager.createUser(user);
+    const input = userManager.validateNewUser(req.body ?? {});
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    const newUser = await userManager.createUser(input, passwordHash);
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    if (error instanceof AppError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -65,15 +67,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const findUserById = async (req: Request, res: Response) => {
   try {
     const user = await userManager.findUserById(Number(req.params.id));
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(404).json({ error: (error as Error).message });
-  }
-};
-
-export const findUserByEmail = async (req: Request, res: Response) => {
-  try {
-    const user = await userManager.findUserByEmail(req.params.email);
     res.status(200).json(user);
   } catch (error) {
     res.status(404).json({ error: (error as Error).message });
@@ -97,24 +90,6 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     await userManager.deleteUser(Number(req.params.id));
     res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
-  }
-};
-
-export const updateLoginTime = async (req: Request, res: Response) => {
-  try {
-    await userManager.updateLoginTime(Number(req.params.id));
-    res.status(200).json({ message: "Login time updated" });
-  } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
-  }
-};
-
-export const updateLogoutTime = async (req: Request, res: Response) => {
-  try {
-    await userManager.updateLogoutTime(Number(req.params.id));
-    res.status(200).json({ message: "Logout time updated" });
   } catch (error) {
     res.status(400).json({ error: (error as Error).message });
   }

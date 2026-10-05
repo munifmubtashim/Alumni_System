@@ -1,35 +1,18 @@
 import { Request, Response } from "express";
 import { AlumniManager, AppError } from "@alumni/businesslogic";
-import { AlumniDTO } from "@alumni/dal";
 
 const alumniManager = new AlumniManager();
 
+// The profile always belongs to the signed-in user; a user_id in the body is ignored.
 export const createAlumni = async (req: Request, res: Response) => {
   try {
-    const {
-      user_id,
-      department,
-      graduation_year,
-      current_company,
-      job_title,
-      experience,
-      bio,
-      linkedin_url,
-    } = req.body;
-    const alumni = new AlumniDTO(
-      user_id,
-      department,
-      graduation_year,
-      current_company,
-      job_title,
-      experience,
-      bio,
-      linkedin_url,
-    );
-    const newAlumni = await alumniManager.createAlumni(alumni);
+    const newAlumni = await alumniManager.createAlumni(Number(req.user.sub), req.body ?? {});
     res.status(201).json(newAlumni);
   } catch (error) {
-    res.status(400).json({ error: (error as Error).message });
+    if (error instanceof AppError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -47,15 +30,6 @@ export const findAlumniById = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const alumni = Number.isInteger(id) ? await alumniManager.findAlumniById(id) : undefined;
     if (!alumni) return res.status(404).json({ error: "Alumni not found" });
-    res.status(200).json(alumni);
-  } catch (error) {
-    res.status(404).json({ error: (error as Error).message });
-  }
-};
-
-export const findAlumniByEmail = async (req: Request, res: Response) => {
-  try {
-    const alumni = await alumniManager.findAlumniByEmail(req.params.email);
     res.status(200).json(alumni);
   } catch (error) {
     res.status(404).json({ error: (error as Error).message });

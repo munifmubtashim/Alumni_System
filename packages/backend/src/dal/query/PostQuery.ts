@@ -45,6 +45,12 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
         return info.rows;
     }
 
+    public async findPostById(id: number): Promise<PostDTO | undefined> {
+        const info = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
+        return info.rows[0];
+    }
+
+    // Never sets user_id: an admin editing someone's post keeps the original author.
     public async updatePost(post: PostDTO): Promise<PostDTO> {
         const info = await pool.query(
             `UPDATE posts SET caption=$1, media_url=$2, updated_at=NOW()

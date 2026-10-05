@@ -8,14 +8,31 @@ export class AlumniManager {
   constructor() {
     this.alumniQuery = new AlumniQuery();
   }
-  public async createAlumni(alumni: AlumniDTO) {
-    const newAlumni = await this.alumniQuery.createAlumni(alumni);
-    return newAlumni;
-  }
 
-  public async findAlumniByEmail(email: string) {
-    const alumni = await this.alumniQuery.findAlumniByEmail(email);
-    return alumni;
+  // POST /api/alumni: creates the caller's own profile. `userId` comes from the token, never the body.
+  public async createAlumni(userId: number, body: Record<string, unknown>) {
+    const existing = await this.alumniQuery.findAlumniByUserId(userId);
+    if (existing) throw new AppError(409, "You already have an alumni profile");
+    const f = validateAlumniFields(body);
+    const alumni = new AlumniDTO(
+      userId,
+      f.department,
+      f.graduation_year,
+      f.current_company,
+      f.job_title,
+      f.experience,
+      f.bio,
+      f.linkedin_url,
+    );
+    try {
+      return await this.alumniQuery.createAlumni(alumni);
+    } catch (error) {
+      // alumni.user_id is UNIQUE: a concurrent create for the same user lands here.
+      if ((error as { code?: string }).code === "23505") {
+        throw new AppError(409, "You already have an alumni profile");
+      }
+      throw error;
+    }
   }
 
   public async findAlumniById(id: number) {

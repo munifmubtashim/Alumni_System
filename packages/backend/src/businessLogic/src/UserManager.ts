@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { UserDTO, UserQuery } from "@alumni/dal";
+import { UserQuery } from "@alumni/dal";
 import type { MyProfileRow, PublicUserRow } from "@alumni/dal";
 import { AppError } from "./errors.js";
 import {
@@ -18,6 +18,17 @@ import {
 
 export const SIGNUP_ROLES = ["alumni", "student"] as const;
 export type SignupRole = (typeof SIGNUP_ROLES)[number];
+
+// Roles an admin may give an account through POST /api/users.
+export const ADMIN_CREATE_ROLES = ["admin", "alumni", "student"] as const;
+export type AdminCreateRole = (typeof ADMIN_CREATE_ROLES)[number];
+
+export interface NewUserInput {
+  role: AdminCreateRole;
+  name: string;
+  email: string;
+  password: string;
+}
 
 const isUniqueViolation = (error: unknown) => (error as { code?: string }).code === "23505";
 
@@ -42,9 +53,30 @@ export class UserManager {
     this.userQuery = new UserQuery();
   }
 
-  public async createUser(user: UserDTO) {
-    const newUser = await this.userQuery.createUser(user);
-    return newUser;
+  // Validates an admin's POST /api/users body with the same rules as sign-up, plus admin as a role.
+  public validateNewUser(body: Record<string, unknown>): NewUserInput {
+    const role = body.role;
+    if (!ADMIN_CREATE_ROLES.includes(role as AdminCreateRole)) {
+      throw new AppError(400, 'Role must be "admin", "alumni" or "student"');
+    }
+    return {
+      role: role as AdminCreateRole,
+      name: requiredText(body.name, "Name", 100),
+      email: requiredEmail(body.email),
+      password: validateNewPassword(body.password),
+    };
+  }
+
+  // `passwordHash` must already be a bcrypt hash. Returns the public columns only.
+  public async createUser(input: NewUserInput, passwordHash: string): Promise<PublicUserRow> {
+    try {
+      return await this.userQuery.createUser({ ...input, password: passwordHash });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new AppError(409, "An account with this email already exists");
+      }
+      throw error;
+    }
   }
 
   public async findUserByEmail(email: string) {
@@ -52,13 +84,12 @@ export class UserManager {
     return user;
   }
 
-  public async findUserById(id: number) {
+  public async findUserById(id: number): Promise<PublicUserRow | undefined> {
     const user = await this.userQuery.findUserById(id);
     return user;
   }
 
-
-  public async getAllUsers() {
+  public async getAllUsers(): Promise<PublicUserRow[]> {
     const allUsers = await this.userQuery.getAllUsers();
     return allUsers;
   }
@@ -66,14 +97,6 @@ export class UserManager {
   public async deleteUser(id: number) {
     const deletedUser = await this.userQuery.deleteUser(id);
     return deletedUser;
-  }
-
-  public async updateLoginTime(id: number) {
-    await this.userQuery.updateLoginTime(id);
-  }
-
-  public async updateLogoutTime(id: number) {
-    await this.userQuery.updateLogoutTime(id);
   }
 
   // Validates a public sign-up body. `role` must be "student" or "alumni" (never admin).
