@@ -236,7 +236,7 @@ describe('routes any signed-in user may call', () => {
 
   beforeEach(() => {
     vi.mocked(UserManager.prototype.findUserById).mockResolvedValue(PUBLIC_USER as never);
-    vi.mocked(AlumniManager.prototype.getAllAlumni).mockResolvedValue([] as never);
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue({ items: [], total: 0 } as never);
     vi.mocked(AlumniManager.prototype.findAlumniById).mockResolvedValue({ id: 1 } as never);
     vi.mocked(PostManager.prototype.getAllPosts).mockResolvedValue([] as never);
     vi.mocked(PostManager.prototype.createNewPost).mockResolvedValue({ id: 1 } as never);
@@ -268,6 +268,45 @@ describe('routes any signed-in user may call', () => {
     await call(route, tokenFor(STUDENT), BODY);
     expect(manager()).toHaveBeenCalledTimes(1);
     expect(manager()).toHaveBeenCalledWith(...args);
+  });
+});
+
+describe('GET /api/alumni: search, filters and paging', () => {
+  const route: Route = { method: 'get', path: '/api/alumni' };
+
+  it('200 with the manager’s { items, total } as the body', async () => {
+    const page = { items: [{ id: 1, name: 'Ana' }], total: 41 };
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue(page as never);
+    const res = await call(route, tokenFor(STUDENT));
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(page);
+  });
+
+  it('hands the raw query string to the manager', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue({ items: [], total: 0 } as never);
+    await call({ method: 'get', path: '/api/alumni?q=Ana%20B&department=CSE&page=2&pageSize=10' }, tokenFor(STUDENT));
+    expect(AlumniManager.prototype.searchAlumni).toHaveBeenCalledTimes(1);
+    expect(AlumniManager.prototype.searchAlumni).toHaveBeenCalledWith({
+      q: 'Ana B',
+      department: 'CSE',
+      page: '2',
+      pageSize: '10',
+    });
+  });
+
+  it('manager AppError(400) → 400 { message }', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockRejectedValue(
+      new AppError(400, 'pageSize must be a whole number from 1 to 100'),
+    );
+    const res = await call({ method: 'get', path: '/api/alumni?pageSize=500' }, tokenFor(STUDENT));
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'pageSize must be a whole number from 1 to 100' });
+  });
+
+  it('no token → 401 without calling the manager', async () => {
+    const res = await call(route);
+    expect(res.status).toBe(401);
+    expect(AlumniManager.prototype.searchAlumni).not.toHaveBeenCalled();
   });
 });
 
@@ -450,7 +489,7 @@ describe('error bodies use { message } and never leak raw error text', () => {
   it.each([
     ['GET /api/users', { method: 'get', path: '/api/users' } as Route, () => vi.mocked(UserManager.prototype.getAllUsers), ADMIN],
     ['GET /api/users/1', { method: 'get', path: '/api/users/1' } as Route, () => vi.mocked(UserManager.prototype.findUserById), STUDENT],
-    ['GET /api/alumni', { method: 'get', path: '/api/alumni' } as Route, () => vi.mocked(AlumniManager.prototype.getAllAlumni), STUDENT],
+    ['GET /api/alumni', { method: 'get', path: '/api/alumni' } as Route, () => vi.mocked(AlumniManager.prototype.searchAlumni), STUDENT],
     ['GET /api/alumni/1', { method: 'get', path: '/api/alumni/1' } as Route, () => vi.mocked(AlumniManager.prototype.findAlumniById), STUDENT],
   ])('%s: DB failure → 500 with a generic message', async (_n, route, manager, user) => {
     manager().mockRejectedValue(new Error('connection terminated unexpectedly'));

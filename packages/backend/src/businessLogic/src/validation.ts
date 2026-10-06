@@ -1,4 +1,4 @@
-import type { AlumniEditableFields, StudentEditableFields, UserBasicsFields } from "@alumni/dal";
+import type { AlumniEditableFields, AlumniSearchFilters, StudentEditableFields, UserBasicsFields } from "@alumni/dal";
 import { AppError } from "./errors.js";
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -104,4 +104,57 @@ export function requireId(value: unknown, what: string): number {
   const id = Number(value);
   if (!Number.isInteger(id) || id <= 0 || id > MAX_DB_ID) throw new AppError(404, `${what} not found`);
   return id;
+}
+
+// Alumni directory search (GET /api/alumni). Paging limits: pageSize default 20, max 100; page capped at 10000 to bound OFFSET.
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+export const MAX_PAGE = 10000;
+
+export interface AlumniSearch {
+  filters: AlumniSearchFilters;
+  page: number;
+  pageSize: number;
+}
+
+// A query-string value must be one string; Express's qs parser turns `?a=1&a=2` into an array and `?a[x]=1` into an object.
+function singleQueryValue(value: unknown, param: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string") throw new AppError(400, `${param} must be a single value`);
+  return value;
+}
+
+// Whole number from 1 to max; empty or whitespace-only counts as absent, so the default applies.
+function pagingNumber(value: unknown, param: string, fallback: number, max: number): number {
+  const text = singleQueryValue(value, param)?.trim();
+  if (!text) return fallback;
+  const n = Number(text);
+  if (!/^\d+$/.test(text) || n < 1 || n > max) {
+    throw new AppError(400, `${param} must be a whole number from 1 to ${max}`);
+  }
+  return n;
+}
+
+// Parses req.query for the alumni directory into typed filters + paging, or throws AppError(400). Unknown keys are ignored.
+export function parseAlumniSearch(query: Record<string, unknown>): AlumniSearch {
+  const filters: AlumniSearchFilters = {};
+  const q = optionalText(singleQueryValue(query.q, "q"), "q", 100);
+  if (q) filters.q = q;
+  const department = optionalText(singleQueryValue(query.department, "department"), "department", 100);
+  if (department) filters.department = department;
+  const university = optionalText(singleQueryValue(query.university, "university"), "university", 150);
+  if (university) filters.university = university;
+  const year = singleQueryValue(query.graduationYear, "graduationYear")?.trim();
+  if (year) {
+    const n = Number(year);
+    if (!/^\d{4}$/.test(year) || n < 1900 || n > new Date().getFullYear() + 10) {
+      throw new AppError(400, "graduationYear is not valid");
+    }
+    filters.graduationYear = n;
+  }
+  return {
+    filters,
+    page: pagingNumber(query.page, "page", 1, MAX_PAGE),
+    pageSize: pagingNumber(query.pageSize, "pageSize", DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE),
+  };
 }

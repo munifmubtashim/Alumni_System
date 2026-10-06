@@ -1,4 +1,4 @@
-import type { BaseDTO } from "./BaseDTO";
+import type { BaseDTO } from "./baseDTO";
 export class AlumniDTO implements BaseDTO {
   id!: number;
   user_id: number;

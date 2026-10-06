@@ -19,6 +19,16 @@ export interface Alumni {
   university?: string;
 }
 
+// One row of GET /api/alumni: the profile plus the joined public user columns (never email).
+export type AlumniListItem = Omit<Alumni, "email">;
+
+// GET /api/alumni?q=&department=&university=&graduationYear=&page=&pageSize=
+// page defaults to 1 (max 10000), pageSize to 20 (max 100). total counts every match, not just this page.
+export interface AlumniListResponse {
+  items: AlumniListItem[];
+  total: number;
+}
+
 // GET/PUT /api/me: the caller's account plus their alumni or students row, if they have one.
 // Every role gets a profile; alumni fields are empty when has_alumni_profile is false,
 // student fields when has_student_profile is false.

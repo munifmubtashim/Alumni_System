@@ -4,6 +4,32 @@ import { AlumniDTO } from "../dto/AlumniDTO.js";
 // Public user columns joined onto alumni rows. Email is only exposed on single-profile reads.
 const LIST_COLUMNS = "a.*, u.name, u.photo_url, u.university";
 const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url, u.university";
+const LIST_FROM = "FROM alumni a JOIN users u ON a.user_id = u.id";
+
+// Validated filters for the directory search. Every field is optional; absent means "no filter".
+export interface AlumniSearchFilters {
+  q?: string;
+  department?: string;
+  university?: string;
+  graduationYear?: number;
+}
+
+export interface AlumniPaging {
+  limit: number;
+  offset: number;
+}
+
+export interface AlumniPage {
+  items: AlumniDTO[];
+  total: number;
+}
+
+// Makes %, _ and \ match literally in a LIKE/ILIKE pattern. Backslash is Postgres's default
+// LIKE escape character, so the SQL carries no ESCAPE clause (ESCAPE '\' inside a JS template
+// literal would be sent as ESCAPE '', which Postgres rejects).
+export function escapeLike(text: string): string {
+  return text.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
 
 export class AlumniQuery {
   constructor() { }
@@ -58,10 +84,43 @@ export class AlumniQuery {
     return info.rows[0];
   }
 
-  public async getAllAlumni(): Promise<AlumniDTO[]> {
-    const info = await pool.query(
-      `SELECT ${LIST_COLUMNS} FROM alumni a JOIN users u ON a.user_id = u.id ORDER BY u.name`
-    );
-    return info.rows;
+  // Searched, filtered, paged directory list. Fragments are constants; every input value is a
+  // bound parameter, so no request text ever reaches the SQL string.
+  public async searchAlumni(filters: AlumniSearchFilters, paging: AlumniPaging): Promise<AlumniPage> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    const next = (value: unknown): string => {
+      params.push(value);
+      return `$${params.length}`;
+    };
+
+    if (filters.q !== undefined) {
+      const p = next(`%${escapeLike(filters.q)}%`);
+      conditions.push(`(u.name ILIKE ${p} OR a.current_company ILIKE ${p} OR a.job_title ILIKE ${p})`);
+    }
+    if (filters.department !== undefined) {
+      conditions.push(`lower(a.department) = lower(${next(filters.department)})`);
+    }
+    if (filters.university !== undefined) {
+      conditions.push(`lower(u.university) = lower(${next(filters.university)})`);
+    }
+    if (filters.graduationYear !== undefined) {
+      conditions.push(`a.graduation_year = ${next(filters.graduationYear)}`);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const countParams = [...params];
+    const limit = next(paging.limit);
+    const offset = next(paging.offset);
+
+    const [itemsResult, countResult] = await Promise.all([
+      pool.query(
+        `SELECT ${LIST_COLUMNS} ${LIST_FROM} ${where} ORDER BY u.name, a.id LIMIT ${limit} OFFSET ${offset}`,
+        params,
+      ),
+      pool.query(`SELECT COUNT(*)::int AS total ${LIST_FROM} ${where}`, countParams),
+    ]);
+
+    return { items: itemsResult.rows, total: countResult.rows[0]?.total ?? 0 };
   }
 }
