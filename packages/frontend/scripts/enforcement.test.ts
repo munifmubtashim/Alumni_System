@@ -250,9 +250,10 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
   });
 });
 
-// ADR-08: features/directory is reached only through the router's lazy import().
-// This ban is the typescript-eslint copy of the rule, so it has its own rule id.
-describe('ESLint lazy-feature boundary (features/directory)', () => {
+// ADR-08: each lazy feature (directory, profile) is reached only through the
+// router's lazy import(). This ban is the typescript-eslint copy of the rule,
+// so it has its own rule id.
+describe('ESLint lazy-feature boundary (features/directory, features/profile)', () => {
   const LAZY_RULE = '@typescript-eslint/no-restricted-imports';
 
   it.each([
@@ -264,6 +265,16 @@ describe('ESLint lazy-feature boundary (features/directory)', () => {
     ['src/features/home', "import { x } from '../directory/params';"],
     ['src/features/home/__fixture__', "import { x } from '../../directory';"],
     ['src/components/ui/__fixture__', "import { x } from '@/features/directory/params';"],
+    ['src/app/__fixture__', "import { ProfilePage } from '@/features/profile/ProfilePage';"],
+    ['src/app/__fixture__', "import { x } from '../../features/profile';"],
+    ['src/features/home', "import { x } from '../profile/format';"],
+    // One lazy feature may not import the other statically (ADV-006).
+    ['src/features/profile', "import { x } from '../directory/params';"],
+    ['src/features/profile', "import { x } from '@/features/directory/params';"],
+    ['src/features/profile/__fixture__', "import { x } from '../../directory';"],
+    ['src/features/directory', "import { x } from '../profile/format';"],
+    ['src/features/directory', "import { x } from '@/features/profile/ProfilePage';"],
+    ['src/features/directory/__fixture__', "import { x } from '../../profile';"],
   ])('rejects a static import in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', dir);
     expect(ruleIds(messages)).toContain(LAZY_RULE);
@@ -277,6 +288,11 @@ describe('ESLint lazy-feature boundary (features/directory)', () => {
     ['src/app/__fixture__', "import type { DirectoryParams } from '@/features/directory/params';"],
     ['src/app/__fixture__', "import { x } from '@/features/directoryHelpers';"],
     ['src/features/directory', "import { x } from './params';"],
+    ['src/features/directory', "import { x } from '@/features/directory/params';"],
+    ['src/features/profile', "import { x } from './format';"],
+    ['src/features/profile', "import { x } from '@/features/profile/format';"],
+    ['src/app/__fixture__', "export const page = () => import('@/features/profile/ProfilePage');"],
+    ['src/features/profile', "import type { DirectoryParams } from '../directory/params';"],
   ])('allows in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Ok.ts', dir);
     expect(ruleIds(messages)).not.toContain(LAZY_RULE);

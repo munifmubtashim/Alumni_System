@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page and the alumni Directory (search, filters, pages), on top of the design system. Feed and profiles come in later REQs.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages) and an alumni Profile page, on top of the design system. The feed comes in a later REQ.
 
 ## Stack
 
@@ -59,12 +59,13 @@ packages/frontend/
                       MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants: brand.ts (BRAND_NAME, SUPPORT_EMAIL, supportMailto)
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
-                      directory/ (lazy-loaded alumni directory page)
+                      directory/ and profile/ (lazy-loaded directory and alumni profile pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
                       Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle, Avatar, Chip,
                       Skeleton, SearchField, Popover
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
-    services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi
+    services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi,
+                      httpErrors
     styles/           tokens.css (generated), global.css, contrast test
     test/             Vitest setup and harness smoke test
 ```
@@ -90,7 +91,7 @@ Each folder's README says what belongs there and what may import it:
 
 ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log out, and get sent to `/login` with a notice when the session ends.
 
-- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home) and `/directory`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
+- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home), `/directory` and `/alumni/:id`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
 - **Endpoints:** `services/authApi.ts` has `login`, `register` and `getMe` (`GET /me`). They only return data.
 - **Token store:** `services/authToken.ts` keeps the token in `localStorage['token']`. `subscribe(listener)` fires on `setToken`/`clearToken` and on another tab's change. `isTokenExpired(token)` decodes the JWT `exp` (10 s leeway; a malformed token counts as expired). `getLiveToken()` returns the token only if it is present and not expired, with no side effects. `features/auth` reads it with `useLiveToken()` / `useHasSession()` (`useSyncExternalStore`).
 - **401s:** `httpClient` has one response interceptor. On a 401 from a request that carried a token (not `/auth/login` or `/auth/register`), it calls the handler registered with `setUnauthorizedHandler(fn)`, passing that request's token, then re-throws. `services/` never imports app or feature code.
@@ -110,8 +111,8 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 
 REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
 
-- **Lazy route:** `app/router.tsx` loads the page with the route's `lazy` (`import('@/features/directory/DirectoryPage')`), so it is a separate chunk in `dist/assets`. Nothing else may import `features/directory` statically: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every file in `src/` (except that folder and tests) and fails if one does. New large pages follow the same pattern; Home stays eager.
-- **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of the `directory` route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
+- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`) and the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import either feature statically, not even the other one: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
+- **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
 - **Header:** after S1. `MainNav` (desktop) shows the Directory link to signed-in users only, marked current on `/directory` and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name, email, Log out) sit on the right.

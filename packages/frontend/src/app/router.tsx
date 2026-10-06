@@ -38,13 +38,27 @@ export const DIRECTORY_ROUTE: RouteObject = {
 };
 
 /**
+ * The alumni profile page, the second lazy page (ADR-08), built the same way
+ * as `DIRECTORY_ROUTE`: only this dynamic import may reference
+ * `features/profile`, and `HydrateFallback` sits on this route object.
+ */
+export const PROFILE_ROUTE: RouteObject = {
+  path: 'alumni/:id',
+  HydrateFallback,
+  lazy: async () => {
+    const { ProfilePage } = await import('@/features/profile/ProfilePage');
+    return { Component: ProfilePage };
+  },
+};
+
+/**
  * Pages inside AppShell (header). Home is the first signed-in page; the
- * directory is lazy. Any unknown path shows the empty shell.
+ * directory and the profile are lazy. Any unknown path shows the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
   {
     element: <RequireAuth />,
-    children: [{ index: true, element: <HomePage /> }, DIRECTORY_ROUTE],
+    children: [{ index: true, element: <HomePage /> }, DIRECTORY_ROUTE, PROFILE_ROUTE],
   },
   { path: '*', element: null },
 ];
