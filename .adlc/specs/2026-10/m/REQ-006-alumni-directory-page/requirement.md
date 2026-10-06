@@ -8,7 +8,7 @@
 | Created | 2026-10-06 |
 | Primary repo | alumni-system |
 | Touched repos | alumni-system |
-| Related | REQ-005 (search API) · [[architecture/adr-01-ui-layer\|ADR-01]] · [[architecture/adr-02-state-management\|ADR-02]] · [[architecture/adr-03-session-and-401\|ADR-03]] |
+| Related | REQ-005 (search API) · [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] · [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] · [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] |
 
 ## Problem
 

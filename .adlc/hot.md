@@ -24,6 +24,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ## Entries
 
+## [2026-10-06] verify-gate-cleared | REQ-006-alumni-directory-page | findings: C0/M0/m5/t2 open (your-call); 11 fixed in 2 rounds
 ## [2026-10-06] config | git.mode=commit
 ## [2026-10-06] implement-gate-cleared | REQ-006-alumni-directory-page
 ## [2026-10-06] adr-accepted | ADR-08 route code splitting with lazy; list state in the URL

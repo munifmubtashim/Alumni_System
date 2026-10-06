@@ -93,3 +93,88 @@
 **Claim:** Use a 4xx (not 5xx) to test a query's error state through `createQueryClient`, or the default retries add 3 s of delays.
 **Saw it in:** `packages/frontend/src/app/queryClient.ts:20`
 **Context:** 5xx retries twice with 1 s and 2 s back-off, past `findBy*`'s 1 s timeout.
+
+## CAND-ARCH-A [review-arch]
+**Claim:** A "must not import X" boundary should be an ESLint rule first and a test second, like the other layer bans.
+**Saw it in:** `packages/frontend/src/app/lazyRoutes.test.ts:12`
+**Context:** Lazy-route guard is a regex test only; no editor feedback.
+
+## CAND-ARCH-B [review-arch]
+**Claim:** Client copies of API validation limits need a pointer to the backend source, or they drift silently into 400s.
+**Saw it in:** `packages/frontend/src/features/directory/params.ts:8`
+**Context:** shared package has no runtime code, so limits are duplicated by hand.
+
+## CAND-020 [review-corr]
+**Claim:** When an input box mirrors a URL param, remember the last value you wrote and skip the sync-from-URL for it, or a later keystroke is overwritten.
+**Saw it in:** `packages/frontend/src/features/directory/FilterBar.tsx:113`
+**Context:** Render-time sync compares text to the URL, not to what this component last wrote.
+
+## CAND-021 [review-qual]
+**Claim:** Before copying a CSS utility (visually-hidden), make it a shared primitive or shared module; update the "only copy" comment when you copy.
+**Saw it in:** `packages/frontend/src/features/directory/ResultsGrid.module.css:21`
+**Context:** Copy of SearchField's rule; the original comment still claims it is the only one.
+
+## CAND-022 [review-qual]
+**Claim:** Fake-API test helpers (token builder, axios adapter switch, profile fixture) belong in a shared `src/test/` module, not re-typed per test file.
+**Saw it in:** `packages/frontend/src/features/directory/DirectoryPage.test.tsx:21`
+**Context:** Sixth copy across AppShell, session, guards, Login, Register, Directory tests.
+
+## CAND-023 [review-qual]
+**Claim:** A new contrast-test row must differ from existing rows in colours or minimum, or it adds no coverage; extend the existing row's `use` text instead.
+**Saw it in:** `packages/frontend/src/styles/contrast.test.ts:59`
+**Context:** Row repeats the Tag row's pair; another is implied by a stricter existing row.
+
+## CAND-024 [review-qual]
+**Claim:** Update conventions.md in the same REQ that adds folders, primitives or import rules, not only CLAUDE.md and READMEs.
+**Saw it in:** `.adlc/context/conventions.md` (Frontend section)
+**Context:** Repeats LESSON-REQ-001-8 for non-ADR changes (lazy-route rule, new primitives).
+
+## CAND-020 [review-reflect]
+**Claim:** Use `cx` from `components/ui/cx.ts` for conditional class names everywhere (app/ too); CAND-005 should be reworded to say so.
+**Saw it in:** `packages/frontend/src/app/AppShell/MainNav.tsx:26`
+**Context:** MainNav hand-rolled `filter(Boolean).join(' ')`, the body of `cx`; the component page already says "reuse it".
+
+## CAND-021 [review-reflect]
+**Claim:** The frontend directory parser hand-copies the API's limits (q 100, department 100, university 150, year 1900 to now+10, page 10000); a backend change silently drifts. Keep both in one note or add a test pair.
+**Saw it in:** `packages/frontend/src/features/directory/params.ts:9-16` vs `packages/backend/src/businessLogic/src/validation.ts:7-32`
+**Context:** `@alumni/shared` has no runtime code, so the constants cannot be shared; gotcha-gap (ADR-04 only says messages "mirror" the backend).
+
+## CAND-022 [review-reflect]
+**Claim:** `ink-muted` fails 3:1 on `surface-sunken`; use it only on `aria-hidden` decoration, never for text or a meaningful icon.
+**Saw it in:** `packages/frontend/src/components/ui/SearchField/SearchField.module.css:21`, `Pagination.module.css:34`
+**Context:** Every REQ-006 use is decorative and passes by that exemption, not by a recorded pair in `contrast.test.ts`; L-REQ-004-2 found 2.79:1 for this pair.
+
+## CAND-023 [review-reflect]
+**Claim:** A `src/` test can read source text with `import.meta.glob(..., { query: '?raw', import: 'default', eager: true })`; this answers CAND-008 (no `node:fs` needed).
+**Saw it in:** `packages/frontend/src/app/lazyRoutes.test.ts:11`
+**Context:** Source-scanning guard for ADR-08; conventions.md's "read files from disk" advice only fits `scripts/`.
+
+## CAND-UI-001 [ui-review]
+**Claim:** When a list swaps to skeletons on every query-key change, any control rendered inside the results branch (pagination) unmounts mid-click and keyboard focus is lost; move focus to the heading or keep the control mounted.
+**Saw it in:** `packages/frontend/src/features/directory/DirectoryPage.tsx:93-103`
+**Context:** No `placeholderData` was chosen on purpose (AC11), which makes Pagination vanish while the next page loads.
+
+## CAND-UI-002 [ui-review]
+**Claim:** Shared TanStack `retry: 2` means a 5xx keeps a page on skeletons for about 3 s before its error state shows; per-query `retry` is the knob.
+**Saw it in:** `packages/frontend/src/app/queryClient.ts:4`
+**Context:** Easy to miss in tests, which usually fail fast with 4xx.
+
+## CAND-024 [implement-task]
+**Claim:** To add a src-wide import ban next to the per-layer blocks, use `@typescript-eslint/no-restricted-imports`, not a second core `no-restricted-imports` block.
+**Saw it in:** `packages/frontend/eslint.config.js` (LAZY_DIRECTORY_BAN)
+**Context:** Flat config keeps only the last matching block's options per rule, so a second core block would silently drop the layer bans; the TS copy is a different rule id and also has `allowTypeImports`.
+
+## CAND-025 [implement-task]
+**Claim:** CSS Modules `composes:` fails our Stylelint (property-no-unknown, value-keyword-case); sharing a rule that way needs a stylelint.config.js allowance first.
+**Saw it in:** `packages/frontend/stylelint.config.js`
+**Context:** Tried to dedupe `.visuallyHidden` (QUAL-001) with `composes` from a shared module.
+
+## CAND-026 [implement-task]
+**Claim:** A debounced URL write needs "own write" bookkeeping after all (supersedes CAND-016): set the sent value in state in the same tick as navigate, and skip the box sync when the URL shows it.
+**Saw it in:** `packages/frontend/src/features/directory/FilterBar.tsx` (SyncState)
+**Context:** Value comparison alone dropped a key typed while the write landed (CORR-001); state works because react-router renders the URL change in a transition, after the default-lane setState.
+
+## CAND-027 [implement-task]
+**Claim:** Reproduce a "between navigate and render" race in one `act`: `vi.advanceTimersByTime` to fire the write, then `fireEvent.change`; nested acts flush only when the outer one ends.
+**Saw it in:** `packages/frontend/src/features/directory/FilterBar.test.tsx` (keeps a key typed while its own write lands)
+**Context:** userEvent awaits between steps, so the render always lands first and the race never shows.
