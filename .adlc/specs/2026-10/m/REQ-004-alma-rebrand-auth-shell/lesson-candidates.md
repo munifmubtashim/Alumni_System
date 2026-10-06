@@ -103,3 +103,31 @@
 **Claim:** A Base UI Radio can be a Tooltip trigger through the `render` prop; the radio keeps its role and the name must come from `aria-label` when the child is an icon.
 **Saw it in:** `packages/frontend/src/components/ui/SegmentedControl/SegmentedControl.tsx:68`
 **Context:** Extends G05 (name from text content); icon-only options break that, so a gotcha note is needed.
+
+## Candidate verdicts
+
+Dedup basis: `origin/redesign` lessons as of 11 hours ago (21 lessons, none from REQ-004).
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g19 (queryByText ignores aria-hidden) |
+| CAND-002 | discard | covered by L-REQ-001-4 (boundary fixtures) |
+| CAND-003 | discard | already in conventions.md (non-scoped class names) |
+| CAND-004 | discard | local to PasswordInput, commented there |
+| CAND-005 | demote-to-gotcha | ^g19 (guest Account nav) |
+| CAND-006 | demote-to-gotcha | ^g18 (`hidden` vs `display`) |
+| CAND-007 | demote-to-gotcha | ^g19 (count submit buttons) |
+| CAND-008 | promote | LESSON-REQ-004-2 |
+| CAND-009 | demote-to-gotcha | ^g19 (header tests off /login) |
+| CAND-010 | demote-to-gotcha | ^g17 (Tooltip on Radio) |
+| CAND-A01 | promote | LESSON-REQ-004-3 |
+| CAND-A02 | discard | duplicate of L-REQ-001-4 |
+| CAND-A03 | demote-to-gotcha | ^g20 (index.html copies under test) |
+| CAND-011 | discard | general testing habit, not project-specific |
+| CAND-012 | discard | open decision (review m6), tracked as a follow-up |
+| CAND-013 | discard | trivial; fixed in code |
+| CAND-C01 | promote | LESSON-REQ-004-1 |
+| CAND-C02 | demote-to-gotcha | merged into ^g17 |
+| CAND-007 [reflect] | promote | merged into LESSON-REQ-004-1 |
+| CAND-008 [reflect] | promote | merged into LESSON-REQ-004-2 |
+| CAND-009 [reflect] | demote-to-gotcha | merged into ^g17 |

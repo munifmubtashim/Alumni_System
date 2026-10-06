@@ -56,7 +56,9 @@ The token stays in `authToken.ts`, which gains `subscribe`, expiry decoding, and
 | Every authed request's 401 (except login and register) ends the session | rule |
 | New features just use `httpClient` and get expiry handling for free | benefit |
 | The token stays in localStorage, readable by XSS; moving to cookies is a backend REQ | trade-off / follow-up |
-| `SessionBridge` must be mounted inside the router (in `AppShell`) | constraint |
+| `SessionBridge` must be mounted once inside the router, above every shell (in `app/RootLayout`, since [[REQ-004]]; it was in `AppShell` until then) | constraint |
+
+> **Amended 2026-10-06 ([[REQ-004]]):** auth pages left `AppShell` for a header-less `AuthShell`, so `SessionBridge` moved up to a path-less `RootLayout` that wraps both shells (see [[architecture/adr-07-root-layout-and-headerless-auth|ADR-07]]). The decision itself is unchanged: one registered 401 handler, mounted once inside the router.
 
 ## Open questions
 

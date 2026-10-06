@@ -14,4 +14,6 @@
 - `src/styles/contrast.test.ts` pins every text/surface pair the CSS uses at 4.5:1, in both themes. Accepted exceptions are per-theme floors (the Input resting border). Change a token, and the test tells you what you broke ([[knowledge/lessons/LESSON-REQ-001-6]]).
 - Light `accent` was darkened (`#975c43`, `accent-strong` `#7a4734`) in REQ-001 so accent text reaches AA.
 
+- SVG colours follow the same rule: the brand mark, check marks and icons take `fill`/`stroke` from CSS-module classes on tokens (`fill: var(--accent)`), never hex attributes; icon sizes stay literal layout values ([[REQ-004]]). `public/favicon.svg` is the one hex exception, because the browser renders it outside the page.
+
 Introduced in [[REQ-001]]; see [[architecture/adr-01-ui-layer-headless-css-modules|ADR-01]].
