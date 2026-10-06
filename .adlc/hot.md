@@ -7,6 +7,7 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] req-recovered | REQ-007-app-shell-home-s1 | back-filled from 3/cleared to merged (PR #20); archive move finished
 ## [2026-10-07] ship-gate-cleared | REQ-008-alumni-profile-page
 ## [2026-10-07] req-ready-to-merge | REQ-008-alumni-profile-page | alumni profile page at /alumni/:id, S3 designs, lazy route, Back link keeps the directory search
 ## [2026-10-07] lesson | L-REQ-008-1..6 — detail-page query/error state, heading focus, config handover, per-feature lazy ban, design line height vs stylelint, copies between lazy features
