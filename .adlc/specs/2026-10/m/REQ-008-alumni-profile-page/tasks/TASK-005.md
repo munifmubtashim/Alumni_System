@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-008 |
 | Tier | 1 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-001, TASK-002 |
 | Blocks | TASK-006 |
@@ -43,7 +43,18 @@ Timeline, text sections and Recent posts.
 
 ## Notes
 
+From TASK-002: text helpers return `string | undefined` (undefined = hide the line); `relativeTime` returns `''` for an invalid date, so hide the `<time>` then. From TASK-001: `getPostsByUser(userId: number)`.
+
 Do not show the email anywhere. The spec forbids invented content: no placeholder dates, no "Present".
+
+Implementation (2026-10-07):
+- `Timeline` takes `items: { id, title, detail? }[]` and `note?: string`. The note (Employment's `experience`) is a `<p>` after the `<ul>`, indented to line up with the entry text (custom properties `--timeline-dot-size`/`--timeline-gap` on the wrapper). It uses `--text-body-sm` in `--ink-secondary`, my reading of "the timeline's text style". Dots/lines carry `data-part` for tests and sit in an `aria-hidden` rail.
+- Education: university is the title, `educationLine` under it; with no university, `educationLine` becomes the title (spec table + assumption line 81).
+- Sections are `<section aria-labelledby>` with an `h2` (named regions). Heading margins: About 8/10px, others 10/14px (phone/desktop), as calc() of `--space-*`.
+- `RecentPosts({ userId: number })` calls `usePostsByUser` itself, so its states stay inside the section. 2 skeleton cards; error Alert "Posts didn't load" + Retry (`loading` while refetching); "No posts yet". `RECENT_POSTS_LIMIT = 5` is exported.
+- `usePostsByUser` uses `skipToken` rather than `enabled` (same effect, no non-null assertion; lint forbids `!`).
+- `PostCard` reuses `Card as="article"` and shares `RecentPosts.module.css` (task named no PostCard CSS). `<time dateTime>` gets an ISO string; the time and its " · " are hidden when the date is missing or invalid. The `.card` override of Card's padding/gap relies on Card's CSS loading first (it is in the main bundle via RouteError).
+- Type tokens (nearest, for TASK-008's difference list): headings `--text-heading-sm`; timeline title `--text-body-sm` at weight 600; detail `--text-caption` (phone) / `--text-label` (desktop) at weight 400; caption `--text-body-sm`; post meta `--text-caption` weight 400 in `--ink-muted`. Card radius `--radius-lg` (14 vs design 12). Dots `--accent`.
 
 ## Related
 

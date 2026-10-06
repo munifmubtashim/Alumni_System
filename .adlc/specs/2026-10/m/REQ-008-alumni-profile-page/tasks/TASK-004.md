@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-008 |
 | Tier | 0 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | — |
 | Blocks | TASK-006 |
@@ -31,13 +31,15 @@ Directory handover of search state.
 
 ## Acceptance
 
-- [ ] Garbage state (null, number, object without the key, non-string, `'x'`, `'?a#b'`) gives `/directory`; `'?q=ann&page=2'` is restored exactly; empty string gives `/directory`.
-- [ ] A card rendered at `/directory?q=ann` links with that state; existing href test still passes.
-- [ ] ESLint boundary tests for `config/` still pass.
+- [x] Garbage state (null, number, object without the key, non-string, `'x'`, `'?a#b'`) gives `/directory`; `'?q=ann&page=2'` is restored exactly; empty string gives `/directory`.
+- [x] A card rendered at `/directory?q=ann` links with that state; existing href test still passes.
+- [x] ESLint boundary tests for `config/` still pass.
 
 ## Notes
 
 Do not import anything from `features/profile`. The key name `directorySearch` lives only in this config file.
+
+Implemented 2026-10-07. `directoryReturnPath` narrows `unknown` with `'directorySearch' in state` (TS 4.9+ narrowing), so no cast. Extra rejected cases tested beyond the acceptance list: `undefined`, a bare string, `{ directorySearch: null }`, `'/admin'`. The AlumniCard handover test clicks the link into a stub `/alumni/:id` route that renders `directoryReturnPath(location.state)`, so it checks the state end to end through the config helper (the test may import `config/`). One full `npm test` run failed during parallel work by other tasks; a rerun gave 55 files / 777 tests passing.
 
 ## Related
 

@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-008 |
 | Tier | 0 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | — |
 | Blocks | TASK-006 |
@@ -29,13 +29,15 @@ Avatar lg size.
 
 ## Acceptance
 
-- [ ] `size="lg"` sets `data-size="lg"`; default is unchanged.
-- [ ] Stylelint passes (no raw colours; rem sizes as in the other sizes).
-- [ ] README lists the new size.
+- [x] `size="lg"` sets `data-size="lg"`; default is unchanged.
+- [x] Stylelint passes (no raw colours; rem sizes as in the other sizes).
+- [x] README lists the new size.
 
 ## Notes
 
 Phone shrinks it to 72px from the profile's own CSS (TASK-006) with a selector at least as specific as `[data-size='lg']`; this task only adds the size.
+
+Done 2026-10-07: `lg` = 5.25rem square, `font: var(--text-heading-lg)` (28px; S3 desktop initials). Test added for `data-size="lg"`; default md test unchanged. Prettier re-aligned the README table row. Full `npm test` was flaky under parallel load (5s timeouts in DirectoryPage/AppShell/Login/Register tests, files not touched here); a quiet rerun passed 55/55 files, 777 tests. Lint, stylelint, typecheck, format:check all clean.
 
 ## Related
 

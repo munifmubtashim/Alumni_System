@@ -41,3 +41,11 @@ The ui-reviewer at /review repeats this independently. Tokens differ from the de
 
 - Architecture: [[specs/2026-10/m/REQ-008-alumni-profile-page/architecture]]
 - Lessons checked: L-REQ-006-1/2/3, L-REQ-004-2, L-REQ-001-5
+
+### Fix pass (task-implementer, 2026-10-07)
+
+Measured list came from the orchestrator's browser comparison (D1-D5, P1-P5).
+
+- Done: D5 (`Section.module.css` `.trailingSpace`, 16px under Education from 48rem, used by `EducationSection.tsx`); P1 (About text and the experience note 13px on phone, 14px from 48rem; About line height stays `--text-body-sm-line` = 22px, the token nearest the design's 1.6 = 20.8px; headline was already 13px on phone); P2 (timeline title 13px/600 on phone); P3 (post caption 13px on phone; meta was already 12px); P5 (LinkedIn icon `display: none` below 48rem, decorative aria-hidden svg, never toggled by `hidden`, so G18 does not apply). P4 needed no change (h2 16px, name 20px already).
+- D4 checked from CSS, no change: dot 10px / margin-top 6px / gap 16px, line 1px `--border-subtle` with `margin: var(--space-1) 0`, 20px under every entry but the last (phone 9 / 5 / 14 / 14) all match S3; `Timeline.test.tsx` already covers the line on all but the last of 3 entries.
+- Not done, blocked: D1-D4 and P4 `line-height: normal`. Stylelint's declaration-strict-value rule rejects `normal` for `line-height` (not in `ignoreValues`; tested), and the config is outside this task's blast radius. Exact token matches exist for some (back link 16px = `--text-caption-line`, headline 18px = `--text-label-line`, timeline detail 16px = `--text-caption-line`) but not for h1 (30/34px) or h2 (20px). Needs a call: allow `normal` in `stylelint.config.js` (+ enforcement test + conventions), or borrow nearest line tokens, or accept as nearest-token.

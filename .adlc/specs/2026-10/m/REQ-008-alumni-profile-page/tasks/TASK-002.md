@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-008 |
 | Tier | 0 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | — |
 | Blocks | TASK-005, TASK-006 |
@@ -30,14 +30,21 @@ Pure formatting helpers.
 
 ## Acceptance
 
-- [ ] Each helper's missing-part cases give no stray separators.
-- [ ] `javascript:`, `data:`, relative and malformed LinkedIn values return undefined; `https://www.linkedin.com/in/x` passes.
-- [ ] Relative time tested with a fixed `now`: 30 s, 5 min, 3 h, 3 days, 2 weeks, 6 weeks (date), future, invalid.
-- [ ] Tests, typecheck, lint pass.
+- [x] Each helper's missing-part cases give no stray separators.
+- [x] `javascript:`, `data:`, relative and malformed LinkedIn values return undefined; `https://www.linkedin.com/in/x` passes.
+- [x] Relative time tested with a fixed `now`: 30 s, 5 min, 3 h, 3 days, 2 weeks, 6 weeks (date), future, invalid.
+- [x] Tests, typecheck, lint pass.
 
 ## Notes
 
 Do not import AlumniCard's private helpers; copy the 3-line `present`. Do not move shared code between features in this REQ.
+
+**Implementation notes (TASK-002):**
+- Helper inputs are `Pick<Alumni, ...>` so both the full profile (`Alumni`) and list items fit. All string helpers return `string | undefined` (undefined = hide the line).
+- `relativeTime(iso: string | Date, now?)`: under 1 min and any future time read "just now"; minutes/hours/days floor; weeks 1-5 ("5 weeks ago" at 35 days); 42+ days give `Intl.DateTimeFormat('en', { dateStyle: 'medium' })` in local time.
+- Deviation: an **invalid** date returns `''` (not "just now" and not a date, since there is no date to show). Callers should hide the time element when it is empty.
+- `safeLinkedInUrl` returns `url.href` (normalised, e.g. adds a trailing `/` to a bare host) and also rejects host-less URLs.
+- `commentCountText` treats NaN/negative as 0.
 
 ## Related
 
