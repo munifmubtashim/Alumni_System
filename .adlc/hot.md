@@ -16,6 +16,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 ## [2026-10-06] architect-gate-cleared | REQ-005-alumni-search-filters
 ## [2026-10-06] work-path-set | REQ-005-alumni-search-filters | worktree at .worktrees/REQ-005-alumni-search-filters
 ## [2026-10-06] spec-gate-cleared | REQ-005-alumni-search-filters
+## [2026-10-06] req-archived | REQ-004-alma-rebrand-auth-shell
+## [2026-10-06] req-merged | REQ-004-alma-rebrand-auth-shell | PR #17 into redesign (4164e070)
 ## [2026-05-13] req-merged | REQ-042 added Firestore composite indexes for query path
 ## [2026-05-13] lesson | L-REQ-012-1 — declare composite indexes before deploy
 ## [2026-05-12] adr-accepted | ADR-003 chose direct SignalR client over BFF translation
