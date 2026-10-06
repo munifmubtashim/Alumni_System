@@ -1,7 +1,7 @@
-import type { AlumniListResponse } from '@alumni/shared';
+import type { Alumni, AlumniListResponse, Post } from '@alumni/shared';
 import { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig } from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
-import { searchAlumni } from './alumniApi';
+import { getAlumniProfile, getPostsByUser, searchAlumni } from './alumniApi';
 import { httpClient } from './httpClient';
 
 const originalAdapter = httpClient.defaults.adapter;
@@ -111,5 +111,66 @@ describe('searchAlumni', () => {
 
     expect(error).toBeInstanceOf(AxiosError);
     expect((error as AxiosError).response?.status).toBe(400);
+  });
+});
+
+describe('getAlumniProfile', () => {
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+  });
+
+  const profile: Alumni = { id: 3, user_id: 7, name: 'Ada Lovelace', email: 'ada@example.com' };
+
+  it('gets /alumni/:id and returns the profile', async () => {
+    const sent = respondWith(profile);
+
+    await expect(getAlumniProfile('3')).resolves.toEqual(profile);
+
+    const config = sent();
+    expect(config.method).toBe('get');
+    expect(config.url).toBe('/alumni/3');
+  });
+
+  it('encodes an id with odd characters so it stays one path segment', async () => {
+    const sent = respondWith(profile);
+
+    await getAlumniProfile('1/../users?x=1#y z');
+
+    expect(sent().url).toBe('/alumni/1%2F..%2Fusers%3Fx%3D1%23y%20z');
+  });
+
+  it('rejects with the axios error on a 404', async () => {
+    failWith(404, { message: 'Alumni not found' });
+
+    const error: unknown = await getAlumniProfile('999').catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect((error as AxiosError).response?.status).toBe(404);
+  });
+});
+
+describe('getPostsByUser', () => {
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+  });
+
+  it('gets /posts/user/:userId and returns the list', async () => {
+    const posts: Post[] = [{ id: 11, user_id: 7, caption: 'Hello' }];
+    const sent = respondWith(posts);
+
+    await expect(getPostsByUser(7)).resolves.toEqual(posts);
+
+    const config = sent();
+    expect(config.method).toBe('get');
+    expect(config.url).toBe('/posts/user/7');
+  });
+
+  it('rejects with the axios error on a non-2xx answer', async () => {
+    failWith(500, { message: 'Something went wrong' });
+
+    const error: unknown = await getPostsByUser(7).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect((error as AxiosError).response?.status).toBe(500);
   });
 });
