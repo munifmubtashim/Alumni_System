@@ -57,7 +57,9 @@ packages/frontend/
     main.tsx          imports the font, tokens.css, global.css (in that order), renders <App/>
     app/              App, providers, router, QueryClient, RootLayout, AuthShell and AppShell layouts,
                       MainNav, BottomTabs, HydrateFallback, RouteError
-    config/           app-wide constants: brand.ts (BRAND_NAME, SUPPORT_EMAIL, supportMailto)
+    config/           app-wide constants and small pure contracts: brand.ts (BRAND_NAME, SUPPORT_EMAIL,
+                      supportMailto), directoryReturn.ts (DIRECTORY_PATH, profilePath, the directory-to-profile
+                      router-state handover)
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
                       directory/ and profile/ (lazy-loaded directory and alumni profile pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
@@ -116,6 +118,16 @@ REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists a
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
 - **Header:** after S1. `MainNav` (desktop) shows the Directory link to signed-in users only, marked current on `/directory` and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name, email, Log out) sit on the right.
+
+## Profile page
+
+REQ-008. `/alumni/:id` (signed in; every directory card links to it) shows one alumnus from `GET /api/alumni/:id` and their newest 5 posts from `GET /api/posts/user/:userId` (the profile's `user_id`), after the S3 designs.
+
+- **Sections:** header (avatar, name, "job title at company · Class of YYYY", LinkedIn link when it is an http(s) address), About, Education (university, department, class year), Employment (job title and company, then the free-text experience), Recent posts. A section with no data is not rendered. Location, the mentorship badge, degree, year ranges and job history are not shown: nothing stores them.
+- **States:** loading skeletons, "Profile not found" (unknown or malformed id: the API answers 404), error with Retry; posts have their own loading, error and empty states and never hide the profile. A failed background refetch keeps what is already shown.
+- **Back link:** "Back to directory" restores the search, filters and page the user left (the card passes `location.search` in router state; `config/directoryReturn.ts` owns the contract). A direct visit goes to plain `/directory`. On phones it shows as an arrow and "Profile" under the shell's top bar.
+- **Accessibility:** every state has an `h1` and a tab title; focus moves to the heading only when focus was on the page body or on something that disappeared.
+- More: `src/features/profile/README.md`.
 
 ## Forms
 
