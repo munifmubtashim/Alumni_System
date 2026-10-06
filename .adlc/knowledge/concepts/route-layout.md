@@ -12,7 +12,7 @@
 /  RootLayout  (SessionBridge, useApplyTheme; outer errorElement)
  ├─ AuthShell  (<main>, compact ThemeToggle top-right)
  │   └─ (inner errorElement) → GuestOnly → /login, /register
- └─ AppShell   (skip link, S1 header: Logo, MainNav (signed in), HeaderAuth, full ThemeToggle)
+ └─ AppShell   (skip link, S1 header: Logo, MainNav (signed in), compact ThemeToggle, HeaderAuth avatar menu; BottomTabs on phones)
      └─ (inner errorElement) → RequireAuth → / ; /directory (lazy + HydrateFallback) ; * ; createRoutes(testPages)
 ```
 

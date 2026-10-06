@@ -56,7 +56,7 @@ packages/frontend/
   src/
     main.tsx          imports the font, tokens.css, global.css (in that order), renders <App/>
     app/              App, providers, router, QueryClient, RootLayout, AuthShell and AppShell layouts,
-                      MainNav, HydrateFallback, RouteError
+                      MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants: brand.ts (BRAND_NAME, SUPPORT_EMAIL, supportMailto)
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
                       directory/ (lazy-loaded alumni directory page)
@@ -114,7 +114,7 @@ REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists a
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of the `directory` route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
-- **Header:** `MainNav` shows the Directory link to signed-in users only, marked current on `/directory` and below. On phones it wraps under the brand (no bottom tab bar yet).
+- **Header:** after S1. `MainNav` (desktop) shows the Directory link to signed-in users only, marked current on `/directory` and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name, email, Log out) sit on the right.
 
 ## Forms
 
@@ -132,7 +132,7 @@ ADR-04: no form library for now.
 - `Input` `error` prop: `aria-invalid`, error text linked by `aria-describedby`, error border.
 - `Button` `loading` prop: disabled, `aria-busy`, label kept, pulsing dot. `ButtonLink`: Button styles on a react-router `Link`.
 - `Alert`: `tone="error"` (`role="alert"`) or `"info"` (`role="status"`), optional title.
-- `Menu`, `MenuItem`, `MenuLabel`: Base UI Menu; keyboard support; no shadow.
+- `Menu`, `MenuItem`, `MenuLabel`, `MenuSeparator`: Base UI Menu (`label` names an icon-only trigger); keyboard support; no shadow.
 - `SegmentedControl<T>`: Base UI RadioGroup; `ThemeToggle` is a thin wrapper over it.
 
 ## Brand and primitives added in REQ-004

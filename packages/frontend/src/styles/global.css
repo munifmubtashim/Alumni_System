@@ -55,6 +55,14 @@ svg {
   outline-offset: 2px;
 }
 
+/* Phones: the sticky tab bar (about 4.5rem) must not hide a control that
+   scrolls into view on focus. */
+@media (width < 48rem) {
+  html {
+    scroll-padding-block-end: 5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

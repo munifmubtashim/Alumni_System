@@ -69,4 +69,10 @@ describe('initialsOf', () => {
   ])('%j -> %j', (name, expected) => {
     expect(initialsOf(name)).toBe(expected);
   });
+
+  it('has an xs size for the header account button', () => {
+    const { container } = render(<Avatar name="Sophia Marsh" size="xs" />);
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'xs');
+    expect(container.firstElementChild).toHaveTextContent(/^SM$/);
+  });
 });

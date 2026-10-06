@@ -58,12 +58,15 @@ describe('AuthShell', () => {
     expect(screen.getByRole('radio', { name: 'System' })).toBeInTheDocument();
   });
 
-  it('keeps the labelled toggle in the app header', () => {
+  it('uses the same icon-only toggle in the app header', () => {
     renderAt('/does-not-exist');
-    expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([
-      'Light',
-      'Dark',
-      'System',
-    ]);
+    const toggle = within(screen.getByRole('banner')).getByRole('radiogroup', { name: 'Theme' });
+    const radios = within(toggle).getAllByRole('radio');
+    // Same compact toggle as the login page: icons only, still named.
+    expect(radios.map((radio) => radio.textContent)).toEqual(['', '', '']);
+    expect(radios.map((radio) => radio.querySelectorAll('svg').length)).toEqual([1, 1, 1]);
+    for (const name of ['Light', 'Dark', 'System']) {
+      expect(within(toggle).getByRole('radio', { name })).toBeInTheDocument();
+    }
   });
 });

@@ -6,6 +6,9 @@
    The count spans swap by CSS class, not the hidden attribute (G18). */
 
 .page {
+  /* The shell no longer caps page width (REQ-007), so the page does. */
+  width: min(100%, 72rem);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);

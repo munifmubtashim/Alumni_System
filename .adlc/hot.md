@@ -7,6 +7,10 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-06] ship-gate-cleared | REQ-007-app-shell-home-s1
+## [2026-10-06] req-ready-to-merge | REQ-007-app-shell-home-s1 | S1 shell, avatar menu, phone tab bar, Home cards
+## [2026-10-06] task-plan-cleared | REQ-007-app-shell-home-s1
+## [2026-10-06] work-path-set | REQ-007-app-shell-home-s1 | branch feat/REQ-007-app-shell-home-s1
 ## [2026-10-06] ship-gate-cleared | REQ-005-alumni-search-filters
 ## [2026-10-06] req-ready-to-merge | REQ-005-alumni-search-filters | GET /api/alumni search, filters and paging → { items, total }
 ## [2026-10-06] lesson | L-REQ-005-1..2 — paged list endpoints, mocked SQL tests need one real run

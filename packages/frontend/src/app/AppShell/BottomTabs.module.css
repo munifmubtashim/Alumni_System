@@ -1,0 +1,45 @@
+/* Phone tab bar, after docs/design/screens/app/S1-Phone-*: raised surface,
+   hairline on top, equal-width tabs with a 20px icon over the label, secondary
+   ink (the design's ink-muted is under 4.5:1 at this size, as the system's
+   README notes for placeholders) with the current tab in the accent colour. Sticks to the bottom of the
+   shell. Nearest tokens: caption type (12px) for the design's 11px label;
+   the design's 10px bottom padding is space-2 + half a space-1.
+   Hidden from 48rem, where the header nav is shown instead. */
+
+.tabs {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  padding: var(--space-1) var(--space-2) calc(var(--space-2) + var(--space-1) / 2);
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+
+.tab svg {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+.active {
+  color: var(--accent);
+}
+
+@media (width >= 48rem) {
+  .tabs {
+    display: none;
+  }
+}

@@ -71,6 +71,12 @@
   font: var(--text-caption);
 }
 
+.separator {
+  block-size: 1px;
+  margin: var(--space-1) 0;
+  background: var(--border-subtle);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .trigger {
     transition: none;

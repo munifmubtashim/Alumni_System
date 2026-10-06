@@ -39,3 +39,4 @@ React 19 + Vite 8 + TypeScript 6 SPA, rebuilt from scratch in [[REQ-001]]. Since
 - [[REQ-002]] — login, sign-up, session, header user menu, signed-in home
 - [[REQ-004]] — Alma rebrand; full-page auth layout; RootLayout/AuthShell; config/ leaf; Logo, PasswordInput, compact ThemeToggle
 - [[REQ-006]] — alumni directory page (`/directory`), lazy route, `MainNav`, Avatar/Chip/Skeleton/SearchField/Popover/VisuallyHidden, `alumniApi`
+- [[REQ-007]] — S1 shell: `BottomTabs`, `navItems` (`NAV_ITEMS`), avatar menu in the header, compact ThemeToggle in the header, Menu `label` / `MenuSeparator`, Avatar `xs`, Home quick-link cards
