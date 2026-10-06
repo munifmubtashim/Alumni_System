@@ -1,0 +1,33 @@
+/* Auth page frame: full height, no header. The theme toggle sits in the
+   top-right corner, above the page; the page itself fills <main>. */
+
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.toggle {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 1;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (width >= 48rem) {
+  .toggle {
+    top: var(--space-5);
+    right: var(--space-5);
+  }
+}

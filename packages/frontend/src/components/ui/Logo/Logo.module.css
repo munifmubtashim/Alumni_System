@@ -1,0 +1,33 @@
+/* Design: docs/design/brand/alma-mark.svg. The file's hex fills are replaced
+   by tokens so the mark follows the theme. Mark sizes are literal layout sizes. */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: inherit;
+}
+
+.svg {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.logo[data-size='md'] .svg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.mark {
+  fill: var(--accent);
+}
+
+.glyph {
+  stroke: var(--accent-ink);
+}
+
+.wordmark {
+  font: var(--text-heading-sm);
+  color: inherit;
+}

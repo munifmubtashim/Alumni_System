@@ -17,6 +17,10 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-06] implement-gate-cleared | REQ-004-alma-rebrand-auth-shell | 2 revisions (full-page auth layout; toggle/inputs/forgot placement)
+## [2026-10-06] architect-gate-cleared | REQ-004-alma-rebrand-auth-shell
+## [2026-10-06] work-path-set | REQ-004-alma-rebrand-auth-shell | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-06] task-escalated-to-proceed | REQ-004-alma-rebrand-auth-shell | ~13 files across app/, features/auth, components/ui; design decisions taken
 ## [2026-10-06] req-archived | REQ-003-backend-route-auth
 ## [2026-10-06] req-merged | REQ-003-backend-route-auth | PR #16 into redesign (374891a9)
 ## [2026-10-06] ship-gate-cleared | REQ-003-backend-route-auth

@@ -163,7 +163,9 @@ describe('RegisterPage', () => {
     expect(year).toHaveAttribute('min', String(thisYear));
     expect(year).toHaveAttribute('max', String(thisYear + 8));
 
-    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(
+      screen.getAllByRole('button').filter((button) => button.getAttribute('type') === 'submit'),
+    ).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
   });
 
@@ -409,5 +411,36 @@ describe('RegisterPage', () => {
     release();
     expect(await screen.findByRole('heading', { name: 'Home page' })).toBeInTheDocument();
     expect(registerBodies).toHaveLength(1);
+  });
+
+  it('has a show/hide button on the password field and no forgot-password help', async () => {
+    const { user } = renderRegister();
+
+    await user.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(field('Password')).toHaveAttribute('type', 'text');
+    await user.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(field('Password')).toHaveAttribute('type', 'password');
+    expect(screen.queryByRole('button', { name: 'Forgot password?' })).not.toBeInTheDocument();
+  });
+
+  it('puts the log-in prompt right under the heading, and the brand panel beside the form', () => {
+    renderRegister();
+
+    const heading = screen.getByRole('heading', { level: 1, name: 'Sign up' });
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    const prompt = heading.nextElementSibling;
+    expect(prompt).toHaveTextContent('Already have an account? Log in');
+    expect(prompt).toContainElement(screen.getByRole('link', { name: 'Log in' }));
+    expect(
+      prompt?.compareDocumentPosition(screen.getByRole('radiogroup', { name: ROLE_LABEL })),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(screen.getByText('Stay connected with your alumni network.')).toBeInTheDocument();
+    expect(screen.getByText('© 2026 Alma')).toBeInTheDocument();
+  });
+
+  it('suggests a university address in the email field', () => {
+    renderRegister();
+    expect(field('Email')).toHaveAttribute('placeholder', 'you@university.edu');
   });
 });

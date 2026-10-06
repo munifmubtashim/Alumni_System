@@ -63,3 +63,33 @@
     transition: none;
   }
 }
+
+/* Icon-only segment (option.icon): square padding, no reserved label width.
+   The icon is decorative and sized in rem so it scales with zoom. */
+.iconOption {
+  padding: var(--space-1);
+}
+
+.iconOption::after {
+  content: none;
+}
+
+.iconOption svg {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+/* The icon option's name, shown on hover and focus. Flat like Menu: a raised
+   surface with a hairline border and no shadow. */
+.tooltipPositioner {
+  z-index: 10;
+}
+
+.tooltip {
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--ink-primary);
+  font: var(--text-caption);
+}

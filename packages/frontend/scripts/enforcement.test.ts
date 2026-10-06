@@ -156,6 +156,22 @@ const BOUNDARY_CASES: [layerDir: string, banned: string[]][] = [
     ],
   ],
   ['components', ['@/app/x', '../../app']],
+  ['components/ui', ['@/config/brand', '../../../config/brand', '../../../config', './config']],
+  [
+    'config',
+    [
+      '@/app/x',
+      '../../app',
+      '@/features/auth',
+      '../../features/auth',
+      '@/components/ui/Logo',
+      '../../components',
+      '@/store/themeAtom',
+      '../../store',
+      '@/services/x',
+      '../../services/x',
+    ],
+  ],
 ];
 
 describe('ESLint layer boundaries', () => {
@@ -178,6 +194,9 @@ describe('ESLint layer boundaries', () => {
     ['services', "import { t } from './authToken';"],
     ['store', "import { atom } from 'jotai';"],
     ['components', "import { Button } from '@/components/ui/Button';"],
+    ['config', "import { x } from './other';"],
+    ['features', "import { BRAND_NAME } from '@/config/brand';"],
+    ['app', "import { BRAND_NAME } from '@/config/brand';\nimport { x } from '../../config';"],
   ])('allows the permitted imports in src/%s', async (layer, imports) => {
     const code = `${imports}\nexport {};\n`;
     const messages = await eslintMessages(code, 'Ok.ts', `src/${layer}/__fixture__`);
@@ -193,6 +212,8 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
     ['components/ui', 'some-lib/services'],
     ['store', 'some-lib/features'],
     ['services', 'some-lib/components'],
+    ['config', 'some-lib/app'],
+    ['components/ui', 'some-lib/config'],
   ])('allows src/%s importing the package sub-path %s', async (layer, spec) => {
     const code = `import { x } from '${spec}';\nexport const y = x;\n`;
     const messages = await eslintMessages(code, 'Ok.ts', `src/${layer}/__fixture__`);

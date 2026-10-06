@@ -19,17 +19,45 @@
   color: var(--ink-secondary);
 }
 
+/* Holds the input and an optional end adornment. Full width with min-width 0,
+   so a field with an adornment is exactly as wide as one without. */
+.control {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ~40px tall: 16px text (no iOS zoom on focus) on the 22px body-sm line,
+   space-2 padding and a 1px border (architecture.md -> Revision 2; the
+   design's 41px has no token). */
 .input {
   font: var(--text-body);
+  line-height: var(--text-body-sm-line);
   color: var(--ink-primary);
   background: var(--surface-sunken);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-4);
   outline: none;
   transition:
     border-color var(--duration-fast) var(--easing-standard),
     background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* Room for the adornment (up to 2.5rem plus its inset), so text never runs under it. */
+.withAdornment {
+  padding-inline-end: var(--space-7);
+}
+
+/* Sits over the input's end edge, vertically centred. */
+.adornment {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--space-1);
+  display: flex;
+  align-items: center;
 }
 
 .input::placeholder {

@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-The Alumni Network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the brand name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages, and a signed-in Home page, on top of the design system. Feed and profiles come in later REQs.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), and a signed-in Home page, on top of the design system. Feed and profiles come in later REQs.
 
 ## Stack
 
@@ -50,14 +50,16 @@ API calls use relative paths under `/api` (the axios instance has `baseURL: '/ap
 
 ```
 packages/frontend/
-  index.html          inline no-flash theme script, then /src/main.tsx
+  index.html          <title>Alma</title>, inline no-flash theme script, then /src/main.tsx
+  public/             favicon.svg (copied from docs/design/brand/; the one raw-hex design asset)
   scripts/            generate-tokens.ts (+ test), enforcement.test.ts (lint rules self-test)
   src/
     main.tsx          imports the font, tokens.css, global.css (in that order), renders <App/>
-    app/              App, providers, router, QueryClient, AppShell layout, RouteError
+    app/              App, providers, router, QueryClient, RootLayout, AuthShell and AppShell layouts, RouteError
+    config/           app-wide constants: brand.ts (BRAND_NAME, SUPPORT_EMAIL, supportMailto)
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/
-    components/ui/    design-system primitives: Button, ButtonLink, Input, Card, Tag, Alert,
-                      Menu, SegmentedControl, ThemeToggle
+    components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
+                      Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
     services/         httpClient (axios), authToken (token in localStorage), authApi
     styles/           tokens.css (generated), global.css, contrast test
@@ -65,30 +67,31 @@ packages/frontend/
 ```
 
 Each folder's README says what belongs there and what may import it:
-[app](src/app/README.md) · [features](src/features/README.md) · [components/ui](src/components/ui/README.md) · [store](src/store/README.md) · [services](src/services/README.md) · [styles](src/styles/README.md) · [test](src/test/README.md)
+[app](src/app/README.md) · [config](src/config/README.md) · [features](src/features/README.md) · [components/ui](src/components/ui/README.md) · [store](src/store/README.md) · [services](src/services/README.md) · [styles](src/styles/README.md) · [test](src/test/README.md)
 
 **Path alias:** `@/` means `src/` (`import { Button } from '@/components/ui/Button'`). It is declared in `tsconfig.app.json` (`paths`) and in `vite.config.ts` (`resolve.alias`); Vitest reads the Vite config, so the editor, typecheck, build and tests all agree.
 
 **Import boundaries** (enforced by ESLint for both `@/…` and relative paths):
 
-- `components/ui/` must not import `services/`, `store/`, `features/`, `app/`, `axios` or `@tanstack/react-query`. Primitives are props in, events out.
+- `components/ui/` must not import `services/`, `store/`, `features/`, `config/`, `app/`, `axios` or `@tanstack/react-query`. Primitives are props in, events out (the brand name reaches `Logo` as a prop).
 - `services/` must not import React, `components/`, `store/`, `features/` or `app/`. Services return data to the caller.
 - `store/` must not import `services/`, `features/` or `app/`. Features wire atoms to services.
+- `config/` is a leaf: it must not import `app/`, `features/`, `components/`, `store/` or `services/`. `app/` and `features/` read it.
 - Nothing in `features/`, `store/`, `services/` or `components/` may import `app/` (in practice only `main.tsx` does). Test files (`*.test.ts(x)`) are exempt from this one ban only, so tests may import `app/` providers to render a component.
 
 **Server state vs client state (ADR-02):** data from the API goes through TanStack Query, using the shared `QueryClient` from `app/queryClient.ts` (30 s stale time, no refetch on window focus, up to 2 retries but never on a 4xx). Jotai atoms in `store/` hold client-only state. The auth token lives only in `services/authToken.ts` (`localStorage['token']`), never in an atom; `httpClient` adds `Authorization: Bearer <token>` in its one request interceptor, so call sites never build auth headers.
 
-**Route errors:** the router has two `errorElement` layers. The outer one, on the `/` layout route, catches a crash in the shell itself (the header is gone). The inner one, on a pathless child route, catches page errors and shows `RouteError` inside the shell, with the header still there.
+**Route errors:** the router has two `errorElement` layers on each branch. The outer one, on the `/` root layout, catches a crash in a shell itself (the shell is gone). The inner one, on a pathless child route inside each shell (`AuthShell`, `AppShell`), catches page errors and shows `RouteError` inside that shell's `<main>`.
 
 ## Auth and session
 
 ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log out, and get sent to `/login` with a notice when the session ends.
 
-- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home). An unknown path shows the empty shell.
+- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home). An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
 - **Endpoints:** `services/authApi.ts` has `login`, `register` and `getMe` (`GET /me`). They only return data.
 - **Token store:** `services/authToken.ts` keeps the token in `localStorage['token']`. `subscribe(listener)` fires on `setToken`/`clearToken` and on another tab's change. `isTokenExpired(token)` decodes the JWT `exp` (10 s leeway; a malformed token counts as expired). `getLiveToken()` returns the token only if it is present and not expired, with no side effects. `features/auth` reads it with `useLiveToken()` / `useHasSession()` (`useSyncExternalStore`).
 - **401s:** `httpClient` has one response interceptor. On a 401 from a request that carried a token (not `/auth/login` or `/auth/register`), it calls the handler registered with `setUnauthorizedHandler(fn)`, passing that request's token, then re-throws. `services/` never imports app or feature code.
-- **SessionBridge** (`features/auth/SessionBridge.tsx`, mounted once in `AppShell`, renders nothing):
+- **SessionBridge** (`features/auth/SessionBridge.tsx`, mounted once in `app/RootLayout`, above both shells, renders nothing):
   1. on load, silently drops a stored token that has expired;
   2. registers the 401 handler, which acts only if the failed request's token is still the current one (so a burst of 401s, or a late 401 after logout, causes one redirect at most): clear the token, set `sessionNoticeAtom` to `'expired'`, go to `/login` with `state.from`;
   3. clears the whole query cache whenever the token changes (login, logout, another tab), so no previous user's data is shown.
@@ -119,6 +122,14 @@ ADR-04: no form library for now.
 - `Menu`, `MenuItem`, `MenuLabel`: Base UI Menu; keyboard support; no shadow.
 - `SegmentedControl<T>`: Base UI RadioGroup; `ThemeToggle` is a thin wrapper over it.
 
+## Brand and primitives added in REQ-004
+
+- The product is **Alma**. The name, support email and `supportMailto(subject)` live in `src/config/brand.ts`; nothing else in `src/` hardcodes them (`index.html`'s `<title>` is static text).
+- `Logo`: inline-SVG mark coloured by tokens, with optional wordmark. Props `label`, `showWordmark`, `decorative`, `size`. The header shows it as a link home.
+- `PasswordInput`: `Input` with a show/hide button whose `aria-label` flips; focus stays in the field.
+- `Input` gained `endAdornment` (a control inside the field's end edge).
+- Auth pages share `features/auth/AuthLayout`: a brand panel on `--surface-sunken` beside the form card from 60rem up, hidden below. "Forgot password?" on log-in (`ForgotPasswordHelp`) shows a message with a mailto link to support; there is no reset flow yet.
+
 ## Design tokens
 
 `docs/design/design-system/tokens.json` is the single source for colors, spacing, type, radii and motion (`--duration-fast`, `--easing-standard`). `scripts/generate-tokens.ts` turns it into `src/styles/tokens.css`: CSS custom properties for both themes.
@@ -134,6 +145,8 @@ To change a token:
 3. Run `npm test`. `scripts/generate-tokens.test.ts` fails if `tokens.css` is stale, and `src/styles/contrast.test.ts` fails if a text/background pair drops below WCAG contrast.
 
 Never edit `tokens.css` by hand. `npm run tokens:check` and the test both catch it.
+
+`public/favicon.svg` is the one design asset with raw hex colors: the browser draws it outside the page, so it can't read CSS variables. It is copied as-is from `docs/design/brand/favicon.svg` and sits outside the linted `src/`.
 
 The light accent was darkened at the architecture gate (`accent` `#975c43`, `accent-strong` `#7a4734`) so button labels and links reach 4.5:1. One recorded exception: the Input's resting border (`border-strong`, against both its `surface-sunken` fill and `surface-page`) is below 3:1 in both themes; the label and the sunken fill mark the field. The contrast test pins both pairs at their recorded ratios, fails if either gets worse, and fails if a pair ever starts passing, so the exception gets removed.
 
