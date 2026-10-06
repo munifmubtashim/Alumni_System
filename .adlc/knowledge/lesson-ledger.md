@@ -42,3 +42,9 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-006-2 | A list that swaps to skeletons on every query change strands keyboard focus | frontend, accessibility, focus, pagination | trap | REQ-006 |
 | LESSON-REQ-006-3 | A client copy of an API's validation limits needs a pointer to its source | frontend, backend, validation, api | guideline | REQ-006 |
 | LESSON-REQ-007-1 | A sticky bottom bar needs a matching scroll-padding, or focus lands behind it | frontend, accessibility, focus, layout, phone | guideline | REQ-007 |
+| LESSON-REQ-008-1 | A detail page keys its query by the route id and shows the error view only when it has no data | frontend, tanstack-query, detail-page, routing | trap | REQ-008 |
+| LESSON-REQ-008-2 | Move focus to a page heading only when focus is on the body or on a node that left the page | frontend, accessibility, focus, routing | trap | REQ-008 |
+| LESSON-REQ-008-3 | Hand state between two lazy features through one config/ contract that validates on read, and test it by clicking through | frontend, routing, router-state, config, adr | guideline | REQ-008 |
+| LESSON-REQ-008-4 | Give each lazy feature its own import ban and guard check, each exempting only its own folder | frontend, eslint, lazy-routes, adr | guideline | REQ-008 |
+| LESSON-REQ-008-5 | Decide at architect time how to match a design that uses the browser default line height | frontend, design-system, stylelint, tokens | guideline | REQ-008 |
+| LESSON-REQ-008-6 | Helpers copied between lazy features need a decided shared home and a tracked follow-up, not a code comment | frontend, lazy-routes, duplication, tests | guideline | REQ-008 |

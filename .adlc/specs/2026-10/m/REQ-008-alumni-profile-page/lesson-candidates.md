@@ -140,3 +140,38 @@
 **Claim:** Move focus to a page heading only when focus is on the body or on a node that left the DOM, so a control the user tabbed to keeps it.
 **Saw it in:** `packages/frontend/src/features/profile/ProfilePage.tsx` (the `useEffect` focus guard), test "leaves focus on the Back link"
 **Context:** Refines L-REQ-006-2: an unconditional heading focus stole focus from the Back link while loading.
+
+## Candidate verdicts
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g28 |
+| CAND-002 | demote-to-gotcha | ^g29 |
+| CAND-003 | promote | LESSON-REQ-008-3 |
+| CAND-004 | demote-to-gotcha | ^g29 |
+| CAND-005 | demote-to-gotcha | ^g28 |
+| CAND-006 | demote-to-gotcha | ^g30 |
+| CAND-007 | demote-to-gotcha | ^g29 |
+| CAND-008 | demote-to-gotcha | ^g29 |
+| CAND-009 | demote-to-gotcha | ^g30 |
+| CAND-010 | promote | LESSON-REQ-008-2 |
+| CAND-011 | demote-to-gotcha | ^g28 |
+| CAND-012 | promote | LESSON-REQ-008-4 |
+| CAND-013 | demote-to-gotcha | ^g29 |
+| CAND-014 | demote-to-gotcha | ^g29 |
+| CAND-015 | promote | LESSON-REQ-008-5 (also ^g28) |
+| CAND-016 | promote | LESSON-REQ-008-3 (ADR-06 amendment is at the gate) |
+| CAND-017 | promote | LESSON-REQ-008-4 |
+| CAND-018 | promote | LESSON-REQ-008-1 |
+| CAND-019 | promote | LESSON-REQ-008-2 |
+| CAND-020 | promote | LESSON-REQ-008-6 |
+| CAND-021 | promote | LESSON-REQ-008-6 |
+| CAND-022 | promote | LESSON-REQ-008-6 |
+| CAND-023 | promote | LESSON-REQ-008-1 |
+| CAND-024 | promote | LESSON-REQ-008-1 |
+| CAND-025 | promote | LESSON-REQ-008-6 |
+| CAND-026 | promote | concept detail-page-pattern (title element) |
+| CAND-027 | promote | LESSON-REQ-008-3 |
+| CAND-028 | promote | LESSON-REQ-008-2 |
+
+Dedup basis: origin/redesign as of 5 hours ago (30 lessons, none matching). Merged candidates fold into one lesson each (28 candidates → 6 lessons, 3 gotchas, 1 concept).

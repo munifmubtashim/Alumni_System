@@ -29,7 +29,7 @@ Full reviewer narratives: `review-log.md` — not loaded by later phases; open o
 | m4 | minor | Posts error alert narrower than the cards (UI-001) | resolved, round 2 |
 | m5 | minor | "Loading posts…" status inside an aria-busy region (REFL-004) | resolved, round 2 |
 | m6 | minor | Hard-coded `/directory` and inline `/alumni/<id>`; now `DIRECTORY_PATH` and `profilePath` (ARCH-002, QUAL-004) | resolved, round 2 |
-| m7 | minor | ADR-06, CLAUDE.md:85, frontend README:60 still say `config/` is "constants only" (ARCH-001, REFL-002) | open, your call |
+| m7 | minor | ADR-06, CLAUDE.md:85, frontend README:60 still say `config/` is "constants only" (ARCH-001, REFL-002) | resolved at /wrapup (ADR-06 amended; README and CLAUDE.md lines fixed) |
 | m8 | minor | `present()` copied into profile and directory; no shared home for helpers both lazy features may use (QUAL-002, REFL-003) | open, your call |
 | m9 | minor | Fake-login test helper copied into 8 test files, G26 (QUAL-001) | open, your call |
 | m10 | minor | Error + Retry block repeated in 3 places (QUAL-003) | open, your call |
