@@ -75,3 +75,68 @@
 **Claim:** `line-height: normal` fails our Stylelint (strict-value; `normal` is not an allowed keyword) — decide at architect time how to match designs that use the browser default line height.
 **Saw it in:** `packages/frontend/stylelint.config.js:41`
 **Context:** S3 designs set no line-height, so their text boxes are shorter than our type tokens; TASK-008 could not apply `normal`.
+
+## CAND-016 [review-arch]
+**Claim:** When a leaf layer's ADR says "constants only", amend the ADR in the same REQ that adds logic to it.
+**Saw it in:** `packages/frontend/src/config/directoryReturn.ts:1`
+**Context:** README and ADR-08 were updated, ADR-06 was not.
+
+## CAND-017 [review-arch]
+**Claim:** Per-feature lazy-import bans: one ESLint block per region of src/, each with the full ban list, since rule options do not merge.
+**Saw it in:** `packages/frontend/eslint.config.js:97`
+**Context:** `lazyFeatureBoundaries()` generates non-overlapping blocks; worth codifying as the pattern for a third lazy feature.
+
+## CAND-018 [review-corr]
+**Claim:** Gate error views on `isError && data === undefined`; TanStack v5 keeps old data with status `error` after a failed refetch.
+**Saw it in:** `packages/frontend/src/features/profile/ProfilePage.tsx:30`
+**Context:** Cached profile is replaced by the error page when a stale refetch fails.
+
+## CAND-019 [review-corr]
+**Claim:** Auto-focus on state change must check where focus currently is, or it steals it from a user who already tabbed elsewhere.
+**Saw it in:** `packages/frontend/src/features/profile/ProfilePage.tsx:35`
+**Context:** Focus effect keyed on `[id, view]` fires when loading becomes profile.
+
+## CAND-020 [review-qual]
+**Claim:** Give lazy features a shared leaf for pure helpers (like present()), since they may not import each other.
+**Saw it in:** `packages/frontend/src/features/profile/format.ts:4` (and `features/directory/AlumniCard.tsx:13`)
+**Context:** ADR-08 bans cross-lazy imports, so each copied the same helper.
+
+## CAND-021 [review-qual]
+**Claim:** A test helper copied "because the shared one is a follow-up" needs a tracked task, not a code comment.
+**Saw it in:** `packages/frontend/src/features/profile/ProfilePage.test.tsx:23`
+**Context:** Token builder now in 8 files; the QUAL-002 follow-up lives only in a comment.
+
+## CAND-022 [review-qual]
+**Claim:** Extract a shared error-plus-Retry block once a third page repeats it.
+**Saw it in:** `packages/frontend/src/features/profile/RecentPosts.module.css:36`
+**Context:** Directory, profile states and posts each define the same .error/.retry CSS.
+
+## CAND-023 [review-reflect]
+**Claim:** Encode ids that come from the URL (`encodeURIComponent`) before putting them in an API path; a stray `/` or `?` must not change which endpoint is called.
+**Saw it in:** `packages/frontend/src/services/alumniApi.ts:48`
+**Context:** `getAlumniProfile(id)` takes a raw route param; `getPostsByUser` takes a number and only needs `String()` (CAND-001).
+
+## CAND-024 [review-reflect]
+**Claim:** Key a detail query by the route id and set no `placeholderData`, so a new id shows loading, never the previous person.
+**Saw it in:** `packages/frontend/src/features/profile/useAlumniProfile.ts:12`
+**Context:** Same family as L-REQ-006-2; the profile also re-focuses its h1 per state (CAND-010).
+
+## CAND-025 [review-reflect]
+**Claim:** Decide where pure helpers shared by two lazy features live (`config/` per its README, or a new folder), since neither may import the other.
+**Saw it in:** `packages/frontend/src/features/profile/format.ts:3` and `features/directory/AlumniCard.tsx:17`
+**Context:** `present()` was copied; the feed REQ will copy it a third time without a stated home (REFL-003).
+
+## CAND-026 [review-reflect]
+**Claim:** Set the tab title with a React 19 `<title>` element inside each page state (loaded, loading, not found, error) rather than a `document.title` effect.
+**Saw it in:** `packages/frontend/src/features/profile/ProfileHeader.tsx:334`, `ProfileStates.tsx:477`
+**Context:** First use in the app; no vault page records the pattern or its test approach.
+
+## CAND-027 [review-reflect]
+**Claim:** Validate router state on read (`unknown` in, string-and-prefix checks out) and let one `config/` file own the key name for a handover between features.
+**Saw it in:** `packages/frontend/src/config/directoryReturn.ts:30`
+**Context:** Tampered or missing `location.state` falls back to the plain directory; extends L-REQ-006-1 and ADR-08's amendment into a reusable pattern.
+
+## CAND-028 [review-reflect]
+**Claim:** Move focus to a page heading only when focus is on the body or on a node that left the DOM, so a control the user tabbed to keeps it.
+**Saw it in:** `packages/frontend/src/features/profile/ProfilePage.tsx` (the `useEffect` focus guard), test "leaves focus on the Back link"
+**Context:** Refines L-REQ-006-2: an unconditional heading focus stole focus from the Back link while loading.
