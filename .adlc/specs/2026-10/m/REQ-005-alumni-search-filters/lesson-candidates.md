@@ -89,3 +89,27 @@
 **Claim:** When a REQ deletes a Manager method, also sweep `TestManager.ts`; its commented calls survive grep-based acceptance checks (G-style note).
 **Saw it in:** `packages/backend/src/businessLogic/src/TestManager.ts:55` (already removed in this diff)
 **Context:** Duplicates CAND-003 from implement; merge. Also note lesson-candidates.md has two entries numbered CAND-001 (implement-task, same BaseDTO topic): dedupe at wrapup.
+
+## Candidate verdicts
+
+Dedup basis: lessons on `origin/redesign` (merged into this branch at 8a681aee, which includes REQ-004's L-REQ-004-1..3); no REQ-005 lessons exist there.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 (both) | demote-to-gotcha | ^g22 (baseDTO casing) |
+| CAND-002 | demote-to-gotcha | added to ^g13 (two-query mocks) |
+| CAND-003 | demote-to-gotcha | ^g24 (TestManager sweep) |
+| CAND-901 | demote-to-gotcha | ^g23 (NUL → 400) |
+| CAND-902 | demote-to-gotcha | ^g21 (LIKE escaping) |
+| CAND-004 [qual] | discard | general habit; fixed in code (m2, m3) |
+| CAND-005 [qual] | demote-to-gotcha | merged into ^g13 |
+| CAND-006 [qual] | discard | done in code (`AlumniListRow`) |
+| CAND-007 [arch] | promote | merged into LESSON-REQ-005-1; conventions.md says when to extract |
+| CAND-008 [arch] | discard | now the code's shape (dal/dto/) |
+| CAND-009 [arch] | promote | merged into LESSON-REQ-005-1 |
+| CAND-010 [arch] | demote-to-gotcha | merged into ^g22 |
+| CAND-004 [reflect] | demote-to-gotcha | merged into ^g21 |
+| CAND-005 [reflect] | promote | LESSON-REQ-005-2 |
+| CAND-006 [reflect] | demote-to-gotcha | added to ^g15 (column types) |
+| CAND-007 [reflect] | promote | merged into LESSON-REQ-005-1 |
+| CAND-008 [reflect] | demote-to-gotcha | duplicate of CAND-003 → ^g24 |
