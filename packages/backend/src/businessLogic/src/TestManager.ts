@@ -52,7 +52,6 @@ import { UserManager } from "./UserManager";
 // //   "https://linkedin.com/in/alumni",
 // // );
 // // alumniManager.createAlumni(alumni);
-// alumniManager.getAllAlumni();
 // // alumniManager.findAlumniById(1);
 // // alumniManager.updateAlumni(1, { department: "Software Engineering" });
 

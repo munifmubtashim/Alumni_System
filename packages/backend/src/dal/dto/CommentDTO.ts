@@ -1,4 +1,4 @@
-import type  { BaseDTO } from "./BaseDTO";
+import type  { BaseDTO } from "./baseDTO";
 
 export class CommentDTO implements BaseDTO {
     id!: number;

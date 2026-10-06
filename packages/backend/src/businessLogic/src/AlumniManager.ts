@@ -1,6 +1,6 @@
 import { AlumniDTO, AlumniQuery } from "@alumni/dal";
 import { AppError, isUniqueViolation } from "./errors.js";
-import { requireId, validateAlumniFields } from "./validation.js";
+import { parseAlumniSearch, requireId, validateAlumniFields } from "./validation.js";
 
 export class AlumniManager {
   alumniQuery: AlumniQuery;
@@ -17,7 +17,8 @@ export class AlumniManager {
     const alumni = new AlumniDTO(
       userId,
       f.department,
-      f.graduation_year,
+      // validateAlumniFields returns the year as text; the column is INTEGER, so pass a number.
+      f.graduation_year === undefined ? undefined : Number(f.graduation_year),
       f.current_company,
       f.job_title,
       f.experience,
@@ -51,8 +52,9 @@ export class AlumniManager {
     return this.alumniQuery.updateAlumni(id, validateAlumniFields(body));
   }
 
-  public async getAllAlumni() {
-    const allAlumni = await this.alumniQuery.getAllAlumni();
-    return allAlumni;
+  // GET /api/alumni: validates the raw query string first (AppError 400), so bad input never reaches SQL.
+  public async searchAlumni(query: Record<string, unknown>) {
+    const { filters, page, pageSize } = parseAlumniSearch(query);
+    return this.alumniQuery.searchAlumni(filters, { limit: pageSize, offset: (page - 1) * pageSize });
   }
 }

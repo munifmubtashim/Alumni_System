@@ -1,5 +1,6 @@
 export { PostDTO } from "./dto/PostDTO"
 export { AlumniDTO } from "./dto/AlumniDTO"
+export type { AlumniSearchFilters, AlumniPaging, AlumniListRow, AlumniListPage } from "./dto/AlumniSearchDTO"
 export { UserDTO } from "./dto/UserDTO"
 export { CommentDTO } from "./dto/CommentDTO"
 export { UserQuery } from "./query/UserQuery"

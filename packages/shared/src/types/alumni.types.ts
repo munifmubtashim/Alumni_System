@@ -3,7 +3,7 @@ import type { User } from "./user.types";
 export interface Alumni {
   id: number;
   user_id: number;
-  graduation_year?: string;
+  graduation_year?: number | null; // INTEGER column; null when not set
   department?: string;
   current_company?: string;
   job_title?: string;
@@ -17,6 +17,16 @@ export interface Alumni {
   email?: string;
   photo_url?: string;
   university?: string;
+}
+
+// One row of GET /api/alumni: the profile plus the joined public user columns (never email).
+export type AlumniListItem = Omit<Alumni, "email">;
+
+// GET /api/alumni?q=&department=&university=&graduationYear=&page=&pageSize=
+// page defaults to 1 (max 10000), pageSize to 20 (max 100). total counts every match, not just this page.
+export interface AlumniListResponse {
+  items: AlumniListItem[];
+  total: number;
 }
 
 // GET/PUT /api/me: the caller's account plus their alumni or students row, if they have one.

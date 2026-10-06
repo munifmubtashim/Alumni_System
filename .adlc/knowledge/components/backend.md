@@ -4,7 +4,7 @@
 |---|---|
 | Path | `packages/backend` (`src/api`, `src/businessLogic`, `src/dal`) |
 | Owner | munifmubtashim |
-| Status | current as of REQ-003 (2026-10-06) |
+| Status | current as of REQ-005 (2026-10-06) |
 
 Express 4 + Postgres API in three npm workspaces that form one pipeline: routes → controllers (`@alumni/api`) → `*Manager` (`@alumni/businesslogic`, consumed from its compiled `dist/`) → `*Query` (`@alumni/dal`, raw parameterized `pg`). Since [[REQ-003]], every route except login, register and health needs a token, and the backend has its own test suite.
 
@@ -14,6 +14,8 @@ Express 4 + Postgres API in three npm workspaces that form one pipeline: routes 
 - `src/businessLogic/src/` — one `*Manager` per domain. Ownership lives here: `PostManager`/`CommentManager` are owner-or-admin; `updateOwnUser`/`updateOwnAlumni` are owner-only. `UserManager` owns hashing and the login check (`verifyLogin`). `validation.ts` (`requireId` → 404 for bad ids, [[knowledge/gotchas#^g14|G14]]) and `errors.ts` (`AppError`, `isUniqueViolation`, `isForeignKeyViolation`). Rebuild with `tsc` before trusting the running API.
 - `src/dal/` — `config/db.ts` (one `pg.Pool`; connection check at import time), `query/*Query.ts` (all SQL; user reads select `PUBLIC_USER_COLUMNS`, never the password, except `findUserByEmail` for login), `dto/`.
 - Tests ([[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]]): `vitest.config.ts` (aliases `@alumni/businesslogic` to source), `src/test/setup.ts` (pool mock, [[knowledge/gotchas#^g13|G13]]), `src/test/expectAppError.ts`, `src/api/test/{authHelpers,routeList}.ts`, `routes/routeGuard.test.ts` (fails on any unprotected route). `npm test` and `npm run typecheck` (includes tests via `tsconfig.test.json`) inside `packages/backend`; `test:backend` / `typecheck:backend` from the root.
+
+- **Lists (REQ-005):** `GET /api/alumni` takes `q`, `department`, `university`, `graduationYear`, `page`, `pageSize` and answers `{ items, total }`. `parseAlumniSearch` (validation.ts) checks single values and limits → `AppError(400)`; `AlumniQuery.searchAlumni` builds its WHERE from fixed fragments with bound params, escapes LIKE input with `escapeLike` ([[knowledge/gotchas#^g21|G21]]), orders by name then id, and counts with a separate query ([[knowledge/lessons/LESSON-REQ-005-1-paged-list-endpoints|L-REQ-005-1]]). Search types live in `dal/dto/AlumniSearchDTO.ts`.
 
 ## Decisions and rules
 
@@ -25,8 +27,9 @@ Express 4 + Postgres API in three npm workspaces that form one pipeline: routes 
 
 ## Gotchas
 
-[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes
+[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes · [[knowledge/gotchas#^g21|G21]] LIKE escaping · [[knowledge/gotchas#^g22|G22]] baseDTO casing · [[knowledge/gotchas#^g23|G23]] NUL → 400 · [[knowledge/gotchas#^g24|G24]] TestManager sweep
 
 ## Touched by
 
 - [[REQ-003]] — auth on every non-public route, post ownership, partial post update, shared sendError, first backend test suite (ADR-05)
+- [[REQ-005]] — search, filters and paging for `GET /api/alumni`; NUL check in `optionalText`; `graduation_year` typed as a number on list types

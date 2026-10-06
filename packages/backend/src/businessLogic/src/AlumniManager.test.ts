@@ -11,7 +11,7 @@ vi.mock('@alumni/dal', async (importOriginal) => {
     this.createAlumni = vi.fn();
     this.findAlumniById = vi.fn();
     this.updateAlumni = vi.fn();
-    this.getAllAlumni = vi.fn();
+    this.searchAlumni = vi.fn();
   }) };
 });
 
@@ -33,7 +33,7 @@ describe('AlumniManager.createAlumni (POST /api/alumni)', () => {
     const row = query.createAlumni.mock.calls[0][0];
     expect(row.user_id).toBe(42);
     expect(row.department).toBe('CSE');
-    expect(row.graduation_year).toBe('2020');
+    expect(row.graduation_year).toBe(2020);
   });
 
   it('returns 409 when the user already has a profile, without inserting', async () => {
@@ -142,11 +142,42 @@ describe('AlumniManager.updateOwnAlumni (PUT /api/alumni/:id): owner only', () =
   });
 });
 
-describe('AlumniManager.getAllAlumni (GET /api/alumni)', () => {
-  it('returns the query rows as they are', async () => {
-    const manager = new AlumniManager();
-    const rows = [{ id: 1 }, { id: 2 }];
-    (manager.alumniQuery as unknown as { getAllAlumni: ReturnType<typeof vi.fn> }).getAllAlumni.mockResolvedValue(rows);
-    await expect(manager.getAllAlumni()).resolves.toBe(rows);
+describe('AlumniManager.searchAlumni (GET /api/alumni)', () => {
+  let manager: AlumniManager;
+  let searchAlumni: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    manager = new AlumniManager();
+    searchAlumni = (manager.alumniQuery as unknown as { searchAlumni: ReturnType<typeof vi.fn> }).searchAlumni;
+  });
+
+  it('returns the query page as it is', async () => {
+    const page = { items: [{ id: 1 }], total: 1 };
+    searchAlumni.mockResolvedValue(page);
+    await expect(manager.searchAlumni({})).resolves.toBe(page);
+  });
+
+  it('no paging params → limit 20, offset 0', async () => {
+    searchAlumni.mockResolvedValue({ items: [], total: 0 });
+    await manager.searchAlumni({});
+    expect(searchAlumni).toHaveBeenCalledWith({}, { limit: 20, offset: 0 });
+  });
+
+  it('page 3, pageSize 10 → offset 20; filters are passed validated', async () => {
+    searchAlumni.mockResolvedValue({ items: [], total: 0 });
+    await manager.searchAlumni({ q: ' Ana ', department: 'CSE', graduationYear: '2020', page: '3', pageSize: '10' });
+    expect(searchAlumni).toHaveBeenCalledWith(
+      { q: 'Ana', department: 'CSE', graduationYear: 2020 },
+      { limit: 10, offset: 20 },
+    );
+  });
+
+  it.each([
+    ['pageSize over 100', { pageSize: '101' }],
+    ['page not a number', { page: 'abc' }],
+    ['q repeated', { q: ['a', 'b'] }],
+  ])('%s → 400 without calling the query', async (_label, query) => {
+    await expectAppError(manager.searchAlumni(query), 400);
+    expect(searchAlumni).not.toHaveBeenCalled();
   });
 });

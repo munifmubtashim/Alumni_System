@@ -14,10 +14,10 @@ export const createAlumni = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllAlumni = async (req: Request, res: Response) => {
+// Searched, filtered, paged directory list: 200 { items, total }. Bad query input is a 400.
+export const searchAlumni = async (req: Request, res: Response) => {
   try {
-    const alumni = await alumniManager.getAllAlumni();
-    res.status(200).json(alumni);
+    res.status(200).json(await alumniManager.searchAlumni(req.query));
   } catch (error) {
     sendError(res, error);
   }

@@ -320,6 +320,8 @@ Use both. They serve different purposes.
 
 **Don't:** Don't add a per-file pool mock or remove the setup mock. If a DB log line ever appears in a test run, a real Pool was built: find the import that escaped the mock.
 
+**Two queries at once:** when a method runs two queries via `Promise.all` (e.g. items + count), make the mock answer by SQL text (`/COUNT\(/`) and find calls the same way, not by `mockResolvedValueOnce` order or `calls.at(-2)` ([[REQ-005]]).
+
 **Related:** [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]] · [[knowledge/lessons/LESSON-REQ-003-1-partial-mocks-of-workspace-packages|L-REQ-003-1]]
 
 ---
@@ -365,6 +367,8 @@ Use both. They serve different purposes.
 **Why it's surprising:** You'd expect migrations to describe the whole schema.
 
 **Why it exists:** The schema predates the migrations folder. `STATUS: needs verification`.
+
+**Column types (checked in [[REQ-005]]):** `alumni.graduation_year` is `integer`; `students.expected_graduation_year` is `VARCHAR(10)`. Don't confuse them; both explorers in REQ-005 did. `db/backups/` is untracked, so a worktree or fresh clone doesn't have it.
 
 **Don't:** Don't assume a constraint is absent because migrations don't mention it. Code that inserts or deletes must still handle 23505 (unique → 409) and 23503 (foreign key → 409), as `AlumniManager.createAlumni` and `UserManager.deleteUser` do.
 
@@ -475,4 +479,78 @@ Use both. They serve different purposes.
 **Don't:** Don't change `BRAND_NAME` or the theme key without editing `index.html` too; don't delete those tests.
 
 **Related:** [[architecture/adr-06-config-leaf-layer|ADR-06]] · [[REQ-004]]
+
+---
+
+## G21 — LIKE escaping: backslash, no `ESCAPE` clause in JS template literals ^g21
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-005 |
+| Component | backend dal |
+| Status | confirmed |
+| Severity | trap |
+
+**What:** `escapeLike` in `AlumniQuery.ts` prefixes `\`, `%` and `_` with `\`, and the pattern goes in as a bound parameter. Backslash is Postgres's default LIKE/ILIKE escape, so no `ESCAPE` clause is needed.
+
+**Why it's surprising:** `ESCAPE '\'` written inside a JS template literal reaches Postgres as `ESCAPE ''` (the `\'` collapses), which Postgres rejects, so every search would 500. Mocked query tests can't see it ([[knowledge/lessons/LESSON-REQ-005-2-mocked-sql-tests-need-one-real-run|L-REQ-005-2]]).
+
+**Don't:** Don't add an `ESCAPE` clause. If you ever need one, write `ESCAPE '\\'` and test against a real database.
+
+**Related:** [[REQ-005]]
+
+---
+
+## G22 — `dal/dto/baseDTO.ts` is lower-case in git; import it as `./baseDTO` ^g22
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-005 |
+| Component | backend dal |
+| Status | confirmed |
+| Severity | trap |
+
+**What:** Git tracks `baseDTO.ts`. Four DTOs imported `./BaseDTO`, which works on a case-insensitive Mac checkout (and `core.ignorecase=true` hides the mismatch), but fails `tsc` with TS1261 in any fresh clone, worktree or Linux CI. Fixed in REQ-005 by importing `./baseDTO`.
+
+**Don't:** Import with the exact case git tracks (`git ls-files` shows it). Renaming the file to `BaseDTO.ts` would also work, but needs a two-step `git mv` on macOS.
+
+**Related:** [[REQ-005]]
+
+---
+
+## G23 — Postgres rejects NUL characters in text; validators turn them into a 400 ^g23
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-005 |
+| Component | backend businessLogic |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** A `\u0000` in a text parameter makes Postgres fail with 22021, which would surface as a 500. `optionalText` (used by every text validator) rejects it with a 400 "<field> contains an invalid character".
+
+**Don't:** Don't route user text to SQL around `optionalText`/`requiredText`; passwords use `validateNewPassword` and are hashed, so they never reach a text column raw.
+
+**Related:** [[REQ-005]]
+
+---
+
+## G24 — `TestManager.ts` keeps commented calls to Manager methods ^g24
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-005 |
+| Component | backend businessLogic |
+| Status | confirmed |
+| Severity | trivia |
+
+**What:** `businessLogic/src/TestManager.ts` is scratch code full of commented-out calls. When a REQ deletes or renames a Manager method, a "grep finds nothing" check still matches there.
+
+**Don't:** Sweep `TestManager.ts` in the same change (REQ-003 and REQ-005 both had to).
+
+**Related:** [[REQ-003]] · [[REQ-005]]
 

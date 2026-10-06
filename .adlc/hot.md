@@ -7,6 +7,15 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-06] ship-gate-cleared | REQ-005-alumni-search-filters
+## [2026-10-06] req-ready-to-merge | REQ-005-alumni-search-filters | GET /api/alumni search, filters and paging → { items, total }
+## [2026-10-06] lesson | L-REQ-005-1..2 — paged list endpoints, mocked SQL tests need one real run
+## [2026-10-06] gotcha | G21–G24 — LIKE escaping, baseDTO casing, NUL → 400, TestManager sweep (G13 and G15 extended)
+## [2026-10-06] verify-gate-cleared | REQ-005-alumni-search-filters | findings: C0/M0; m9+t3 follow-up; 2 rounds
+## [2026-10-06] implement-gate-cleared | REQ-005-alumni-search-filters
+## [2026-10-06] architect-gate-cleared | REQ-005-alumni-search-filters
+## [2026-10-06] work-path-set | REQ-005-alumni-search-filters | worktree at .worktrees/REQ-005-alumni-search-filters
+## [2026-10-06] spec-gate-cleared | REQ-005-alumni-search-filters
 ## [2026-10-06] req-archived | REQ-004-alma-rebrand-auth-shell
 ## [2026-10-06] req-merged | REQ-004-alma-rebrand-auth-shell | PR #17 into redesign (4164e070)
 ## [2026-05-13] req-merged | REQ-042 added Firestore composite indexes for query path

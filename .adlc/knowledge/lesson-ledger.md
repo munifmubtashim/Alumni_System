@@ -36,3 +36,5 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-004-1 | Mount app-wide effects in a path-less root layout, never inside one shell | frontend, routing, session, auth | trap | REQ-004 |
 | LESSON-REQ-004-2 | Check a design's colour choice against the real token pair before using it | frontend, design-tokens, accessibility, contrast | guideline | REQ-004 |
 | LESSON-REQ-004-3 | When code moves between layers, grep the ADRs and context pages for its old home in the same change | adr, docs, architecture | nice-to-know | REQ-004 |
+| LESSON-REQ-005-1 | Paged list endpoints: single-value query checks, a stable order, a separate count, `{ items, total }` | backend, api, pagination, validation | guideline | REQ-005 |
+| LESSON-REQ-005-2 | Mocked query tests never run the SQL: check new SQL once against a real database | backend, testing, sql, postgres | trap | REQ-005 |
