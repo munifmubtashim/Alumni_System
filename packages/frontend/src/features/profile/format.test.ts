@@ -1,0 +1,101 @@
+import { describe, expect, it } from 'vitest';
+import {
+  commentCountText,
+  educationLine,
+  employmentTitle,
+  headline,
+  present,
+  safeLinkedInUrl,
+} from './format';
+
+describe('present', () => {
+  it('trims text and treats missing or blank values as undefined', () => {
+    expect(present('  Ana  ')).toBe('Ana');
+    expect(present('   ')).toBeUndefined();
+    expect(present('')).toBeUndefined();
+    expect(present(null)).toBeUndefined();
+    expect(present(undefined)).toBeUndefined();
+  });
+});
+
+describe('headline', () => {
+  it('joins job title, company and class year', () => {
+    expect(
+      headline({
+        job_title: 'Design Lead',
+        current_company: 'Terra Climate',
+        graduation_year: 2017,
+      }),
+    ).toBe('Design Lead at Terra Climate · Class of 2017');
+  });
+
+  it('drops missing parts without stray "at" or "·"', () => {
+    expect(headline({ job_title: 'Design Lead', graduation_year: 2017 })).toBe(
+      'Design Lead · Class of 2017',
+    );
+    expect(headline({ current_company: 'Terra Climate', graduation_year: 2017 })).toBe(
+      'Terra Climate · Class of 2017',
+    );
+    expect(headline({ job_title: 'Design Lead', current_company: 'Terra Climate' })).toBe(
+      'Design Lead at Terra Climate',
+    );
+    expect(
+      headline({ job_title: '  ', current_company: '', graduation_year: null }),
+    ).toBeUndefined();
+    expect(headline({ graduation_year: 2017 })).toBe('Class of 2017');
+    expect(headline({})).toBeUndefined();
+  });
+});
+
+describe('educationLine', () => {
+  it('joins department and class year, dropping missing parts', () => {
+    expect(educationLine({ department: 'CSE', graduation_year: 2017 })).toBe('CSE · Class of 2017');
+    expect(educationLine({ department: ' CSE ' })).toBe('CSE');
+    expect(educationLine({ graduation_year: 2017 })).toBe('Class of 2017');
+    expect(educationLine({ department: ' ', graduation_year: null })).toBeUndefined();
+  });
+});
+
+describe('employmentTitle', () => {
+  it('joins job title and company, dropping missing parts', () => {
+    expect(employmentTitle({ job_title: 'Engineer', current_company: 'Acme' })).toBe(
+      'Engineer · Acme',
+    );
+    expect(employmentTitle({ job_title: 'Engineer' })).toBe('Engineer');
+    expect(employmentTitle({ current_company: 'Acme' })).toBe('Acme');
+    expect(employmentTitle({ job_title: '', current_company: ' ' })).toBeUndefined();
+  });
+});
+
+describe('safeLinkedInUrl', () => {
+  it('accepts absolute http and https addresses', () => {
+    expect(safeLinkedInUrl('https://www.linkedin.com/in/x')).toBe('https://www.linkedin.com/in/x');
+    expect(safeLinkedInUrl('  http://linkedin.com/in/x  ')).toBe('http://linkedin.com/in/x');
+  });
+
+  it('rejects other schemes, relative and malformed values', () => {
+    expect(safeLinkedInUrl('javascript:alert(1)')).toBeUndefined();
+    expect(safeLinkedInUrl('JavaScript:alert(1)')).toBeUndefined();
+    expect(safeLinkedInUrl('data:text/html,<script>alert(1)</script>')).toBeUndefined();
+    expect(safeLinkedInUrl('/in/x')).toBeUndefined();
+    expect(safeLinkedInUrl('linkedin.com/in/x')).toBeUndefined();
+    expect(safeLinkedInUrl('https://')).toBeUndefined();
+    expect(safeLinkedInUrl('not a url')).toBeUndefined();
+    expect(safeLinkedInUrl('')).toBeUndefined();
+    expect(safeLinkedInUrl(null)).toBeUndefined();
+    expect(safeLinkedInUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe('commentCountText', () => {
+  it('uses the singular only for one', () => {
+    expect(commentCountText(0)).toBe('0 comments');
+    expect(commentCountText(1)).toBe('1 comment');
+    expect(commentCountText(14)).toBe('14 comments');
+  });
+
+  it('treats bad counts as zero', () => {
+    expect(commentCountText(Number.NaN)).toBe('0 comments');
+    expect(commentCountText(-3)).toBe('0 comments');
+  });
+});

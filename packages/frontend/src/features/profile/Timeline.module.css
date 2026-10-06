@@ -1,0 +1,124 @@
+/* Design: S3 Education and Employment timelines (desktop and phone). The dot
+   is 9px on phone and 10px from 48rem (rem literals; sizes are not on the
+   spacing scale). Off-scale spacing is calc() of tokens: dot-to-text gap
+   14px phone / 16px desktop, space under an entry that has a next one 14px /
+   20px, dot top offset 5px / 6px. Title: label size on phone, body-sm size
+   from 48rem, at the heading weight (design 13px / 14px, 600). Detail:
+   text-caption on phone, text-label from 48rem, both at body weight (design
+   12px / 13px, 400). The experience note is 13px on phone, 14px from 48rem. Dots use --accent,
+   not the design colour (contrast token, L-REQ-004-2). */
+
+.timeline {
+  --timeline-dot-size: 0.5625rem;
+  --timeline-gap: calc(var(--space-3) + var(--space-1) / 2);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: var(--timeline-gap);
+  min-width: 0;
+}
+
+.rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dot {
+  flex: none;
+  inline-size: var(--timeline-dot-size);
+  block-size: var(--timeline-dot-size);
+  margin-block-start: calc(var(--space-1) + var(--space-1) / 4);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.line {
+  flex-grow: 1;
+  inline-size: 1px;
+  margin: var(--space-1) 0;
+  background: var(--border-subtle);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.item:not(:last-child) .content {
+  padding-block-end: calc(var(--space-3) + var(--space-1) / 2);
+}
+
+.title {
+  /* S3's title box is 17px (line-height: normal); 18px is the nearest token. */
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-body-sm);
+  font-size: var(--text-label-size);
+  font-weight: var(--text-heading-sm-weight);
+  line-height: var(--text-label-line);
+  overflow-wrap: anywhere;
+}
+
+.detail {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-caption-line); /* 16px, as S3 */
+  overflow-wrap: anywhere;
+}
+
+/* A plain-text paragraph under the entries (Employment's experience), lined
+   up with the entry text, not the dots. */
+.note {
+  margin: 0;
+  padding-inline-start: calc(var(--timeline-dot-size) + var(--timeline-gap));
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+  font-size: var(--text-label-size);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+@media (width >= 48rem) {
+  .timeline {
+    --timeline-dot-size: 0.625rem;
+    --timeline-gap: var(--space-4);
+  }
+
+  .dot {
+    margin-block-start: calc(var(--space-1) + var(--space-1) / 2);
+  }
+
+  .item:not(:last-child) .content {
+    padding-block-end: calc(var(--space-4) + var(--space-1));
+  }
+
+  .title,
+  .note {
+    font-size: var(--text-body-sm-size);
+  }
+
+  .detail {
+    font: var(--text-label);
+    font-weight: var(--text-body-weight);
+    line-height: var(--text-caption-line);
+  }
+}

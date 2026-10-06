@@ -1,0 +1,54 @@
+/* Shared by the profile's text sections (About, Education, Employment,
+   Recent posts). Design: docs/design/screens/app/S3-Desktop-Light and
+   S3-Phone-Light. Nearest tokens: heading text-heading-sm on both widths
+   (design 15px phone, 16px desktop). Off-scale gaps are calc() of tokens:
+   heading to content 10px phone / 14px desktop (8px / 10px under About).
+   About text is 13px on phone and 14px from 48rem; its line height stays
+   text-body-sm-line (22px), the token nearest the design's 1.6 (20.8px).
+   .trailingSpace: S3 desktop keeps 16px under its one Education entry
+   (padding-bottom on the item), so from 48rem the section gets it; the phone
+   design has none. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.heading {
+  margin: 0 0 calc(var(--space-2) + var(--space-1) / 2);
+  font: var(--text-heading-sm);
+}
+
+.headingCompact {
+  margin: 0 0 var(--space-2);
+  font: var(--text-heading-sm);
+}
+
+/* Free text (bio): plain text, line breaks kept, long words wrap. */
+.text {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-body-sm);
+  font-size: var(--text-label-size);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+@media (width >= 48rem) {
+  .heading {
+    margin-block-end: calc(var(--space-3) + var(--space-1) / 2);
+  }
+
+  .headingCompact {
+    margin-block-end: calc(var(--space-2) + var(--space-1) / 2);
+  }
+
+  .text {
+    font-size: var(--text-body-sm-size);
+  }
+
+  .trailingSpace {
+    padding-block-end: var(--space-4);
+  }
+}

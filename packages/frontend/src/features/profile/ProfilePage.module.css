@@ -1,0 +1,19 @@
+/* Design: docs/design/screens/app/S3-Desktop-Light and S3-Phone-Light. The
+   page caps at 860px (53.75rem, so it scales with zoom); the shell's <main>
+   already gives S3's outer padding. Gaps between blocks: 24px on phone
+   (space-5), 28px from 48rem (space-5 + space-1, off the scale). */
+
+.page {
+  width: min(100%, 53.75rem);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+@media (width >= 48rem) {
+  .page {
+    gap: calc(var(--space-5) + var(--space-1));
+  }
+}
