@@ -131,7 +131,7 @@ Full pass (sensitive: dynamic SQL, public response contract). 2 findings, both f
 | ADV-001 (major): `ESCAPE '\'` in a template literal becomes `ESCAPE ''`, so every `q` request 500s; mocked tests can't see it | **Fixed:** no `ESCAPE` clause (backslash is the default); a test asserts the SQL has no `ESCAPE` and the param is escaped; manual `psql` check (`q=100%`, `q=a_b`) on the review checklist |
 | ADV-002 (minor): page cap not in AC6; empty `?page=` undecided | **Fixed:** cap added to AC6; empty `page`/`pageSize` = absent → default, tested |
 
-Note: `alumni.graduation_year` is `VARCHAR(10)` in the current schema (exploration). A numeric parameter compares fine, because `pg` sends it as text and Postgres infers varchar.
+Note (corrected at review): `alumni.graduation_year` is `integer` (base schema in `db/backups/`, an untracked folder; migration 003 only renames it). The `VARCHAR(10)` column is `students.expected_graduation_year`. Binding a number is correct.
 
 ## Open questions
 

@@ -1,28 +1,12 @@
 import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
+import type { AlumniEditableFields } from "../dto/RegisterDTO.js";
+import type { AlumniListPage, AlumniPaging, AlumniSearchFilters } from "../dto/AlumniSearchDTO.js";
 
 // Public user columns joined onto alumni rows. Email is only exposed on single-profile reads.
 const LIST_COLUMNS = "a.*, u.name, u.photo_url, u.university";
 const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url, u.university";
 const LIST_FROM = "FROM alumni a JOIN users u ON a.user_id = u.id";
-
-// Validated filters for the directory search. Every field is optional; absent means "no filter".
-export interface AlumniSearchFilters {
-  q?: string;
-  department?: string;
-  university?: string;
-  graduationYear?: number;
-}
-
-export interface AlumniPaging {
-  limit: number;
-  offset: number;
-}
-
-export interface AlumniPage {
-  items: AlumniDTO[];
-  total: number;
-}
 
 // Makes %, _ and \ match literally in a LIKE/ILIKE pattern. Backslash is Postgres's default
 // LIKE escape character, so the SQL carries no ESCAPE clause (ESCAPE '\' inside a JS template
@@ -66,7 +50,7 @@ export class AlumniQuery {
 
   public async updateAlumni(
     id: number,
-    alumni: Partial<AlumniDTO>,
+    alumni: AlumniEditableFields,
   ): Promise<AlumniDTO> {
     const info = await pool.query(
       `UPDATE alumni SET department=$1 ,graduation_year=$2 ,  current_company=$3 ,job_title=$4 ,experience=$5 ,bio=$6 ,linkedin_url=$7 , updated_at=NOW() WHERE id=$8 RETURNING *`,
@@ -86,7 +70,7 @@ export class AlumniQuery {
 
   // Searched, filtered, paged directory list. Fragments are constants; every input value is a
   // bound parameter, so no request text ever reaches the SQL string.
-  public async searchAlumni(filters: AlumniSearchFilters, paging: AlumniPaging): Promise<AlumniPage> {
+  public async searchAlumni(filters: AlumniSearchFilters, paging: AlumniPaging): Promise<AlumniListPage> {
     const conditions: string[] = [];
     const params: unknown[] = [];
     const next = (value: unknown): string => {

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PAGE_SIZE, MAX_PAGE, MAX_PAGE_SIZE, parseAlumniSearch } from './validation.js';
+import {
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE,
+  MAX_PAGE_SIZE,
+  optionalText,
+  parseAlumniSearch,
+  validateAlumniFields,
+  validateUserBasics,
+} from './validation.js';
 import { expectAppError } from '../../test/expectAppError';
 
 describe('parseAlumniSearch (GET /api/alumni query)', () => {
@@ -51,6 +59,18 @@ describe('parseAlumniSearch (GET /api/alumni query)', () => {
 
     it('measures q after trimming', () => {
       expect(parseAlumniSearch({ q: `  ${'a'.repeat(100)}  ` }).filters.q).toHaveLength(100);
+    });
+  });
+
+  describe('NUL characters', () => {
+    // Postgres rejects \u0000 in text, which would surface as a 500 instead of a 400.
+    it.each(['q', 'department', 'university'])('rejects a NUL character in %s', async (param) => {
+      const error = await expectAppError(() => parseAlumniSearch({ [param]: 'a\u0000b' }), 400);
+      expect(error.message).toBe(`${param} contains an invalid character`);
+    });
+
+    it('rejects a NUL character in graduationYear', async () => {
+      await expectAppError(() => parseAlumniSearch({ graduationYear: '2020\u0000' }), 400);
     });
   });
 
@@ -112,5 +132,22 @@ describe('parseAlumniSearch (GET /api/alumni query)', () => {
     it('ignores an array in an unknown key', () => {
       expect(parseAlumniSearch({ field: ['a', 'b'] }).filters).toEqual({});
     });
+  });
+});
+
+describe('optionalText', () => {
+  it('rejects a NUL character anywhere, even one trimming would not remove', async () => {
+    await expectAppError(() => optionalText('\u0000', 'Bio', 10), 400);
+    const error = await expectAppError(() => optionalText('a\u0000b', 'Bio', 10), 400);
+    expect(error.message).toBe('Bio contains an invalid character');
+  });
+
+  it('still trims and returns ordinary text', () => {
+    expect(optionalText('  hi  ', 'Bio', 10)).toBe('hi');
+  });
+
+  it('protects the profile validators too', async () => {
+    await expectAppError(() => validateAlumniFields({ bio: 'x\u0000' }), 400);
+    await expectAppError(() => validateUserBasics({ name: 'Ada\u0000' }), 400);
   });
 });

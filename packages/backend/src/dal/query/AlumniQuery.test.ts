@@ -46,13 +46,13 @@ describe('AlumniQuery.searchAlumni (GET /api/alumni)', () => {
   const alumniQuery = new AlumniQuery();
   const paging = { limit: 20, offset: 40 };
 
-  // Promise.all starts the items query first, then the count query.
-  const call = (n: 0 | 1) => {
-    const c = query.mock.calls.at(n - 2);
+  // Find each call by its SQL, not its position, so reordering the two queries can't swap them.
+  const call = (isCount: boolean) => {
+    const c = query.mock.calls.findLast(([sql]) => /COUNT\(/.test(String(sql)) === isCount);
     return { sql: String(c?.[0]), params: (c?.[1] ?? []) as unknown[] };
   };
-  const items = () => call(0);
-  const count = () => call(1);
+  const items = () => call(false);
+  const count = () => call(true);
 
   beforeEach(() => {
     query.mockImplementation(((sql: string) =>

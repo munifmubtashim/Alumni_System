@@ -3,7 +3,7 @@ import type { User } from "./user.types";
 export interface Alumni {
   id: number;
   user_id: number;
-  graduation_year?: string;
+  graduation_year?: number | null; // INTEGER column; null when not set
   department?: string;
   current_company?: string;
   job_title?: string;

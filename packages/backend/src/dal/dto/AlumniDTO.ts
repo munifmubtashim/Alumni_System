@@ -3,7 +3,7 @@ export class AlumniDTO implements BaseDTO {
   id!: number;
   user_id: number;
   department?: string;
-  graduation_year?: string;
+  graduation_year?: number | null; // INTEGER column, nullable
   current_company?: string;
   job_title?: string;
   experience?: string;
@@ -19,7 +19,7 @@ export class AlumniDTO implements BaseDTO {
   constructor(
     user_id: number,
     department?: string,
-    graduation_year?: string,
+    graduation_year?: number,
     current_company?: string,
     job_title?: string,
     experience?: string,

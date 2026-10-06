@@ -7,6 +7,7 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-06] verify-gate-cleared | REQ-005-alumni-search-filters | findings: C0/M0; m9+t3 follow-up; 2 rounds
 ## [2026-10-06] implement-gate-cleared | REQ-005-alumni-search-filters
 ## [2026-10-06] architect-gate-cleared | REQ-005-alumni-search-filters
 ## [2026-10-06] work-path-set | REQ-005-alumni-search-filters | worktree at .worktrees/REQ-005-alumni-search-filters

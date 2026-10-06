@@ -33,7 +33,7 @@ describe('AlumniManager.createAlumni (POST /api/alumni)', () => {
     const row = query.createAlumni.mock.calls[0][0];
     expect(row.user_id).toBe(42);
     expect(row.department).toBe('CSE');
-    expect(row.graduation_year).toBe('2020');
+    expect(row.graduation_year).toBe(2020);
   });
 
   it('returns 409 when the user already has a profile, without inserting', async () => {

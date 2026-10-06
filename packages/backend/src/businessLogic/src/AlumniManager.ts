@@ -17,7 +17,8 @@ export class AlumniManager {
     const alumni = new AlumniDTO(
       userId,
       f.department,
-      f.graduation_year,
+      // validateAlumniFields returns the year as text; the column is INTEGER, so pass a number.
+      f.graduation_year === undefined ? undefined : Number(f.graduation_year),
       f.current_company,
       f.job_title,
       f.experience,
