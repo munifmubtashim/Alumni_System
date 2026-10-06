@@ -19,7 +19,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
 | REQ-002 | Login, sign-up and session handling on the new frontend | merged 2026-10-05 (PR #15) | specs/_archive/2026-10/m/REQ-002-auth-login-register |
 | REQ-003 | Require sign-in on every non-public backend route | merged 2026-10-06 (PR #16) | specs/_archive/2026-10/m/REQ-003-backend-route-auth |
-| REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | ready to merge 2026-10-06 | specs/2026-10/m/REQ-004-alma-rebrand-auth-shell |
+| REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | merged 2026-10-06 (PR #17) | specs/_archive/2026-10/m/REQ-004-alma-rebrand-auth-shell |
 
 ## ADRs
 
