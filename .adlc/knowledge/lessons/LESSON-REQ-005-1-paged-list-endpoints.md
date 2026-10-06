@@ -20,4 +20,4 @@ For a list endpoint:
 ## Saw it in
 
 - `businessLogic/src/validation.ts` (`parseAlumniSearch`, `singleQueryValue`, `pagingNumber`), `dal/query/AlumniQuery.ts` (`searchAlumni`) — [[REQ-005]]
-- conventions.md → Pagination
+- conventions-api.md → Pagination (was conventions.md → Pagination before the 2026-10-06 split)
