@@ -26,6 +26,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ## Entries
 
+## [2026-10-06] config | git.protect=[main, master, release/*, redesign]
 ## [2026-10-06] req-merged | REQ-006-alumni-directory-page | PR #19
 ## [2026-10-06] req-archived | REQ-006-alumni-directory-page
 ## [2026-10-06] req-merged | REQ-005-alumni-search-filters | PR #18

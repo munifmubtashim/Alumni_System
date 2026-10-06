@@ -57,7 +57,7 @@ layout:
 # (status / diff / log / show) are always allowed.
 git:
   mode: commit
-  protect: [main, master, release/*]
+  protect: [main, master, release/*, redesign]
 
 stack:
   # Declare what's in use. Skills read these to decide what stack-specific
