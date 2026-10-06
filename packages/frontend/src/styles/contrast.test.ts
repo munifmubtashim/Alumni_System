@@ -64,6 +64,7 @@ const PAIRS: Pair[] = [
   { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'focus outline' },
   { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Input focus border' },
   { fg: 'accent', bg: 'surface-sunken', min: NON_TEXT, use: 'auth panel check marks, Logo' },
+  { fg: 'ink-secondary', bg: 'surface-sunken', min: NON_TEXT, use: 'show/hide password icon' },
 ];
 
 // Accepted exceptions: the ratio is the floor recorded in architecture.md;

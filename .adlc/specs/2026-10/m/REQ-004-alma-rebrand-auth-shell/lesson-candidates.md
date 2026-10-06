@@ -48,3 +48,58 @@
 **Claim:** To put a Base UI Tooltip on a Base UI Radio, render the radio through the trigger: `<Tooltip.Trigger render={<Radio.Root aria-label=… />}>`; arrow-key focus moves then open each tooltip.
 **Saw it in:** `packages/frontend/src/components/ui/SegmentedControl/SegmentedControl.tsx:69`
 **Context:** Base UI 1.8; the radio keeps role, name and keyboard model, and the tooltip opens on focus in jsdom too.
+
+## CAND-A01 [review-arch]
+**Claim:** When a component moves between layout layers, grep ADRs and context/architecture.md for its old location in the same change.
+**Saw it in:** `.adlc/architecture/adr-03-frontend-session-and-401-handling.md:59`
+**Context:** SessionBridge moved from AppShell to RootLayout; the ADR constraint still names AppShell.
+
+## CAND-A02 [review-arch]
+**Claim:** A new src layer needs its lint block, a README, a ban fixture, an allow fixture and a package sub-path fixture before it counts as done.
+**Saw it in:** `packages/frontend/scripts/enforcement.test.ts:159`
+**Context:** config/ followed all of these, which is why docs and lint agree.
+
+## CAND-A03 [review-arch]
+**Claim:** Keep a single-source constant that must also appear in static HTML under a test, as with the theme storage key.
+**Saw it in:** `packages/frontend/index.html:7`
+**Context:** The `<title>` duplicates `BRAND_NAME` with no drift test.
+
+## CAND-011 [review-qual]
+**Claim:** Test a primitive's new prop branch in the primitive's own test file, not only through a wrapper that uses it.
+**Saw it in:** `packages/frontend/src/components/ui/SegmentedControl/SegmentedControl.tsx:62`
+**Context:** Icon-only option is covered only by ThemeToggle.test.tsx.
+
+## CAND-012 [review-qual]
+**Claim:** Decide on one icon pattern (shared Icon primitive or one CSS convention) before the third inline SVG lands.
+**Saw it in:** `packages/frontend/src/components/ui/ThemeToggle/ThemeToggle.tsx:56`, `PasswordInput.tsx:35`, `features/auth/AuthLayout.tsx:78`
+**Context:** Three icons, two styling approaches, stroke CSS duplicated.
+
+## CAND-013 [review-qual]
+**Claim:** Content literals that go stale (copyright year) belong in config or computed, not inline in a component.
+**Saw it in:** `packages/frontend/src/features/auth/AuthLayout.tsx:27`
+**Context:** `© 2026` hard-coded next to a config-sourced brand name.
+
+## CAND-C01 [review-corr]
+**Claim:** Mount app-wide session/401 handlers in a path-less root layout route above every shell, not in one shell.
+**Saw it in:** `packages/frontend/src/app/RootLayout.tsx:1`
+**Context:** A second shell (AuthShell, no header) would otherwise lose SessionBridge on /login.
+
+## CAND-C02 [review-corr]
+**Claim:** When wrapping a Base UI primitive in Tooltip.Trigger via `render`, cover keyboard-focus and hover tooltip opening with tests.
+**Saw it in:** `packages/frontend/src/components/ui/ThemeToggle/ThemeToggle.test.tsx:130`
+**Context:** Radio.Root merged into Tooltip.Trigger; the behavior is only proven by those tests.
+
+## CAND-007 [review-reflect]
+**Claim:** Mount app-wide session and theme effects in a path-less root layout above every shell, not inside one shell.
+**Saw it in:** `packages/frontend/src/app/RootLayout.tsx:11`
+**Context:** AuthShell has no header, so SessionBridge in AppShell would have left auth pages without 401 handling; ADR-03 still says "in AppShell".
+
+## CAND-008 [review-reflect]
+**Claim:** Check any new icon or control colour on the Input fill against the contrast test before using `ink-muted`; it is under 3:1 on `surface-sunken` in light mode.
+**Saw it in:** `packages/frontend/src/components/ui/PasswordInput/PasswordInput.module.css:15`
+**Context:** AuthLayout already documents the failure; PasswordInput repeated it (2.79:1) and nothing pinned it.
+
+## CAND-009 [review-reflect]
+**Claim:** A Base UI Radio can be a Tooltip trigger through the `render` prop; the radio keeps its role and the name must come from `aria-label` when the child is an icon.
+**Saw it in:** `packages/frontend/src/components/ui/SegmentedControl/SegmentedControl.tsx:68`
+**Context:** Extends G05 (name from text content); icon-only options break that, so a gotcha note is needed.

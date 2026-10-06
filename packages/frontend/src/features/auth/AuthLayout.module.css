@@ -14,13 +14,19 @@
   padding-block-end: var(--space-6);
 }
 
-/* Narrow: only the logo row shows. The top padding clears the theme toggle. */
+/* Narrow: only the logo row shows. The top padding is here, not in
+   AuthShell, because it is the logo row that must clear AuthShell's theme
+   toggle: below ~27rem the centred logo and the top-right toggle share the
+   same columns, so the logo starts under the toggle (its top offset
+   --space-4, plus its 3rem height with 2.5rem segments, plus a --space-3
+   gap). From 60rem the panel has its own padding and the toggle sits over
+   the form column, so nothing is reserved there. */
 .panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 0;
-  padding: var(--space-8) var(--space-5) 0;
+  padding: calc(var(--space-4) + 3rem + var(--space-3)) var(--space-5) 0;
   color: var(--ink-primary);
 }
 

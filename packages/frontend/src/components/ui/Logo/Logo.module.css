@@ -5,7 +5,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: inherit;
 }
 
 .svg {
@@ -29,5 +28,4 @@
 
 .wordmark {
   font: var(--text-heading-sm);
-  color: inherit;
 }

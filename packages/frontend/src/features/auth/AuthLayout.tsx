@@ -25,8 +25,6 @@ export interface AuthLayoutProps {
 
 const DEFAULT_HEADLINE = 'Stay close to the people you studied with.';
 
-const COPYRIGHT = `© 2026 ${BRAND_NAME}`;
-
 // Neutral on purpose: no member or university counts (spec AC3).
 const POINTS: readonly string[] = [
   'Find classmates and mentors in your field',
@@ -64,7 +62,9 @@ export function AuthLayout({
             ))}
           </ul>
         </div>
-        <p className={styles.copyright}>{COPYRIGHT}</p>
+        <p className={styles.copyright}>
+          © {new Date().getFullYear()} {BRAND_NAME}
+        </p>
       </div>
       <div className={styles.column}>
         <section aria-labelledby={titleId} className={styles.form}>

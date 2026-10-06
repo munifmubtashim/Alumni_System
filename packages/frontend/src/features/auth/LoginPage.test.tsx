@@ -365,7 +365,7 @@ describe('LoginPage', () => {
     expect(prompt?.compareDocumentPosition(emailField())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 
     expect(screen.getByText('Welcome back to your alumni network.')).toBeInTheDocument();
-    expect(screen.getByText('© 2026 Alma')).toBeInTheDocument();
+    expect(screen.getByText(`© ${String(new Date().getFullYear())} Alma`)).toBeInTheDocument();
     expect(screen.getByText('Alma', { selector: 'span' })).toBeInTheDocument();
   });
 

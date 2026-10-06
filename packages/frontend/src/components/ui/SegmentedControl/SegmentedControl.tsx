@@ -69,6 +69,9 @@ export function SegmentedControl<T extends string>({
 function IconOption<T extends string>({ option }: { option: SegmentedControlOption<T> }) {
   return (
     <Tooltip.Root>
+      {/* 300ms, half Base UI's 600ms default: the tooltip is the only visible
+          text for an icon segment, so it should come up sooner, but not for
+          a pointer that is only passing over the pill. */}
       <Tooltip.Trigger
         delay={300}
         render={

@@ -112,4 +112,71 @@ describe('SegmentedControl', () => {
     expect(group).toHaveClass('track');
     expect(group).toHaveClass('extra');
   });
+
+  describe('icon options', () => {
+    type View = 'list' | 'grid';
+
+    const ICON_OPTIONS = [
+      { value: 'list', label: 'List', icon: <svg data-testid="list-icon" aria-hidden="true" /> },
+      { value: 'grid', label: 'Grid', icon: <svg data-testid="grid-icon" aria-hidden="true" /> },
+    ] as const;
+
+    it('names an icon option by its label and shows only the icon', () => {
+      render(
+        <SegmentedControl<View>
+          label="View"
+          options={ICON_OPTIONS}
+          value="grid"
+          onValueChange={vi.fn()}
+        />,
+      );
+
+      const list = screen.getByRole('radio', { name: 'List' });
+      expect(list).toHaveTextContent('');
+      expect(list).toContainElement(screen.getByTestId('list-icon'));
+      expect(list).toHaveClass('iconOption');
+      expect(list).not.toHaveAttribute('data-label');
+      expect(screen.getByRole('radio', { name: 'Grid' })).toHaveAttribute('aria-checked', 'true');
+      // The label is not on screen until the tooltip opens.
+      expect(screen.queryByText('List')).not.toBeInTheDocument();
+    });
+
+    it('mixes icon and text options in one group, in order', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <SegmentedControl<View>
+          label="View"
+          options={[ICON_OPTIONS[0], { value: 'grid', label: 'Grid' }]}
+          value="list"
+          onValueChange={onValueChange}
+        />,
+      );
+
+      expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual(['', 'Grid']);
+      expect(screen.getByRole('radio', { name: 'List' })).toHaveClass('iconOption');
+      const grid = screen.getByRole('radio', { name: 'Grid' });
+      expect(grid).not.toHaveClass('iconOption');
+      expect(grid).toHaveAttribute('data-label', 'Grid');
+
+      await user.click(grid);
+      expect(onValueChange).toHaveBeenCalledWith('grid');
+    });
+
+    it('shows the label in a tooltip when an icon option gets keyboard focus', async () => {
+      const user = userEvent.setup();
+      render(
+        <SegmentedControl<View>
+          label="View"
+          options={ICON_OPTIONS}
+          value="grid"
+          onValueChange={vi.fn()}
+        />,
+      );
+
+      await user.tab();
+      expect(screen.getByRole('radio', { name: 'Grid' })).toHaveFocus();
+      expect(await screen.findByText('Grid')).toBeVisible();
+    });
+  });
 });

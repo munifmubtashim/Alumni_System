@@ -17,6 +17,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
+## [2026-10-06] verify-gate-cleared | REQ-004-alma-rebrand-auth-shell | findings: C0/M1(vault)/m4 open (wrap-up/your call); 2 rounds
 ## [2026-10-06] implement-gate-cleared | REQ-004-alma-rebrand-auth-shell | 2 revisions (full-page auth layout; toggle/inputs/forgot placement)
 ## [2026-10-06] architect-gate-cleared | REQ-004-alma-rebrand-auth-shell
 ## [2026-10-06] work-path-set | REQ-004-alma-rebrand-auth-shell | branch at /Users/munifmubtashim/Alumni_System

@@ -436,7 +436,7 @@ describe('RegisterPage', () => {
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 
     expect(screen.getByText('Stay connected with your alumni network.')).toBeInTheDocument();
-    expect(screen.getByText('© 2026 Alma')).toBeInTheDocument();
+    expect(screen.getByText(`© ${String(thisYear)} Alma`)).toBeInTheDocument();
   });
 
   it('suggests a university address in the email field', () => {
