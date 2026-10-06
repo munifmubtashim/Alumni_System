@@ -1,7 +1,9 @@
 import type { AlumniListItem } from '@alumni/shared';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { directoryReturnPath } from '@/config/directoryReturn';
 import { AlumniCard, AlumniCardSkeleton } from './AlumniCard';
 
 const amira: AlumniListItem = {
@@ -94,6 +96,39 @@ describe('AlumniCard', () => {
     const { container } = renderCard({ ...amira, photo_url: undefined });
     expect(container.querySelector('img')).toBeNull();
     expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent(/^AM$/);
+  });
+});
+
+/** Stands in for the profile page: shows where its back link would go. */
+function BackTarget() {
+  const location = useLocation();
+  return <p data-testid="back">{directoryReturnPath(location.state)}</p>;
+}
+
+function renderAt(url: string) {
+  return render(
+    <MemoryRouter initialEntries={[url]}>
+      <Routes>
+        <Route path="/directory" element={<AlumniCard alumnus={amira} />} />
+        <Route path="/alumni/:id" element={<BackTarget />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
+describe('AlumniCard handover to the profile', () => {
+  it('passes the current search as link state', async () => {
+    renderAt('/directory?q=ann&page=2');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/alumni/7');
+    await userEvent.click(link);
+    expect(screen.getByTestId('back')).toHaveTextContent('/directory?q=ann&page=2');
+  });
+
+  it('hands over an empty search when the directory has none', async () => {
+    renderAt('/directory');
+    await userEvent.click(screen.getByRole('link'));
+    expect(screen.getByTestId('back')).toHaveTextContent(/^\/directory$/);
   });
 });
 
