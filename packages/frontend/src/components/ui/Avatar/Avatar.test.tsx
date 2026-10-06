@@ -51,6 +51,12 @@ describe('Avatar', () => {
     expect(container.firstElementChild).toHaveAttribute('data-size', 'sm');
   });
 
+  it('has an lg size for the profile header', () => {
+    const { container } = render(<Avatar name="Sophia Marsh" size="lg" />);
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'lg');
+    expect(container.firstElementChild).toHaveTextContent(/^SM$/);
+  });
+
   it('merges a passed className', () => {
     const { container } = render(<Avatar name="A B" className="extra" />);
     expect(container.firstElementChild).toHaveClass('avatar', 'extra');
