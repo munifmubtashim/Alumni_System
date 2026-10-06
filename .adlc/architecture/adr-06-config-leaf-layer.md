@@ -16,7 +16,7 @@ REQ-004 needed the product name ("Alma") in the app header (`app/`) and on the a
 ## Considered options
 
 ### Option 1 — `src/config/`, a lint-enforced leaf
-Constants only. `config/` may not import `app`, `features`, `components`, `store` or `services`; `components/ui` may not import `config/`, because primitives stay prop-driven and take brand text as a prop. Enforced by ESLint blocks plus ban/allow fixtures.
+Constants and small pure contracts only (amended by REQ-008, 2026-10-07: a pure file such as `directoryReturn.ts`, which owns the router-state key and the route paths that two lazy features share, is allowed because neither lazy feature may import the other, ADR-08). `config/` may not import `app`, `features`, `components`, `store` or `services`; `components/ui` may not import `config/`, because primitives stay prop-driven and take brand text as a prop. Enforced by ESLint blocks plus ban/allow fixtures.
 **Pros:** one source for brand values; impossible to create a cycle; ui stays reusable. **Cons:** one more folder and boundary to keep documented.
 
 ### Option 2 — keep constants in `app/` and pass them down as props

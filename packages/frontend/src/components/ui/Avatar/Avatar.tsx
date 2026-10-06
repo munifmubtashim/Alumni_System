@@ -3,14 +3,14 @@ import { cx } from '../cx';
 import styles from './Avatar.module.css';
 import { initialsOf } from './initials';
 
-export type AvatarSize = 'md' | 'sm' | 'xs';
+export type AvatarSize = 'lg' | 'md' | 'sm' | 'xs';
 
 export interface AvatarProps extends Omit<ComponentPropsWithRef<'span'>, 'children'> {
   /** The person's name; the initials come from its first and last word. */
   name: string;
   /** Photo URL. Without one, or if it fails to load, the initials show. */
   photoUrl?: string | null;
-  /** md (default, result cards), sm, or xs (the header's account button). */
+  /** lg (the profile header), md (default, result cards), sm, or xs (the header's account button). */
   size?: AvatarSize;
 }
 

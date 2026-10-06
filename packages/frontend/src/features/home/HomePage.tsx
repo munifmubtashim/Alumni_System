@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { DIRECTORY_PATH } from '@/config/directoryReturn';
 import { useCurrentUser } from '@/features/auth';
 import styles from './HomePage.module.css';
 
@@ -15,7 +16,7 @@ interface QuickLink {
  */
 const QUICK_LINKS: readonly QuickLink[] = [
   {
-    to: '/directory',
+    to: DIRECTORY_PATH,
     title: 'Browse the directory',
     description: 'Find classmates by year, department or field',
   },

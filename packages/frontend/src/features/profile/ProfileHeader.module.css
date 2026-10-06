@@ -1,0 +1,108 @@
+/* Design: docs/design/screens/app/S3-Desktop-Light (a row: 84px avatar, 24px
+   gap, name 24px, headline 15px, LinkedIn 13px medium) and S3-Phone-Light (a
+   centred column: 72px avatar, 10px gap, name 19px, headline 13px, LinkedIn
+   12px). Nearest tokens (gate decision): name text-heading-md on phone and
+   text-heading-lg from 48rem; headline label size (regular) on phone and
+   text-body-sm from 48rem; LinkedIn text-caption on phone and text-label from
+   48rem; phone initials text-heading-md (design 24px). Off-scale gaps are
+   calc() of tokens: 10px = space-2 + space-1 / 2, 6px = space-1 + space-1 / 2.
+   The 72px phone avatar overrides Avatar's own `.avatar[data-size='lg']`, so
+   the selector must be more specific than that rule (ADV-004). */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  text-align: center;
+  min-width: 0;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  max-inline-size: 100%;
+}
+
+.name {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-md);
+  overflow-wrap: anywhere;
+}
+
+.headline {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: var(--text-label-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-label-line);
+  overflow-wrap: anywhere;
+}
+
+.linkedIn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+  margin-block-start: var(--space-1);
+  color: var(--accent);
+  font: var(--text-caption);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.linkedIn:hover {
+  color: var(--accent-strong);
+}
+
+.icon {
+  flex: none;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+}
+
+@media (width < 48rem) {
+  /* S3 phone shows the LinkedIn link as text only. The icon is a decorative
+     aria-hidden svg that never takes the hidden attribute, so display:none
+     is safe here (G18). */
+  .icon {
+    display: none;
+  }
+
+  .header .avatar[data-size='lg'] {
+    inline-size: 4.5rem;
+    block-size: 4.5rem;
+    font: var(--text-heading-md);
+  }
+}
+
+@media (width >= 48rem) {
+  .header {
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: var(--space-5);
+    text-align: start;
+  }
+
+  .identity {
+    flex: 1 1 15rem;
+    align-items: flex-start;
+    gap: calc(var(--space-1) + var(--space-1) / 2);
+  }
+
+  .name {
+    font: var(--text-heading-lg);
+  }
+
+  .headline {
+    font: var(--text-body-sm);
+    line-height: var(--text-label-line); /* S3 headline box is 18px tall */
+  }
+
+  .linkedIn {
+    font: var(--text-label);
+  }
+}

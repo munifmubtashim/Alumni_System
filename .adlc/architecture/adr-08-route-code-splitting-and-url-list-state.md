@@ -41,6 +41,10 @@ Each large page is a route with `lazy: () => import(...)`. List state (query, fi
 | Lazy chunk presence is checked in the build, not only in unit tests | trade-off |
 | Home stays eager (it is the landing page) | trade-off |
 
+## Amendment — REQ-008 (2026-10-07)
+
+The profile page (`/alumni/:id`) is the second lazy page. The import guard (ESLint and `lazyRoutes.test.ts`) now runs one check per lazy feature from a `LAZY_FEATURES` list, each leaving out only that feature's own folder, so one lazy feature cannot import another statically either. Two lazy features that need to share something meet in `config/`.
+
 ## Open questions
 
 - [ ] Prefetching a chunk on hover/focus of its nav link: not decided here.

@@ -1,0 +1,70 @@
+import type { Alumni } from '@alumni/shared';
+import type { Ref } from 'react';
+import { Avatar } from '@/components/ui/Avatar';
+import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
+import { BRAND_NAME } from '@/config/brand';
+import { headline, present, safeLinkedInUrl } from './format';
+import styles from './ProfileHeader.module.css';
+
+/** The h1 when a profile has no name (the API allows a blank one). */
+export const UNNAMED_PROFILE = 'Alumni profile';
+
+export interface ProfileHeaderProps {
+  alumni: Pick<
+    Alumni,
+    'name' | 'photo_url' | 'job_title' | 'current_company' | 'graduation_year' | 'linkedin_url'
+  >;
+  /** The page focuses this h1 when the profile first shows (ADV-005). */
+  headingRef?: Ref<HTMLHeadingElement>;
+}
+
+/**
+ * The profile's header (S3): large avatar, the name as the page's one h1,
+ * the headline "Job title at Company · Class of YYYY", and a LinkedIn link
+ * only for a safe http(s) URL. Sets the tab title to "<name> · Alma".
+ * No location, mentorship badge or email (AC5; email is never shown).
+ */
+export function ProfileHeader({ alumni, headingRef }: ProfileHeaderProps) {
+  const name = present(alumni.name);
+  const heading = name ?? UNNAMED_PROFILE;
+  const line = headline(alumni);
+  const linkedIn = safeLinkedInUrl(alumni.linkedin_url);
+
+  return (
+    <header className={styles.header}>
+      <title>{`${heading} · ${BRAND_NAME}`}</title>
+      <Avatar
+        className={styles.avatar}
+        size="lg"
+        name={name ?? ''}
+        photoUrl={present(alumni.photo_url)}
+      />
+      <div className={styles.identity}>
+        <h1 ref={headingRef} className={styles.name} tabIndex={-1}>
+          {heading}
+        </h1>
+        {line !== undefined && <p className={styles.headline}>{line}</p>}
+        {linkedIn !== undefined && (
+          <a className={styles.linkedIn} href={linkedIn} target="_blank" rel="noopener noreferrer">
+            <svg
+              className={styles.icon}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable={false}
+            >
+              <rect x="2" y="9" width="4" height="12" />
+              <circle cx="4" cy="4" r="2" />
+              <path d="M8 9h4v2a4.5 4.5 0 0 1 8 3v7h-4v-6a2 2 0 0 0-4 0v6H8z" />
+            </svg>
+            LinkedIn <VisuallyHidden>(opens in a new tab)</VisuallyHidden>
+          </a>
+        )}
+      </div>
+    </header>
+  );
+}

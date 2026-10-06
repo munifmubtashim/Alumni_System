@@ -1,0 +1,99 @@
+/* The profile's loading, not-found and error states. The skeleton follows the
+   S3 header (avatar 72px phone / 84px from 48rem, a centred column on phone and
+   a row from 48rem) so the swap to the real header barely moves anything.
+   Messages reuse the page's type: heading text-heading-md, body text-body-sm. */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.hiddenHeading {
+  margin: 0;
+}
+
+.skeletonHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+}
+
+.skeletonAvatar {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+}
+
+.skeletonIdentity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  inline-size: min(100%, 15rem);
+}
+
+.skeletonName {
+  inline-size: 70%;
+  block-size: var(--text-heading-md-line);
+}
+
+.skeletonLine {
+  inline-size: 60%;
+}
+
+.skeletonSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeletonHeading {
+  inline-size: 6rem;
+  block-size: var(--text-heading-sm-line);
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.heading {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-md);
+}
+
+.text {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+}
+
+.retry {
+  padding: var(--space-2) var(--space-4);
+}
+
+@media (width >= 48rem) {
+  .skeletonHeader {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-5);
+  }
+
+  .skeletonAvatar {
+    inline-size: 5.25rem;
+    block-size: 5.25rem;
+  }
+
+  .skeletonIdentity {
+    align-items: flex-start;
+    padding-block-start: var(--space-2);
+  }
+
+  .skeletonName {
+    block-size: var(--text-heading-lg-line);
+  }
+}

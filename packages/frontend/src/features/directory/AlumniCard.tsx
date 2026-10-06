@@ -1,7 +1,8 @@
 import type { AlumniListItem } from '@alumni/shared';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { directoryReturnState, profilePath } from '@/config/directoryReturn';
 import styles from './AlumniCard.module.css';
 
 export interface AlumniCardProps {
@@ -25,16 +26,18 @@ function jobLine(alumnus: Pick<AlumniListItem, 'job_title' | 'current_company'>)
 /**
  * One directory result: the whole card is a single link to the profile.
  * The avatar is aria-hidden, so the link reads as the name, then the details.
- * No Mentor tag (not in this REQ's data).
+ * No Mentor tag (not in this REQ's data). The link carries the current search
+ * as router state so the profile's back link can restore it (REQ-008).
  */
 export function AlumniCard({ alumnus }: AlumniCardProps) {
+  const { search } = useLocation();
   const name = present(alumnus.name) ?? '';
   const year = alumnus.graduation_year ?? undefined;
   const department = present(alumnus.department);
   const job = jobLine(alumnus);
 
   return (
-    <Link to={`/alumni/${String(alumnus.id)}`} className={styles.card}>
+    <Link to={profilePath(alumnus.id)} state={directoryReturnState(search)} className={styles.card}>
       <div className={styles.header}>
         <Avatar name={name} photoUrl={present(alumnus.photo_url)} />
         <div className={styles.identity}>

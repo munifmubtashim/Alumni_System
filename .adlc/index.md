@@ -22,7 +22,8 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | merged 2026-10-06 (PR #17) | specs/_archive/2026-10/m/REQ-004-alma-rebrand-auth-shell |
 | REQ-005 | Search, filters and paging for the alumni directory API | merged 2026-10-06 (PR #18) | specs/_archive/2026-10/m/REQ-005-alumni-search-filters |
 | REQ-006 | Alumni directory page at /directory (lazy route, URL-held search and filters, Directory nav link) | merged 2026-10-06 (PR #19) | specs/_archive/2026-10/m/REQ-006-alumni-directory-page |
-| REQ-007 | App shell and Home match S1 (avatar menu, phone tab bar, quick-link cards) | ship gate cleared 2026-10-06 (merge pending) | specs/2026-10/m/REQ-007-app-shell-home-s1 |
+| REQ-007 | App shell and Home match S1 (avatar menu, phone tab bar, quick-link cards) | merged 2026-10-06 (PR #20) | specs/_archive/2026-10/m/REQ-007-app-shell-home-s1 |
+| REQ-008 | Alumni profile page at /alumni/:id (lazy route, S3 designs, Back link keeps directory search) | ship gate awaiting 2026-10-07 | specs/2026-10/m/REQ-008-alumni-profile-page |
 
 ## ADRs
 
@@ -43,6 +44,7 @@ Patterns, rules that must always hold, domain models.
 
 | Page | One-line summary |
 |---|---|
+| [[knowledge/concepts/detail-page-pattern]] | one record page: id-keyed query, dependent posts query, every state has h1 + title + focus, Back link handover via config |
 | [[knowledge/concepts/design-tokens]] | tokens.json → generated CSS variables; tokens-only enforced by lint; contrast pinned by test |
 | [[knowledge/concepts/route-layout]] | one root layout (session + theme effects) above AuthShell (no header) and AppShell (header); two error layers per shell |
 | [[knowledge/concepts/session-and-401]] | token store + `['me']` Query; registered 401 handler; one expire path (401 or timer); guards own navigation |

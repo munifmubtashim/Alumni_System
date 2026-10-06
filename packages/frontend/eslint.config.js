@@ -67,25 +67,53 @@ const UI_FORBIDDEN_LAYERS = ['services', 'store', 'features', 'config'];
 // config/ is a leaf: constants that app/ and features/ share, importing nothing internal.
 const CONFIG_FORBIDDEN_LAYERS = ['features', 'components', 'store', 'services'];
 
-// ADR-08: features/directory reaches the app only through the router's lazy
+// ADR-08: each lazy feature reaches the app only through the router's lazy
 // import(), so it stays in its own chunk. This uses the typescript-eslint copy
 // of no-restricted-imports, a separate rule from the layer blocks above, so it
-// can cover all of src/ in one block without overriding them; it also lets
-// `import type` through (erased at build). Dynamic import() is never matched.
-// '../directory' and '../../directory' are the sibling forms used from inside
-// features/. src/app/lazyRoutes.test.ts is the second layer of this guard.
-const LAZY_DIRECTORY_BAN = {
-  group: [
-    '@/features/directory',
-    './**/features/directory',
-    '../**/features/directory',
-    '../directory',
-    '../../directory',
-  ].flatMap((form) => [form, `${form}/**`]),
-  allowTypeImports: true,
-  message:
-    "features/directory is lazy-loaded (ADR-08): reach it only through the router's import().",
-};
+// can cover all of src/ without overriding them; it also lets `import type`
+// through (erased at build). Dynamic import() is never matched. '../<name>' and
+// '../../<name>' are the sibling forms used from inside features/.
+// src/app/lazyRoutes.test.ts is the second layer of this guard.
+const LAZY_FEATURES = ['directory', 'profile'];
+
+function lazyBan(feature) {
+  return {
+    group: [
+      `@/features/${feature}`,
+      `./**/features/${feature}`,
+      `../**/features/${feature}`,
+      `../${feature}`,
+      `../../${feature}`,
+    ].flatMap((form) => [form, `${form}/**`]),
+    allowTypeImports: true,
+    message: `features/${feature} is lazy-loaded (ADR-08): reach it only through the router's import().`,
+  };
+}
+
+// One check per lazy feature (ADV-006): a feature's own folder is exempt from
+// its own ban only, so one lazy feature can never import another statically.
+// The rule's options do not merge across blocks, so each region of src/ gets
+// one block with the full list of bans that apply there, and no two overlap.
+function lazyFeatureBoundaries() {
+  const folders = LAZY_FEATURES.map((feature) => `src/features/${feature}/**`);
+  const block = (files, ignores, banned) => ({
+    files,
+    ignores: [...ignores, ...TEST_FILES],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': ['error', { patterns: banned.map(lazyBan) }],
+    },
+  });
+  return [
+    block(['src/**/*.{ts,tsx}'], folders, LAZY_FEATURES),
+    ...LAZY_FEATURES.map((feature) =>
+      block(
+        [`src/features/${feature}/**/*.{ts,tsx}`],
+        [],
+        LAZY_FEATURES.filter((other) => other !== feature),
+      ),
+    ),
+  ];
+}
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage']),
@@ -192,12 +220,6 @@ export default defineConfig([
     ignores: ['src/components/ui/**'],
     patterns: [NO_APP],
   }),
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/features/directory/**', ...TEST_FILES],
-    rules: {
-      '@typescript-eslint/no-restricted-imports': ['error', { patterns: [LAZY_DIRECTORY_BAN] }],
-    },
-  },
+  ...lazyFeatureBoundaries(),
   prettierConfig,
 ]);

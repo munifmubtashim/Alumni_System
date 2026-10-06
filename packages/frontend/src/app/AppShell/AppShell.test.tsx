@@ -1,4 +1,4 @@
-import type { AlumniListItem, MyProfile } from '@alumni/shared';
+import type { Alumni, AlumniListItem, MyProfile } from '@alumni/shared';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -19,7 +19,7 @@ import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
-import { createRoutes, DIRECTORY_ROUTE, routes } from '../router';
+import { createRoutes, DIRECTORY_ROUTE, PROFILE_ROUTE, routes } from '../router';
 
 // ---- tokens and a fake API at the axios adapter (the REQ-001 test policy) ----
 
@@ -451,7 +451,11 @@ describe('Header auth area', () => {
     screen.getByRole('button', { name: 'Account menu for Amina' }).focus();
     await user.keyboard('{Enter}');
 
-    expect(await screen.findByRole('menuitem', { name: 'Log out' })).toHaveFocus();
+    // Base UI moves focus a tick after the item appears, so wait for it.
+    const logOut = await screen.findByRole('menuitem', { name: 'Log out' });
+    await waitFor(() => {
+      expect(logOut).toHaveFocus();
+    });
   });
 
   it('shows initials in the avatar button, named for the user', async () => {
@@ -711,6 +715,105 @@ describe('Directory route', () => {
     renderAt(
       '/directory',
       directoryRoutesWith(() => Promise.reject(new Error('chunk failed'))),
+    );
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { name: 'Something went wrong.' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
+    expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'chunk failed' }));
+  });
+});
+
+// ---- the lazy /alumni/:id route (ADR-08, REQ-008) ----
+
+const LINNEA: Alumni = { id: 3, user_id: 30, name: 'Linnea Berg', graduation_year: 2019 };
+
+/** A route tree whose profile route is `PROFILE_ROUTE` with another `lazy`. */
+function profileRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
+  return createRoutes([{ element: <RequireAuth />, children: [{ ...PROFILE_ROUTE, lazy }] }]);
+}
+
+describe('Profile route', () => {
+  beforeEach(() => {
+    mockApi({
+      'GET /me': ok(AMINA),
+      'GET /alumni/3': ok(LINNEA),
+      'GET /posts/user/30': ok([]),
+    });
+  });
+
+  it('renders the profile page inside the shell for a signed-in visit', async () => {
+    setToken(makeToken());
+    renderAt('/alumni/3');
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { level: 1, name: 'Linnea Berg' }),
+    ).toBeInTheDocument();
+    // The shell's header (the page's own <header> also counts as a banner here).
+    expect(screen.getByRole('button', { name: 'Account menu for Amina' })).toBeInTheDocument();
+  });
+
+  it('sends a guest to /login, then back to /alumni/3 after logging in', async () => {
+    const token = makeToken();
+    mockApi({
+      'POST /auth/login': ok({ token }),
+      'GET /me': ok(AMINA),
+      'GET /alumni/3': ok(LINNEA),
+      'GET /posts/user/30': ok([]),
+    });
+    const user = userEvent.setup();
+    const { router } = renderAt('/alumni/3');
+
+    expect(await screen.findByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(apiCalls).not.toContain('GET /alumni/3');
+
+    await user.type(screen.getByRole('textbox', { name: 'Email' }), 'amina@example.com');
+    await user.type(screen.getByLabelText('Password'), 'correct-horse');
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Linnea Berg' }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/alumni/3');
+  });
+
+  it('keeps the shell and shows Loading… in main while the page code loads', async () => {
+    const chunk = gate();
+    setToken(makeToken());
+    renderAt(
+      '/alumni/3',
+      profileRoutesWith(async () => {
+        await chunk.opened;
+        return { Component: () => <h1>Profile loaded</h1> };
+      }),
+    );
+
+    const banner = screen.getByRole('banner');
+    expect(
+      await within(banner).findByRole('button', { name: 'Account menu for Amina' }),
+    ).toBeInTheDocument();
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
+
+    await act(async () => {
+      chunk.open();
+      await chunk.opened;
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Profile loaded' })).toBeInTheDocument();
+  });
+
+  it('shows the route error inside the shell when the page code fails to load', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    setToken(makeToken());
+    renderAt(
+      '/alumni/3',
+      profileRoutesWith(() => Promise.reject(new Error('chunk failed'))),
     );
 
     const main = screen.getByRole('main');

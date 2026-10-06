@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { DIRECTORY_PATH } from '@/config/directoryReturn';
 import { GridIcon } from './NavIcons';
 
 export interface NavItem {
@@ -14,5 +15,5 @@ export interface NavItem {
  * here when their pages are built (S1 shows all four).
  */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { to: '/directory', label: 'Directory', icon: <GridIcon /> },
+  { to: DIRECTORY_PATH, label: 'Directory', icon: <GridIcon /> },
 ];

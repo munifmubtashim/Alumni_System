@@ -628,3 +628,63 @@ Use both. They serve different purposes.
 
 **Related:** [[knowledge/gotchas#^g04|G04]] · [[knowledge/gotchas#^g07|G07]] · [[knowledge/gotchas#^g10|G10]] · [[REQ-006]]
 
+
+## G28 — Type-aware lint traps found building the profile page ^g28
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-008 |
+| Component | frontend lint |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- A bare number in a template-literal URL (`/posts/user/${userId}`) passes `tsc` but fails `restrict-template-expressions`: wrap it in `String()`.
+- A dependent query uses `skipToken` as its `queryFn` while the input is `undefined`; `enabled` plus a `!` assertion fails because lint bans `!` and `as` narrowing.
+- `const { state } = useLocation()` fails `no-unsafe-assignment` (`state` is `any`): read it into `const x: unknown = location.state` and validate.
+- `line-height: normal` fails Stylelint `strict-value` ([[knowledge/lessons/LESSON-REQ-008-5-design-line-height-vs-stylelint|L-REQ-008-5]]); use a token line height.
+
+**Where:** `services/alumniApi.ts`, `features/profile/usePostsByUser.ts`, `BackLink.tsx`, `stylelint.config.js`
+
+**Related:** [[knowledge/gotchas#^g10|G10]] · [[knowledge/gotchas#^g27|G27]]
+
+## G29 — Test traps found building the profile page ^g29
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-008 |
+| Component | frontend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Pin the locale (`'en'`) in `Intl` formatters and build expected dates with the same `Intl` call; the default locale and the runner's time zone vary by machine.
+- The full `npm test` can time out on the heavy page tests (Directory, AppShell, Login, Register) when several agents run Vitest at once in the same tree: rerun on a quiet tree before blaming a change.
+- In component tests of an error state, turn query retry off on the test client; the app policy retries 5xx twice with backoff and the test waits ~3 s.
+- A leading space inside a `VisuallyHidden` span is trimmed from the accessible name in tests: put the space as a text node outside the span.
+- After a Base UI Menu opens, wait for focus with `waitFor`; `findByRole` returns the item a tick before focus lands (the flaky "opens the user menu from the keyboard" test failed 3 of 8 runs).
+- A page's own `<header>` inside `<main>` also matches `getByRole('banner')`: find the app shell by a header control instead.
+
+**Where:** `features/profile/relativeTime.test.ts`, `RecentPosts.test.tsx`, `ProfileHeader.tsx`, `app/AppShell/AppShell.test.tsx`
+
+**Related:** [[knowledge/gotchas#^g12|G12]] · [[knowledge/gotchas#^g19|G19]] · [[knowledge/gotchas#^g26|G26]]
+
+## G30 — CSS override order and live regions on the profile page ^g30
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-008 |
+| Component | frontend css, accessibility |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Overriding a `components/ui` primitive with a same-specificity className works only if the primitive's CSS loads first. `Card.module.css` is in the main bundle (via `RouteError`), so a lazy chunk's rule wins; a primitive that lives only in another lazy chunk could win instead. For a size override on an `[data-size]` primitive use a selector at least as specific as the primitive's own.
+- Never put a `role="status"` line inside an `aria-busy="true"` container: some screen readers hold live-region updates inside a busy subtree. Put `aria-busy` only on the decorative skeleton.
+
+**Where:** `features/profile/RecentPosts.module.css`, `RecentPosts.tsx`, `ProfileStates.tsx`, `ProfileHeader.module.css`
+
+**Related:** [[knowledge/gotchas#^g18|G18]] · [[knowledge/gotchas#^g27|G27]]

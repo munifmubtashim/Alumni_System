@@ -1,0 +1,75 @@
+/* Design: S3 Recent posts (desktop and phone). Card radius is --radius-lg
+   (design 12px; token 14px). Off-scale spacing is calc() of tokens: card
+   padding 14px phone / 16px desktop, caption-to-meta gap 6px / 8px. Caption
+   label size on phone, text-body-sm from 48rem (design 13px / 14px); meta text-caption (design 11px / 12px)
+   in ink-muted. Cards are not links (no post page yet), so no hover state.
+   .card overrides Card's padding and gap: Card's CSS loads first (it is in
+   the main bundle via RouteError), so these same-specificity rules win.
+   .error: the alert spans the column like the post cards; Retry sits under
+   it, start-aligned (as on ProfileLoadError). */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+  padding: calc(var(--space-3) + var(--space-1) / 2);
+  min-width: 0;
+}
+
+.caption {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-body-sm);
+  font-size: var(--text-label-size);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font: var(--text-caption);
+  font-weight: var(--text-body-weight);
+}
+
+.skeletonMeta {
+  inline-size: 40%;
+  block-size: var(--text-caption-line);
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.retry {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-4);
+}
+
+@media (width >= 48rem) {
+  .card {
+    gap: var(--space-2);
+    padding: var(--space-4);
+  }
+
+  .caption {
+    font-size: var(--text-body-sm-size);
+  }
+}

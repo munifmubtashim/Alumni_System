@@ -7,6 +7,16 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] ship-gate-cleared | REQ-008-alumni-profile-page
+## [2026-10-07] req-ready-to-merge | REQ-008-alumni-profile-page | alumni profile page at /alumni/:id, S3 designs, lazy route, Back link keeps the directory search
+## [2026-10-07] lesson | L-REQ-008-1..6 — detail-page query/error state, heading focus, config handover, per-feature lazy ban, design line height vs stylelint, copies between lazy features
+## [2026-10-07] gotcha | G28–G30 — type-aware lint traps, test traps, CSS override order and live regions
+## [2026-10-07] concept | detail-page-pattern — first captured
+## [2026-10-07] verify-gate-cleared | REQ-008-alumni-profile-page | findings: C0/M0/m5 (m1-m6 fixed; m7-m11 open)
+## [2026-10-07] implement-gate-cleared | REQ-008-alumni-profile-page
+## [2026-10-07] architect-gate-cleared | REQ-008-alumni-profile-page
+## [2026-10-06] work-path-set | REQ-008-alumni-profile-page | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-06] spec-gate-cleared | REQ-008-alumni-profile-page
 ## [2026-10-06] ship-gate-cleared | REQ-007-app-shell-home-s1
 ## [2026-10-06] req-ready-to-merge | REQ-007-app-shell-home-s1 | S1 shell, avatar menu, phone tab bar, Home cards
 ## [2026-10-06] task-plan-cleared | REQ-007-app-shell-home-s1

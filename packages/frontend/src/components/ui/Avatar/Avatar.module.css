@@ -1,5 +1,6 @@
 /* Design: docs/design/screens/app/S2-Desktop-Light (result card avatar) and
-   S1-Desktop-Dark (the 32px header avatar, size xs).
+   S1-Desktop-Dark (the 32px header avatar, size xs), S3-Desktop-Light (the 84px
+   profile header avatar, size lg).
    Sizes are in rem so they scale with zoom; the design's 44px has no token. */
 
 .avatar {
@@ -15,6 +16,12 @@
   color: var(--accent-strong);
   font: var(--text-heading-sm);
   user-select: none;
+}
+
+.avatar[data-size='lg'] {
+  inline-size: 5.25rem;
+  block-size: 5.25rem;
+  font: var(--text-heading-lg);
 }
 
 .avatar[data-size='sm'] {
