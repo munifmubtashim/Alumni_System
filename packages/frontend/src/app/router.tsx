@@ -3,6 +3,7 @@ import { GuestOnly, LoginPage, RegisterPage, RequireAuth } from '@/features/auth
 import { HomePage } from '@/features/home';
 import { AppShell } from './AppShell';
 import { AuthShell } from './AuthShell';
+import { HydrateFallback } from './HydrateFallback';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -21,13 +22,29 @@ const AUTH_ROUTES: RouteObject[] = [
 ];
 
 /**
- * Pages inside AppShell (header). Home is the first signed-in page. Any
- * unknown path shows the empty shell.
+ * The directory page loads in its own chunk (ADR-08). Only this dynamic
+ * import may reference `features/directory`; `lazyRoutes.test.ts` fails on a
+ * static import of it anywhere in `src/`. `HydrateFallback` sits on this route
+ * object itself, so a direct visit keeps the shell and shows "Loading…" in
+ * `<main>` until the chunk arrives. A failed chunk load shows RouteError.
+ */
+export const DIRECTORY_ROUTE: RouteObject = {
+  path: 'directory',
+  HydrateFallback,
+  lazy: async () => {
+    const { DirectoryPage } = await import('@/features/directory/DirectoryPage');
+    return { Component: DirectoryPage };
+  },
+};
+
+/**
+ * Pages inside AppShell (header). Home is the first signed-in page; the
+ * directory is lazy. Any unknown path shows the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
   {
     element: <RequireAuth />,
-    children: [{ index: true, element: <HomePage /> }],
+    children: [{ index: true, element: <HomePage /> }, DIRECTORY_ROUTE],
   },
   { path: '*', element: null },
 ];

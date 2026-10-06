@@ -1,0 +1,84 @@
+import { createRef, useState } from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { SearchField } from '.';
+
+describe('SearchField', () => {
+  it('is a search box named by its label', () => {
+    render(<SearchField label="Search alumni" />);
+    const box = screen.getByRole('searchbox', { name: 'Search alumni' });
+    expect(box).toHaveAttribute('type', 'search');
+  });
+
+  it('keeps the label in the document but visually hidden', () => {
+    render(<SearchField label="Search alumni" />);
+    const label = screen.getByText('Search alumni');
+    expect(label.tagName).toBe('LABEL');
+    expect(label).toHaveClass('visuallyHidden');
+  });
+
+  it('hides the search icon from assistive tech', () => {
+    const { container } = render(<SearchField label="Search alumni" />);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('accepts typing and reports each change', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    function Controlled() {
+      const [value, setValue] = useState('');
+      return (
+        <SearchField
+          label="Search alumni"
+          value={value}
+          onChange={(event) => {
+            onChange(event.target.value);
+            setValue(event.target.value);
+          }}
+        />
+      );
+    }
+    render(<Controlled />);
+    const box = screen.getByRole('searchbox', { name: 'Search alumni' });
+
+    await user.type(box, 'Ada');
+
+    expect(box).toHaveValue('Ada');
+    expect(onChange).toHaveBeenLastCalledWith('Ada');
+    await user.clear(box);
+    expect(box).toHaveValue('');
+  });
+
+  it('passes native props and the ref to the input', () => {
+    const ref = createRef<HTMLInputElement>();
+    render(
+      <SearchField
+        ref={ref}
+        label="Search alumni"
+        placeholder="Search by name, company or role"
+        maxLength={100}
+        className="extra"
+      />,
+    );
+    const box = screen.getByRole('searchbox', { name: 'Search alumni' });
+    expect(ref.current).toBe(box);
+    expect(box).toHaveAttribute('maxlength', '100');
+    expect(box).toHaveAttribute('placeholder', 'Search by name, company or role');
+    expect(box).toHaveClass('input', 'extra');
+  });
+
+  it('respects an explicit id and gives each instance its own otherwise', () => {
+    render(
+      <>
+        <SearchField label="First" id="first" />
+        <SearchField label="Second" />
+        <SearchField label="Third" />
+      </>,
+    );
+    expect(screen.getByRole('searchbox', { name: 'First' })).toHaveAttribute('id', 'first');
+    expect(screen.getByRole('searchbox', { name: 'Second' }).id).not.toBe(
+      screen.getByRole('searchbox', { name: 'Third' }).id,
+    );
+  });
+});

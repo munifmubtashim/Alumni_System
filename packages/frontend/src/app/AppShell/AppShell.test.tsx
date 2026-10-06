@@ -1,4 +1,4 @@
-import type { MyProfile } from '@alumni/shared';
+import type { AlumniListItem, MyProfile } from '@alumni/shared';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -13,13 +13,13 @@ import { createMemoryRouter, type RouteObject } from 'react-router';
 // session redirects rely on it for a single navigation.
 import { RouterProvider } from 'react-router/dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SESSION_EXPIRED_MESSAGE } from '@/features/auth';
-import { getToken, setToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
+import { RequireAuth, SESSION_EXPIRED_MESSAGE } from '@/features/auth';
+import { clearToken, getToken, setToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
 import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
-import { createRoutes, routes } from '../router';
+import { createRoutes, DIRECTORY_ROUTE, routes } from '../router';
 
 // ---- tokens and a fake API at the axios adapter (the REQ-001 test policy) ----
 
@@ -191,9 +191,10 @@ describe('AppShell', () => {
     );
   });
 
-  // AC7: S1's Directory/Feed/My Profile/Admin links stay out until their pages
-  // exist. The banner's only nav is the guest "Account" one from HeaderAuth.
-  it('has no nav links in the header, only the brand link home and the auth area', async () => {
+  // REQ-004 AC7 kept S1's nav links out until their pages exist. REQ-006 AC2
+  // adds Directory: a guest's banner has only the "Account" nav from
+  // HeaderAuth; a signed-in user's has only the "Main" nav.
+  it('shows the guest only the Account nav, and a signed-in user only the Main nav', async () => {
     renderAt('/does-not-exist');
 
     let banner = screen.getByRole('banner');
@@ -213,12 +214,16 @@ describe('AppShell', () => {
     await renderSignedIn();
 
     banner = screen.getByRole('banner');
-    expect(within(banner).queryByRole('navigation')).not.toBeInTheDocument();
+    expect(
+      within(banner)
+        .getAllByRole('navigation')
+        .map((nav) => nav.ariaLabel),
+    ).toEqual(['Main']);
     expect(
       within(banner)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Alma']);
+    ).toEqual(['Alma', 'Directory']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -234,6 +239,114 @@ describe('AppShell', () => {
     expect(screen.queryByRole('banner')).not.toBeInTheDocument();
     expect(screen.queryByRole('main')).not.toBeInTheDocument();
     expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'shell failed' }));
+  });
+});
+
+// These tests pass their own stand-in pages to createRoutes, so the nav is
+// checked without the real (lazy) directory page; that page is covered below.
+function DirectoryStub() {
+  return <h1>Directory stub</h1>;
+}
+
+function OtherStub() {
+  return <h1>Other stub</h1>;
+}
+
+const NAV_TEST_ROUTES: RouteObject[] = [
+  { path: 'directory/*', element: <DirectoryStub /> },
+  { path: 'other', element: <OtherStub /> },
+];
+
+function renderNavAt(path: string) {
+  setToken(makeToken());
+  return renderAt(path, createRoutes(NAV_TEST_ROUTES));
+}
+
+function mainNav() {
+  return within(screen.getByRole('banner')).getByRole('navigation', { name: 'Main' });
+}
+
+describe('Header main nav', () => {
+  it('is hidden from a guest', () => {
+    // The stand-in pages are not behind RequireAuth, so a guest sees the shell.
+    renderAt('/directory', createRoutes(NAV_TEST_ROUTES));
+
+    const banner = screen.getByRole('banner');
+    expect(within(banner).queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument();
+    expect(within(banner).queryByRole('link', { name: 'Directory' })).not.toBeInTheDocument();
+  });
+
+  it('links to /directory', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveAttribute(
+      'href',
+      '/directory',
+    );
+  });
+
+  it('is not marked current on another page', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+
+  it.each(['/directory', '/directory?q=ana&page=2', '/directory/42'])(
+    'is marked current at %s',
+    async (path) => {
+      renderNavAt(path);
+      await screen.findByRole('heading', { name: 'Directory stub' });
+
+      expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    },
+  );
+
+  it('goes to the directory on click and becomes current', async () => {
+    const user = userEvent.setup();
+    const { router } = renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    await user.click(within(mainNav()).getByRole('link', { name: 'Directory' }));
+
+    expect(await screen.findByRole('heading', { name: 'Directory stub' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/directory');
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('is reachable by keyboard after the brand link', async () => {
+    const user = userEvent.setup();
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    within(screen.getByRole('banner')).getByRole('link', { name: 'Alma' }).focus();
+    await user.tab();
+
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveFocus();
+  });
+
+  it('disappears when the session ends', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+    expect(mainNav()).toBeInTheDocument();
+
+    // /other is not behind RequireAuth, so the header stays and must drop the nav.
+    act(() => {
+      clearToken();
+    });
+
+    const banner = screen.getByRole('banner');
+    expect(within(banner).queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument();
+    expect(within(banner).getByRole('link', { name: 'Log in' })).toBeInTheDocument();
   });
 });
 
@@ -375,5 +488,115 @@ describe('App routes', () => {
     expect(router.state.location.pathname).toBe('/login');
     expect(visits).toEqual(['/login']);
     expect(getToken()).toBeNull();
+  });
+});
+
+// ---- the lazy /directory route (ADR-08) ----
+
+const ARVID: AlumniListItem = {
+  id: 7,
+  user_id: 7,
+  name: 'Arvid Lund',
+  graduation_year: 2015,
+  department: 'Physics',
+};
+
+/** A route tree whose directory route is `DIRECTORY_ROUTE` with another `lazy`. */
+function directoryRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
+  return createRoutes([{ element: <RequireAuth />, children: [{ ...DIRECTORY_ROUTE, lazy }] }]);
+}
+
+/** A promise plus the function that resolves it. */
+function gate() {
+  let open: () => void = () => undefined;
+  const opened = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  return { opened, open };
+}
+
+describe('Directory route', () => {
+  beforeEach(() => {
+    mockApi({ 'GET /me': ok(AMINA), 'GET /alumni': ok({ items: [ARVID], total: 1 }) });
+  });
+
+  it('renders the directory page for a signed-in visit, with Directory current', async () => {
+    setToken(makeToken());
+    renderAt('/directory');
+
+    expect(await screen.findByRole('heading', { name: 'Alumni Directory' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Arvid Lund/ })).toBeInTheDocument();
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('sends a guest to /login, then back to /directory after logging in', async () => {
+    const token = makeToken();
+    mockApi({
+      'POST /auth/login': ok({ token }),
+      'GET /me': ok(AMINA),
+      'GET /alumni': ok({ items: [ARVID], total: 1 }),
+    });
+    const user = userEvent.setup();
+    const { router } = renderAt('/directory');
+
+    expect(await screen.findByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(apiCalls).not.toContain('GET /alumni');
+
+    await user.type(screen.getByRole('textbox', { name: 'Email' }), 'amina@example.com');
+    await user.type(screen.getByLabelText('Password'), 'correct-horse');
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+    expect(await screen.findByRole('heading', { name: 'Alumni Directory' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/directory');
+  });
+
+  // ADV-003: the fallback sits on the directory route itself, so the header
+  // stays and "Loading…" shows inside <main> until the chunk arrives.
+  it('keeps the shell and shows Loading… in main while the page code loads', async () => {
+    const chunk = gate();
+    setToken(makeToken());
+    renderAt(
+      '/directory',
+      directoryRoutesWith(async () => {
+        await chunk.opened;
+        return { Component: () => <h1>Directory loaded</h1> };
+      }),
+    );
+
+    // Wait out RequireAuth's own "Loading…" (the ['me'] query) first.
+    const banner = screen.getByRole('banner');
+    expect(await within(banner).findByRole('button', { name: 'Amina' })).toBeInTheDocument();
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
+    expect(within(banner).getByRole('link', { name: 'Alma' })).toBeInTheDocument();
+
+    await act(async () => {
+      chunk.open();
+      await chunk.opened;
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Directory loaded' })).toBeInTheDocument();
+    expect(within(main).queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows the route error inside the shell when the page code fails to load', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    setToken(makeToken());
+    renderAt(
+      '/directory',
+      directoryRoutesWith(() => Promise.reject(new Error('chunk failed'))),
+    );
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { name: 'Something went wrong.' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
+    expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'chunk failed' }));
   });
 });

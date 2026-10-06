@@ -1,0 +1,28 @@
+/* Header nav links, after docs/design/screens/app/S1-* (.nav-link): label
+   type in ink-secondary; the current page is ink-primary with a 2px accent
+   underline. The underline is a bottom border (transparent when inactive) so
+   the label does not shift. Focus uses the global :focus-visible ring. */
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.link {
+  padding-block: var(--space-2);
+  color: var(--ink-secondary);
+  font: var(--text-label);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.link:hover {
+  color: var(--ink-primary);
+}
+
+.active {
+  color: var(--ink-primary);
+  border-bottom-color: var(--accent);
+}
