@@ -7,6 +7,8 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-06] work-path-set | REQ-008-alumni-profile-page | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-06] spec-gate-cleared | REQ-008-alumni-profile-page
 ## [2026-10-06] ship-gate-cleared | REQ-007-app-shell-home-s1
 ## [2026-10-06] req-ready-to-merge | REQ-007-app-shell-home-s1 | S1 shell, avatar menu, phone tab bar, Home cards
 ## [2026-10-06] task-plan-cleared | REQ-007-app-shell-home-s1
