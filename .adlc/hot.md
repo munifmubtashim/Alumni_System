@@ -26,6 +26,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ## Entries
 
+## [2026-10-06] req-merged | REQ-005-alumni-search-filters | PR #18
+## [2026-10-06] req-archived | REQ-005-alumni-search-filters
 ## [2026-10-06] config-budgets | context/conventions.md: 23888 B → 7336 B, moved verbatim to conventions-api.md (5066), conventions-frontend.md (7245), conventions-testing.md (5844)
 ## [2026-10-06] ship-gate-cleared | REQ-006-alumni-directory-page
 ## [2026-10-06] req-ready-to-merge | REQ-006-alumni-directory-page | /directory alumni directory page: URL-held search/filters/page, lazy route, Directory nav link (stacked on REQ-005)

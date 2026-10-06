@@ -20,7 +20,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-002 | Login, sign-up and session handling on the new frontend | merged 2026-10-05 (PR #15) | specs/_archive/2026-10/m/REQ-002-auth-login-register |
 | REQ-003 | Require sign-in on every non-public backend route | merged 2026-10-06 (PR #16) | specs/_archive/2026-10/m/REQ-003-backend-route-auth |
 | REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | merged 2026-10-06 (PR #17) | specs/_archive/2026-10/m/REQ-004-alma-rebrand-auth-shell |
-| REQ-005 | Search, filters and paging for the alumni directory API | ready to merge 2026-10-06 | specs/2026-10/m/REQ-005-alumni-search-filters |
+| REQ-005 | Search, filters and paging for the alumni directory API | merged 2026-10-06 (PR #18) | specs/_archive/2026-10/m/REQ-005-alumni-search-filters |
 | REQ-006 | Alumni directory page at /directory (lazy route, URL-held search and filters, Directory nav link) | ready to merge 2026-10-06 (stacked on REQ-005) | specs/2026-10/m/REQ-006-alumni-directory-page |
 
 ## ADRs
