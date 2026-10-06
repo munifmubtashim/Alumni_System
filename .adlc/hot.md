@@ -7,6 +7,9 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] adr-accepted | ADR-09 optimistic updates by editing the TanStack Query cache
+## [2026-10-07] architect-gate-cleared | REQ-009-post-feed-page | adversary: 0 critical, 5 major fixed, 4 minor handled
+## [2026-10-07] work-path-set | REQ-009-post-feed-page | branch at /Users/munifmubtashim/Alumni_System
 ## [2026-10-07] task-escalated-to-proceed | REQ-009-post-feed-page | new PUT /api/comments/:id (public API contract) + 10+ files
 ## [2026-10-07] req-archived | REQ-008-alumni-profile-page
 ## [2026-10-06] req-merged | REQ-008-alumni-profile-page | PR #21 into redesign (d353a29d); PR #22 (8bf7314a) followed with the REQ-007 archive recovery

@@ -37,6 +37,7 @@ _(REQ pages by id, with a one-line summary)_
 | [[architecture/adr-06-config-leaf-layer\|ADR-06]] | `src/config/` leaf layer for app-wide constants | accepted | 2026-10-06 |
 | [[architecture/adr-07-root-layout-and-headerless-auth\|ADR-07]] | Root layout above two shells; header-less auth pages | accepted | 2026-10-06 |
 | [[architecture/adr-08-route-code-splitting-and-url-list-state\|ADR-08]] | Route `lazy` splitting; list state in the URL | accepted | 2026-10-06 |
+| [[architecture/adr-09-optimistic-updates-by-cache-edit\|ADR-09]] | Optimistic updates by editing the query cache | accepted | 2026-10-07 |
 
 ## Concepts
 
