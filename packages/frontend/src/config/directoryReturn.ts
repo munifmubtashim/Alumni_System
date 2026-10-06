@@ -10,6 +10,11 @@
 /** Where the directory lives. */
 export const DIRECTORY_PATH = '/directory';
 
+/** The profile page URL for an alumni id (`/alumni/<id>`, id URL-encoded). */
+export function profilePath(id: number | string): string {
+  return `/alumni/${encodeURIComponent(String(id))}`;
+}
+
 /** Router state a directory card hands to the profile page. */
 export interface DirectoryReturnState {
   directorySearch: string;

@@ -115,6 +115,8 @@ function held(data: unknown) {
 }
 
 const originalAdapter = httpClient.defaults.adapter;
+/** The QueryClient of the latest renderAt, for driving background refetches. */
+let currentClient = createQueryClient();
 const requests: string[] = [];
 
 interface Api {
@@ -160,6 +162,7 @@ function renderAt(entry: InitialEntry) {
   const client = createQueryClient();
   // Errors end at once here; the app's retry policy is tested in queryClient.test.ts.
   client.setDefaultOptions({ queries: { ...client.getDefaultOptions().queries, retry: false } });
+  currentClient = client;
   const router = createMemoryRouter(createRoutes(PAGE_ROUTES), { initialEntries: [entry] });
   render(
     <AppProviders queryClient={client} store={createStore()}>
@@ -245,6 +248,38 @@ describe('ProfilePage', () => {
 
     await expectFocusAndTitle('Amira Mendes', 'Amira Mendes · Alma');
     expect(requests.filter((url) => url === '/alumni/7')).toHaveLength(2);
+  });
+
+  it('keeps the profile when a background refetch fails', async () => {
+    mockApi({ profile: { '7': [ok(AMIRA), fail(500)] } });
+    renderAt('/alumni/7');
+    await expectFocusAndTitle('Amira Mendes', 'Amira Mendes · Alma');
+
+    const key = ['alumni', 'profile', '7'];
+    await act(() => currentClient.refetchQueries({ queryKey: key }));
+
+    expect(currentClient.getQueryState(key)?.status).toBe('error');
+    expect(requests.filter((url) => url === '/alumni/7')).toHaveLength(2);
+    expect(screen.getByRole('heading', { level: 1, name: 'Amira Mendes' })).toBeInTheDocument();
+    expect(screen.queryByText(LOAD_ERROR_HEADING)).not.toBeInTheDocument();
+  });
+
+  it('leaves focus on the Back link when the user tabbed to it while loading', async () => {
+    const answer = held(AMIRA);
+    mockApi({ profile: { '7': [answer.responder] } });
+    const user = userEvent.setup();
+    renderAt('/alumni/7');
+    await expectFocusAndTitle(LOADING_HEADING, 'Profile · Alma');
+
+    // The Back link sits just before the focused h1.
+    await user.tab({ shift: true });
+    expect(backLink()).toHaveFocus();
+
+    act(() => {
+      answer.release();
+    });
+    await h1('Amira Mendes');
+    expect(backLink()).toHaveFocus();
   });
 
   it('a 401 ends the session through the existing handler', async () => {

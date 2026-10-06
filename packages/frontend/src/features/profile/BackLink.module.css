@@ -3,14 +3,15 @@
    in ink, "Profile" 14px semibold, 10px gap). On phone this is a slim row in
    the page under the shell's own bar (gate decision), not S3's separate bar.
    Off-scale gaps are calc() of tokens: 6px = space-1 + space-1 / 2,
-   10px = space-2 + space-1 / 2. The phone link gets space-1 padding (negative
-   margin keeps the layout) so its target is 28px, not 20px. The label is
-   clipped below 48rem, never display:none (G18). */
+   10px = space-2 + space-1 / 2. On phone the "Profile" title sits inside the
+   link, so the word is tappable too; the clipped label is absolutely
+   positioned there, so it takes no flex gap. The phone link gets space-1
+   padding (negative margin keeps the layout) so its target is 28px tall. The
+   label is clipped below 48rem, never display:none (G18). */
 
 .row {
   display: flex;
   align-items: center;
-  gap: calc(var(--space-2) + var(--space-1) / 2);
 }
 
 .link {
@@ -40,6 +41,10 @@
 }
 
 @media (width < 48rem) {
+  .link {
+    gap: calc(var(--space-2) + var(--space-1) / 2);
+  }
+
   .label {
     position: absolute;
     width: 1px;

@@ -22,6 +22,9 @@ export interface RecentPostsProps {
  * Recent posts: the newest five, each as a PostCard. It owns its states, so a
  * posts failure never hides the rest of the profile (AC9): skeleton cards while
  * loading, an inline message with Retry on error, "No posts yet" when empty.
+ * A failed background refetch keeps the posts already shown. The loading status
+ * line sits outside the aria-busy skeletons so it is announced (as in
+ * ProfileStates).
  */
 export function RecentPosts({ userId }: RecentPostsProps) {
   const headingId = useId();
@@ -30,11 +33,11 @@ export function RecentPosts({ userId }: RecentPostsProps) {
   let body: ReactNode;
   if (posts.isPending) {
     body = (
-      <div aria-busy="true">
+      <>
         <VisuallyHidden as="p" role="status">
           Loading posts…
         </VisuallyHidden>
-        <div className={styles.list}>
+        <div className={styles.list} aria-busy="true">
           {Array.from({ length: SKELETON_COUNT }, (_, index) => (
             <Card key={index} className={styles.card} aria-hidden="true">
               <Skeleton />
@@ -42,9 +45,9 @@ export function RecentPosts({ userId }: RecentPostsProps) {
             </Card>
           ))}
         </div>
-      </div>
+      </>
     );
-  } else if (posts.isError) {
+  } else if (posts.isError && posts.data === undefined) {
     body = (
       <div className={styles.error}>
         <Alert tone="error" title="Posts didn't load">

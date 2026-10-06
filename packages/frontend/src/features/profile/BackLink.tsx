@@ -6,8 +6,9 @@ import styles from './BackLink.module.css';
  * The profile's top row: one link back to the directory, restoring the search,
  * filters and page the card was clicked from (router state, REQ-008 AC10).
  * From 48rem: chevron + "Back to directory" (S3 desktop). Below 48rem: the
- * chevron alone, its text visually hidden (clip, not display:none, so the name
- * stays), with an aria-hidden "Profile" title beside it (S3 phone's bar). The
+ * chevron and the "Profile" title (S3 phone's bar), both inside the link so the
+ * word is part of the tap target; "Back to directory" is visually hidden (clip,
+ * not display:none, so the name stays) and "Profile" is aria-hidden, so the
  * link's name is "Back to directory" at both widths.
  */
 export function BackLink() {
@@ -31,10 +32,10 @@ export function BackLink() {
           <polyline points="15 18 9 12 15 6" />
         </svg>
         <span className={styles.label}>Back to directory</span>
+        <span className={styles.title} aria-hidden="true">
+          Profile
+        </span>
       </Link>
-      <span className={styles.title} aria-hidden="true">
-        Profile
-      </span>
     </div>
   );
 }

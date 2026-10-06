@@ -4,7 +4,9 @@
    label size on phone, text-body-sm from 48rem (design 13px / 14px); meta text-caption (design 11px / 12px)
    in ink-muted. Cards are not links (no post page yet), so no hover state.
    .card overrides Card's padding and gap: Card's CSS loads first (it is in
-   the main bundle via RouteError), so these same-specificity rules win. */
+   the main bundle via RouteError), so these same-specificity rules win.
+   .error: the alert spans the column like the post cards; Retry sits under
+   it, start-aligned (as on ProfileLoadError). */
 
 .list {
   display: flex;
@@ -51,11 +53,13 @@
 .error {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .retry {
+  align-self: flex-start;
   padding: var(--space-2) var(--space-4);
 }
 

@@ -18,8 +18,13 @@ type View = 'loading' | 'notFound' | 'error' | 'profile';
  * profile query decides the state: loading, not found (a 404, which the API
  * also gives for a malformed id), load error with Retry, or the profile. Each
  * state has its own h1, and focus moves to it whenever the state or the id
- * changes, so focus is never left on a node that unmounted (L-REQ-006-2).
- * Recent posts owns its own states, so a posts failure keeps the profile.
+ * changes, so focus is never left on a node that unmounted (L-REQ-006-2). It
+ * moves only when focus is on the body or on a node that left the page (a
+ * clicked directory card, a Retry that succeeded); a control the user tabbed
+ * to, such as the Back link, keeps it. A failed background refetch keeps the
+ * profile already shown (TanStack Query keeps `data` and sets `isError`); only
+ * a 404 replaces it. Recent posts owns its own states, so a posts failure
+ * keeps the profile.
  */
 export function ProfilePage() {
   const { id } = useParams();
@@ -29,11 +34,15 @@ export function ProfilePage() {
   let view: View;
   if (id === undefined || id === '') view = 'notFound';
   else if (profile.isPending) view = 'loading';
-  else if (profile.isError) view = isNotFoundError(profile.error) ? 'notFound' : 'error';
+  else if (profile.isError && isNotFoundError(profile.error)) view = 'notFound';
+  else if (profile.isError && profile.data === undefined) view = 'error';
   else view = 'profile';
 
   useEffect(() => {
-    headingRef.current?.focus();
+    const active = document.activeElement;
+    if (active === null || active === document.body || !active.isConnected) {
+      headingRef.current?.focus();
+    }
   }, [id, view]);
 
   let body: ReactNode;

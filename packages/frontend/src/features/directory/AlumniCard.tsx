@@ -2,7 +2,7 @@ import type { AlumniListItem } from '@alumni/shared';
 import { Link, useLocation } from 'react-router';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { directoryReturnState } from '@/config/directoryReturn';
+import { directoryReturnState, profilePath } from '@/config/directoryReturn';
 import styles from './AlumniCard.module.css';
 
 export interface AlumniCardProps {
@@ -37,11 +37,7 @@ export function AlumniCard({ alumnus }: AlumniCardProps) {
   const job = jobLine(alumnus);
 
   return (
-    <Link
-      to={`/alumni/${String(alumnus.id)}`}
-      state={directoryReturnState(search)}
-      className={styles.card}
-    >
+    <Link to={profilePath(alumnus.id)} state={directoryReturnState(search)} className={styles.card}>
       <div className={styles.header}>
         <Avatar name={name} photoUrl={present(alumnus.photo_url)} />
         <div className={styles.identity}>

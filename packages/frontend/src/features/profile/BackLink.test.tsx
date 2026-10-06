@@ -43,13 +43,20 @@ describe('BackLink', () => {
   it('is the only link, named "Back to directory" (its text is in the DOM at every width)', () => {
     renderAt();
     expect(screen.getAllByRole('link')).toHaveLength(1);
-    expect(link()).toHaveTextContent(/^Back to directory$/);
+    expect(link()).toHaveAccessibleName('Back to directory');
+    expect(screen.getByText('Back to directory')).not.toHaveAttribute('aria-hidden');
   });
 
-  it('keeps the phone "Profile" title out of the accessibility tree', () => {
+  it('puts the phone "Profile" title inside the link, out of the accessibility tree', () => {
     renderAt();
     const title = screen.getByText('Profile');
     expect(title).toHaveAttribute('aria-hidden', 'true');
-    expect(link()).not.toContainElement(title);
+    expect(link()).toContainElement(title);
+  });
+
+  it('follows the link when the "Profile" title is tapped', async () => {
+    renderAt(directoryReturnState('?q=ann'));
+    await userEvent.setup().click(screen.getByText('Profile'));
+    expect(screen.getByText('At /directory?q=ann')).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 import type { Post } from '@alumni/shared';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   AxiosError,
@@ -74,11 +74,12 @@ function renderPosts(userId = 7) {
   client.setDefaultOptions({
     queries: { ...client.getDefaultOptions().queries, retry: false },
   });
-  return render(
+  render(
     <QueryClientProvider client={client}>
       <RecentPosts userId={userId} />
     </QueryClientProvider>,
   );
+  return client;
 }
 
 const region = () => screen.getByRole('region', { name: 'Recent posts' });
@@ -104,7 +105,10 @@ describe('RecentPosts', () => {
     renderPosts();
     expect(screen.getByRole('heading', { level: 2, name: 'Recent posts' })).toBeInTheDocument();
     expect(within(region()).getByRole('status')).toHaveTextContent('Loading posts…');
-    expect(region().querySelector('[aria-busy="true"]')).not.toBeNull();
+    const busy = region().querySelector('[aria-busy="true"]');
+    expect(busy).not.toBeNull();
+    // A live region inside a busy subtree may not be announced (REFL-004).
+    expect(busy?.contains(within(region()).getByRole('status'))).toBe(false);
     expect(screen.queryByRole('article')).not.toBeInTheDocument();
   });
 
@@ -120,6 +124,19 @@ describe('RecentPosts', () => {
     expect(await within(region()).findByText('Post 1')).toBeInTheDocument();
     expect(within(region()).queryByRole('alert')).not.toBeInTheDocument();
     expect(requests).toHaveLength(2);
+  });
+
+  it('keeps the loaded posts when a background refetch fails', async () => {
+    mockPosts(ok([post(1)]), fail(500));
+    const client = renderPosts();
+    await within(region()).findByText('Post 1');
+
+    await act(() => client.refetchQueries({ queryKey: ['posts', 'user', 7] }));
+
+    expect(client.getQueryState(['posts', 'user', 7])?.status).toBe('error');
+    expect(requests).toHaveLength(2);
+    expect(within(region()).getByText('Post 1')).toBeInTheDocument();
+    expect(within(region()).queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('says "No posts yet" when the person has none', async () => {

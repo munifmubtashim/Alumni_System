@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { DIRECTORY_PATH, directoryReturnPath, directoryReturnState } from './directoryReturn';
+import {
+  DIRECTORY_PATH,
+  directoryReturnPath,
+  directoryReturnState,
+  profilePath,
+} from './directoryReturn';
 
 describe('directoryReturnState', () => {
   it('wraps the search string', () => {
@@ -41,5 +46,19 @@ describe('directoryReturnPath', () => {
     ['a value with a hash', { directorySearch: '?a#b' }],
   ])('gives /directory for %s', (_label, state) => {
     expect(directoryReturnPath(state)).toBe('/directory');
+  });
+});
+
+describe('profilePath', () => {
+  it('builds the path for a number id', () => {
+    expect(profilePath(7)).toBe('/alumni/7');
+  });
+
+  it('builds the path for a string id', () => {
+    expect(profilePath('42')).toBe('/alumni/42');
+  });
+
+  it('encodes odd characters so they stay in one path segment', () => {
+    expect(profilePath('a/b?c#d e')).toBe('/alumni/a%2Fb%3Fc%23d%20e');
   });
 });
