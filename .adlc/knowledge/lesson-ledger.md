@@ -41,3 +41,4 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-006-1 | An input that mirrors a URL param must track its own last write | frontend, url-state, debounce, search | trap | REQ-006 |
 | LESSON-REQ-006-2 | A list that swaps to skeletons on every query change strands keyboard focus | frontend, accessibility, focus, pagination | trap | REQ-006 |
 | LESSON-REQ-006-3 | A client copy of an API's validation limits needs a pointer to its source | frontend, backend, validation, api | guideline | REQ-006 |
+| LESSON-REQ-007-1 | A sticky bottom bar needs a matching scroll-padding, or focus lands behind it | frontend, accessibility, focus, layout, phone | guideline | REQ-007 |

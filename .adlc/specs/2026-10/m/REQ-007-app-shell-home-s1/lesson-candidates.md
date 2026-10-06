@@ -18,3 +18,12 @@
 **Claim:** Size/colour choices that map a design value to a calc() of tokens should be listed once in a design-gap note, not only in CSS comments.
 **Saw it in:** `packages/frontend/src/features/home/HomePage.module.css`, `app/AppShell/AppShell.module.css`
 **Context:** Many 10px/14px/20px calc() workarounds; the requirement says gaps are listed after the screenshot pass.
+
+## Candidate verdicts
+
+| Candidate | Verdict | Why |
+|---|---|---|
+| CAND-901 | discard | Fixed here; too narrow to keep |
+| CAND-902 | promote | LESSON-REQ-007-1 |
+| CAND-001 | discard | Repeat of L-REQ-002-6; docs were fixed in this REQ |
+| CAND-002 | discard | The gaps are listed in pr-draft.md; no lasting rule |
