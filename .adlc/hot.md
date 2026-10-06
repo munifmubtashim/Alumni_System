@@ -24,6 +24,12 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ## Entries
 
+## [2026-10-06] ship-gate-cleared | REQ-006-alumni-directory-page
+## [2026-10-06] req-ready-to-merge | REQ-006-alumni-directory-page | /directory alumni directory page: URL-held search/filters/page, lazy route, Directory nav link (stacked on REQ-005)
+## [2026-10-06] lesson | L-REQ-006-1..3 — URL-mirrored input own-write tracking, skeleton swaps strand focus, client copies of API limits
+## [2026-10-06] gotcha | G25–G27 — Base UI Popover focus, list-page test traps, component and lint traps (G19 extended)
+## [2026-10-06] concept | route-layout — updated for MainNav and the lazy directory route
+## [2026-10-06] component | frontend — updated to REQ-006; conventions.md Frontend/Testing sections updated
 ## [2026-10-06] verify-gate-cleared | REQ-006-alumni-directory-page | findings: C0/M0/m5/t2 open (your-call); 11 fixed in 2 rounds
 ## [2026-10-06] config | git.mode=commit
 ## [2026-10-06] implement-gate-cleared | REQ-006-alumni-directory-page

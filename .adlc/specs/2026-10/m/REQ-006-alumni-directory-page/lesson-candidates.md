@@ -178,3 +178,46 @@
 **Claim:** Reproduce a "between navigate and render" race in one `act`: `vi.advanceTimersByTime` to fire the write, then `fireEvent.change`; nested acts flush only when the outer one ends.
 **Saw it in:** `packages/frontend/src/features/directory/FilterBar.test.tsx` (keeps a key typed while its own write lands)
 **Context:** userEvent awaits between steps, so the render always lands first and the race never shows.
+
+## Candidate verdicts
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g26 |
+| CAND-002 | demote-to-gotcha | ^g27 |
+| CAND-003 | discard | one-off design choice (the design won over the task text) |
+| CAND-004 | demote-to-gotcha | ^g19 (extended) |
+| CAND-005 | discard | wrong rule; replaced by CAND-020 (reflect), in ^g27 |
+| CAND-006 | demote-to-gotcha | ^g27 |
+| CAND-007 | demote-to-gotcha | ^g27 |
+| CAND-008 | demote-to-gotcha | ^g26 (answered by CAND-023 reflect) |
+| CAND-009 | demote-to-gotcha | ^g25 |
+| CAND-010 | demote-to-gotcha | ^g25 |
+| CAND-011 | promote | LESSON-REQ-006-1 |
+| CAND-012 | demote-to-gotcha | ^g26 |
+| CAND-013 | demote-to-gotcha | ^g27 |
+| CAND-014 | demote-to-gotcha | ^g27 |
+| CAND-015 | demote-to-gotcha | ^g26 |
+| CAND-016 | discard | wrong: superseded by CAND-026 |
+| CAND-017 | discard | one-off to FilterBar; the parser rule it relies on is in LESSON-REQ-006-3 |
+| CAND-018 | demote-to-gotcha | ^g26 |
+| CAND-019 | demote-to-gotcha | ^g26 |
+| CAND-ARCH-A | demote-to-gotcha | ^g27 (ESLint ban first, test second) |
+| CAND-ARCH-B | promote | LESSON-REQ-006-3 |
+| CAND-020 (corr) | promote | LESSON-REQ-006-1 |
+| CAND-021 (qual) | discard | fixed by the VisuallyHidden component; a one-off copy |
+| CAND-022 (qual) | demote-to-gotcha | ^g26 (shared test helper is an open follow-up, QUAL-002) |
+| CAND-023 (qual) | demote-to-gotcha | ^g27 |
+| CAND-024 (qual) | discard | duplicate of LESSON-REQ-001-8 (conventions.md is updated in this wrap-up) |
+| CAND-020 (reflect) | demote-to-gotcha | ^g27 (`cx`) |
+| CAND-021 (reflect) | promote | LESSON-REQ-006-3 |
+| CAND-022 (reflect) | demote-to-gotcha | ^g27 (`ink-muted`; extends L-REQ-004-2) |
+| CAND-023 (reflect) | demote-to-gotcha | ^g26 |
+| CAND-UI-001 | promote | LESSON-REQ-006-2 |
+| CAND-UI-002 | demote-to-gotcha | ^g26 |
+| CAND-024 (impl) | demote-to-gotcha | ^g27 |
+| CAND-025 | demote-to-gotcha | ^g27 |
+| CAND-026 | promote | LESSON-REQ-006-1 (supersedes CAND-016) |
+| CAND-027 | promote | LESSON-REQ-006-1 |
+
+Candidate IDs repeat across reviewers and implementers (CAND-020 to 024 each appear twice); the source tag in brackets tells them apart.
