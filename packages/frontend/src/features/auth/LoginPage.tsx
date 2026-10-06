@@ -4,9 +4,11 @@ import { flushSync } from 'react-dom';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { sessionNoticeAtom } from '@/store/sessionNoticeAtom';
 import { INVALID_CREDENTIALS_MESSAGE, mapLoginError, UNEXPECTED_MESSAGE } from './authErrors';
 import { AuthLayout } from './AuthLayout';
+import { ForgotPasswordHelp } from './ForgotPasswordHelp';
 import { useLogin } from './useLogin';
 import { validateLogin, type LoginErrors, type LoginValues } from './validation';
 import styles from './LoginPage.module.css';
@@ -97,7 +99,8 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Log in"
-      footer={{ prompt: 'No account?', linkLabel: 'Sign up', to: '/register' }}
+      headline="Welcome back to your alumni network."
+      footer={{ prompt: 'New here?', linkLabel: 'Create an account', to: '/register' }}
     >
       {notice === 'expired' && <Alert tone="info">{SESSION_EXPIRED_MESSAGE}</Alert>}
       <form noValidate className={styles.form} onSubmit={handleSubmit}>
@@ -112,20 +115,23 @@ export function LoginPage() {
           name="email"
           type="email"
           autoComplete="email"
+          placeholder="you@university.edu"
           value={values.email}
           error={errors.email}
           onChange={handleChange('email')}
         />
-        <Input
-          ref={passwordRef}
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={values.password}
-          error={errors.password}
-          onChange={handleChange('password')}
-        />
+        <div className={styles.passwordGroup}>
+          <PasswordInput
+            ref={passwordRef}
+            label="Password"
+            name="password"
+            autoComplete="current-password"
+            value={values.password}
+            error={errors.password}
+            onChange={handleChange('password')}
+          />
+          <ForgotPasswordHelp />
+        </div>
         <Button type="submit" variant="primary" loading={login.isPending} className={styles.submit}>
           Log in
         </Button>

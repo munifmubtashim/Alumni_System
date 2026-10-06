@@ -12,6 +12,11 @@ export interface InputProps extends ComponentPropsWithRef<'input'> {
    * and the message is added to its accessible description (before the helper).
    */
   error?: string;
+  /**
+   * A control shown inside the field at its end edge, e.g. PasswordInput's
+   * show/hide button. The input gets extra end padding so text never runs under it.
+   */
+  endAdornment?: ReactNode;
 }
 
 /** A labeled text field. Native input props (and `className`) go to the <input>. */
@@ -19,6 +24,7 @@ export function Input({
   label,
   helperText,
   error,
+  endAdornment,
   id,
   className,
   'aria-describedby': describedBy,
@@ -32,19 +38,23 @@ export function Input({
   const hasHelper = helperText !== undefined && helperText !== null && helperText !== '';
   const hasError = error !== undefined && error !== '';
   const describedByIds = cx(describedBy, hasError && errorId, hasHelper && helperId) || undefined;
+  const hasAdornment = endAdornment !== undefined && endAdornment !== null;
 
   return (
     <div className={styles.field}>
       <label className={styles.label} htmlFor={inputId}>
         {label}
       </label>
-      <input
-        {...rest}
-        id={inputId}
-        aria-invalid={hasError ? true : ariaInvalid}
-        aria-describedby={describedByIds}
-        className={cx(styles.input, className)}
-      />
+      <div className={styles.control}>
+        <input
+          {...rest}
+          id={inputId}
+          aria-invalid={hasError ? true : ariaInvalid}
+          aria-describedby={describedByIds}
+          className={cx(styles.input, hasAdornment && styles.withAdornment, className)}
+        />
+        {hasAdornment && <div className={styles.adornment}>{endAdornment}</div>}
+      </div>
       {hasError && (
         <p id={errorId} className={styles.error}>
           {error}

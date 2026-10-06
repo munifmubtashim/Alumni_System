@@ -33,3 +33,6 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-003-3 | When you change error handling in a controller, move every handler in that file to the shared helper | backend, api, errors | guideline | REQ-003 |
 | LESSON-REQ-003-4 | A package tested through a source alias needs a typecheck that includes its tests | backend, testing, typescript, build | guideline | REQ-003 |
 | LESSON-REQ-003-5 | Declare a dependency in the workspace that imports it, not only at the root | npm-workspaces, dependencies, backend | nice-to-know | REQ-003 |
+| LESSON-REQ-004-1 | Mount app-wide effects in a path-less root layout, never inside one shell | frontend, routing, session, auth | trap | REQ-004 |
+| LESSON-REQ-004-2 | Check a design's colour choice against the real token pair before using it | frontend, design-tokens, accessibility, contrast | guideline | REQ-004 |
+| LESSON-REQ-004-3 | When code moves between layers, grep the ADRs and context pages for its old home in the same change | adr, docs, architecture | nice-to-know | REQ-004 |

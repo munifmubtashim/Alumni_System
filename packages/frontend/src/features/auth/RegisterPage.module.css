@@ -27,3 +27,16 @@
 .submit {
   align-self: stretch;
 }
+
+/* Student fields side by side, as in the design; each needs 12rem, so they
+   stack on phones and at 200% zoom. */
+.pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5) var(--space-4);
+}
+
+.pair > * {
+  flex: 1 1 12rem;
+  min-width: 0;
+}

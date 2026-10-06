@@ -90,4 +90,23 @@ describe('Input', () => {
     expect(input).not.toHaveAttribute('aria-invalid');
     expect(input).not.toHaveAttribute('aria-describedby');
   });
+
+  it('renders an end adornment inside the field and pads the input for it', () => {
+    render(<Input label="Search" endAdornment={<button type="button">Clear</button>} />);
+    const input = screen.getByLabelText('Search');
+    const button = screen.getByRole('button', { name: 'Clear' });
+    expect(input.parentElement).toHaveClass('control');
+    expect(input.parentElement).toContainElement(button);
+    expect(input).toHaveClass('withAdornment');
+  });
+
+  it('adds no adornment padding without an adornment', () => {
+    render(<Input label="Email" />);
+    expect(screen.getByLabelText('Email')).not.toHaveClass('withAdornment');
+  });
+
+  it('renders the label directly in the field', () => {
+    render(<Input label="Email" />);
+    expect(screen.getByText('Email').parentElement).toHaveClass('field');
+  });
 });

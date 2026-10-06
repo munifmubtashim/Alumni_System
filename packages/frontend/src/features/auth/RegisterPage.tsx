@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { SegmentedControl, type SegmentedControlOption } from '@/components/ui/SegmentedControl';
 import { mapRegisterError, UNEXPECTED_MESSAGE } from './authErrors';
 import { AuthLayout } from './AuthLayout';
@@ -140,6 +141,7 @@ export function RegisterPage() {
   return (
     <AuthLayout
       title="Sign up"
+      headline="Stay connected with your alumni network."
       footer={{ prompt: 'Already have an account?', linkLabel: 'Log in', to: '/login' }}
     >
       <form noValidate className={styles.form} onSubmit={handleSubmit}>
@@ -175,6 +177,7 @@ export function RegisterPage() {
           name="email"
           type="email"
           autoComplete="email"
+          placeholder="you@university.edu"
           value={values.email}
           error={errors.email}
           helperText={
@@ -186,11 +189,10 @@ export function RegisterPage() {
           }
           onChange={handleChange('email')}
         />
-        <Input
+        <PasswordInput
           ref={passwordRef}
           label="Password"
           name="password"
-          type="password"
           autoComplete="new-password"
           helperText="At least 8 characters"
           value={values.password}
@@ -207,7 +209,7 @@ export function RegisterPage() {
           onChange={handleChange('university')}
         />
         {isStudent && (
-          <>
+          <div className={styles.pair}>
             <Input
               ref={departmentRef}
               label="Department"
@@ -228,7 +230,7 @@ export function RegisterPage() {
               error={errors.expected_graduation_year}
               onChange={handleChange('expected_graduation_year')}
             />
-          </>
+          </div>
         )}
         <Button
           type="submit"

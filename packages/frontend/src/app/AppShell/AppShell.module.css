@@ -1,4 +1,6 @@
 /* App frame: full-width header with a hairline, content in a centered column.
+   Header follows docs/design/screens/app/S1-* (raised surface, hairline, logo
+   left, actions right; 4rem tall from 48rem up), without its nav links.
    Gutters are space-4 on small screens and space-6 from 48rem up. Everything
    wraps rather than overflowing, down to 360px and at 200% zoom. */
 
@@ -28,8 +30,11 @@
 }
 
 .header {
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid var(--border-subtle);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-raised);
 }
 
 .headerInner,
@@ -46,9 +51,12 @@
   gap: var(--space-4);
 }
 
+/* Brand link home: the Logo with its wordmark, which gives the link its name. */
 .brand {
+  display: inline-flex;
   color: var(--ink-primary);
-  font: var(--text-heading-sm);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
 }
 
 /* Auth area + theme toggle. Wraps under the brand on narrow widths. */
@@ -86,7 +94,8 @@
 
 @media (width >= 48rem) {
   .header {
-    padding: var(--space-5) var(--space-6);
+    min-height: 4rem;
+    padding: var(--space-3) var(--space-6);
   }
 
   .main {

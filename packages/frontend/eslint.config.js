@@ -60,8 +60,12 @@ function layerBoundary({ files, ignores = [], paths = [], patterns }) {
   return blocks;
 }
 
-// UI primitives must stay presentational: no data, state, or app wiring.
-const UI_FORBIDDEN_LAYERS = ['services', 'store', 'features'];
+// UI primitives must stay presentational: no data, state, or app wiring. They
+// also take brand text as props rather than reading config/.
+const UI_FORBIDDEN_LAYERS = ['services', 'store', 'features', 'config'];
+
+// config/ is a leaf: constants that app/ and features/ share, importing nothing internal.
+const CONFIG_FORBIDDEN_LAYERS = ['features', 'components', 'store', 'services'];
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage']),
@@ -149,6 +153,15 @@ export default defineConfig([
     patterns: [
       layerBan('services', 'Store atoms must not call services — features wire them.'),
       layerBan('features', 'Store must not import features/ — features read the store.'),
+      NO_APP,
+    ],
+  }),
+  ...layerBoundary({
+    files: ['src/config/**/*.{ts,tsx}'],
+    patterns: [
+      ...CONFIG_FORBIDDEN_LAYERS.map((layer) =>
+        layerBan(layer, `config/ is a leaf and must not import from ${layer}/.`),
+      ),
       NO_APP,
     ],
   }),

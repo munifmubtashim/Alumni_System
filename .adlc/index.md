@@ -19,6 +19,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-001 | Rebuild the frontend foundation on the new design system | merged 2026-10-05 (PR #14) | specs/_archive/2026-10/m/REQ-001-frontend-foundation |
 | REQ-002 | Login, sign-up and session handling on the new frontend | merged 2026-10-05 (PR #15) | specs/_archive/2026-10/m/REQ-002-auth-login-register |
 | REQ-003 | Require sign-in on every non-public backend route | merged 2026-10-06 (PR #16) | specs/_archive/2026-10/m/REQ-003-backend-route-auth |
+| REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | ready to merge 2026-10-06 | specs/2026-10/m/REQ-004-alma-rebrand-auth-shell |
 
 ## ADRs
 
@@ -29,6 +30,8 @@ _(REQ pages by id, with a one-line summary)_
 | [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] | Frontend session: token store + ['me'] Query; global 401 via registered handler | accepted | 2026-10-05 |
 | [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library for now | accepted | 2026-10-05 |
 | [[architecture/adr-05-backend-tests-vitest-supertest\|ADR-05]] | Backend tests: Vitest + supertest, one mocked boundary per level, no DB | accepted | 2026-10-05 |
+| [[architecture/adr-06-config-leaf-layer\|ADR-06]] | `src/config/` leaf layer for app-wide constants | accepted | 2026-10-06 |
+| [[architecture/adr-07-root-layout-and-headerless-auth\|ADR-07]] | Root layout above two shells; header-less auth pages | accepted | 2026-10-06 |
 
 ## Concepts
 
@@ -37,6 +40,7 @@ Patterns, rules that must always hold, domain models.
 | Page | One-line summary |
 |---|---|
 | [[knowledge/concepts/design-tokens]] | tokens.json → generated CSS variables; tokens-only enforced by lint; contrast pinned by test |
+| [[knowledge/concepts/route-layout]] | one root layout (session + theme effects) above AuthShell (no header) and AppShell (header); two error layers per shell |
 | [[knowledge/concepts/session-and-401]] | token store + `['me']` Query; registered 401 handler; one expire path (401 or timer); guards own navigation |
 
 ## Components

@@ -393,3 +393,86 @@ Use both. They serve different purposes.
 **Don't:** Don't build the review-packet diff with bare `:!<glob>` pathspecs. Use `:(exclude,glob)<glob>`, and check the packet size before dispatching reviewers.
 
 **Related:** [[REQ-003]]
+
+---
+
+## G17 — Base UI Tooltip on a Base UI Radio: render the radio through the trigger ^g17
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-004 |
+| Component | components/ui/SegmentedControl |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** An icon-only segment shows its name as a Tooltip by rendering the radio as the trigger: `<Tooltip.Trigger render={<Radio.Root aria-label={label} value=…/>}>`. The radio keeps its role and roving focus, arrow keys open each tooltip, and the accessible name must come from `aria-label` (the child is only an icon).
+
+**Where:** `packages/frontend/src/components/ui/SegmentedControl/SegmentedControl.tsx`
+
+**Why it's surprising:** Wrapping the radio in a Trigger instead breaks focus order and doubles the focusable element.
+
+**Don't:** Don't nest a Trigger around the Radio, and don't rely on the tooltip text for the name. Test keyboard focus and hover opening.
+
+**Related:** [[knowledge/gotchas#^g05|G05]] · [[knowledge/gotchas#^g09|G09]] · [[REQ-004]]
+
+---
+
+## G18 — Never set `display` on an element toggled with the `hidden` attribute ^g18
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-004 |
+| Component | frontend CSS |
+| Status | confirmed |
+| Severity | trap |
+
+**What:** A CSS Module rule like `.message { display: block }` beats the browser's `[hidden] { display: none }`, so the element shows even when `hidden` is set.
+
+**Where:** `packages/frontend/src/features/auth/ForgotPasswordHelp.module.css` (`.message` deliberately has no `display`)
+
+**Don't:** Leave `display` off such elements, or add `.x[hidden] { display: none }` if a layout needs `display`.
+
+**Related:** [[REQ-004]]
+
+---
+
+## G19 — Auth and shell test traps ^g19
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-004 |
+| Component | frontend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- `queryByText` ignores `aria-hidden`, so it can't prove text is hidden from assistive tech; use role queries or check the hidden ancestor.
+- "Exactly one button" assertions break when a page gains a disclosure or a show/hide toggle; count `type="submit"` buttons instead.
+- `/login` and `/register` render in `AuthShell` (no header). To test "a guest sees the header", use an unknown path such as `/does-not-exist`.
+- A guest header has `HeaderAuth`'s `<nav aria-label="Account">`; "no nav links" tests must allow it.
+
+**Where:** `LoginPage.test.tsx`, `RegisterPage.test.tsx`, `AppShell.test.tsx`
+
+**Related:** [[knowledge/concepts/route-layout]] · [[REQ-004]]
+
+---
+
+## G20 — `index.html` holds copies of two constants; both are pinned by tests ^g20
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-004 |
+| Component | packages/frontend/index.html |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** Static HTML can't import TypeScript, so `index.html` repeats the theme storage key (inline no-flash script, [[knowledge/gotchas#^g01|G01]]) and the `<title>` (= `BRAND_NAME`). `themeAtom.test.ts` and `config/brand.test.ts` fail if either drifts.
+
+**Don't:** Don't change `BRAND_NAME` or the theme key without editing `index.html` too; don't delete those tests.
+
+**Related:** [[architecture/adr-06-config-leaf-layer|ADR-06]] · [[REQ-004]]
+
