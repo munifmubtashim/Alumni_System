@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
@@ -255,6 +255,34 @@ describe('FilterBar', () => {
 
       expect(search()).toBe('?q=Ada');
       expect(box()).toHaveValue('Ada ');
+    });
+
+    it('keeps a key typed while its own write lands, and writes that key too', async () => {
+      const { user, search, box, wait } = setup(['/directory'], { fakeTimers: true });
+
+      await user.type(box(), 'Ada');
+      // The write fires and navigates; before that renders, one more key arrives.
+      act(() => {
+        vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        fireEvent.change(box(), { target: { value: 'Adal' } });
+      });
+      expect(search()).toBe('?q=Ada');
+      expect(box()).toHaveValue('Adal');
+
+      await wait(SEARCH_DEBOUNCE_MS);
+      expect(search()).toBe('?q=Adal');
+      expect(box()).toHaveValue('Adal');
+    });
+
+    it('turns a pasted tab into a space, in the box and in the URL', async () => {
+      const { search, box, wait } = setup(['/directory'], { fakeTimers: true });
+
+      fireEvent.change(box(), { target: { value: 'Ada\tLovelace' } });
+      expect(box()).toHaveValue('Ada Lovelace');
+
+      await wait(SEARCH_DEBOUNCE_MS);
+      expect(search()).toBe('?q=Ada+Lovelace');
+      expect(box()).toHaveValue('Ada Lovelace');
     });
 
     it('an outside change of q (e.g. Back) updates the box', async () => {

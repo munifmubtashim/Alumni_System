@@ -3,6 +3,12 @@
  * pure helpers read and write it. Anything the API would answer 400 to is
  * ignored on read, so a hand-edited or stale URL never breaks the request.
  * Limits match `GET /api/alumni` (conventions.md → Pagination).
+ *
+ * The numbers below are copies of the backend's, not imports: keep them in sync
+ * with `packages/backend/src/businessLogic/src/validation.ts` (`MAX_PAGE`,
+ * `NAME_MAX` for `q`, `DEPARTMENT_MAX`, `UNIVERSITY_MAX`, and the 1900 / now + 10
+ * year window in `optionalYear`). If the API's limit changes and this file does
+ * not, the page sends a value the API answers 400 to and shows the error state.
  */
 
 export const MAX_PAGE = 10000;
@@ -28,6 +34,20 @@ export interface DirectoryParams extends DirectoryFilters {
 // NUL and other control characters: Postgres rejects NUL, the API answers 400 (G23).
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f]/;
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/g;
+
+/**
+ * `value` with each control character (a pasted tab or line break) turned into
+ * a space, so what is written to the URL is what the reader keeps.
+ */
+export function stripControlCharacters(value: string): string {
+  return value.replace(CONTROL_CHARACTERS, ' ');
+}
+
+function writableText(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : stripControlCharacters(value).trim();
+}
 
 /** The one value of `key`, or undefined when it is missing or repeated. */
 function singleValue(search: URLSearchParams, key: string): string | undefined {
@@ -76,13 +96,14 @@ export function parseDirectoryParams(
 
 /**
  * The query string for `params`: empty values and page 1 are left out, so the
- * plain directory URL has no query string at all.
+ * plain directory URL has no query string at all. Control characters become
+ * spaces, since `parseDirectoryParams` would drop the whole value.
  */
 export function toSearchParams(params: DirectoryParams): URLSearchParams {
   const search = new URLSearchParams();
-  const q = params.q?.trim();
-  const department = params.department?.trim();
-  const university = params.university?.trim();
+  const q = writableText(params.q);
+  const department = writableText(params.department);
+  const university = writableText(params.university);
   if (q) search.set('q', q);
   if (department) search.set('department', department);
   if (university) search.set('university', university);

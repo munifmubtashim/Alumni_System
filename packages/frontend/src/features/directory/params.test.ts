@@ -4,6 +4,7 @@ import {
   isValidGraduationYear,
   parseDirectoryParams,
   Q_MAX_LENGTH,
+  stripControlCharacters,
   toSearchParams,
   UNIVERSITY_MAX_LENGTH,
   type DirectoryParams,
@@ -129,5 +130,29 @@ describe('toSearchParams', () => {
     };
     expect(parseDirectoryParams(toSearchParams(params), NOW)).toEqual(params);
     expect(parseDirectoryParams(toSearchParams({ page: 1 }), NOW)).toEqual({ page: 1 });
+  });
+
+  it('writes control characters as spaces, so the reader keeps the value', () => {
+    const search = toSearchParams({
+      q: 'Ada\tLovelace\n',
+      department: 'Computer\u0000Science',
+      university: '\u007fMIT',
+      page: 1,
+    });
+    expect(search.toString()).toBe('q=Ada+Lovelace&department=Computer+Science&university=MIT');
+    expect(parseDirectoryParams(search, NOW)).toEqual({
+      q: 'Ada Lovelace',
+      department: 'Computer Science',
+      university: 'MIT',
+      page: 1,
+    });
+    expect(toSearchParams({ q: '\t\r\n', page: 1 }).toString()).toBe('');
+  });
+});
+
+describe('stripControlCharacters', () => {
+  it('turns each control character into a space and keeps the rest', () => {
+    expect(stripControlCharacters('a\tb\u0000c\u001fd\u007fe')).toBe('a b c d e');
+    expect(stripControlCharacters(' Ünïcode stays ')).toBe(' Ünïcode stays ');
   });
 });

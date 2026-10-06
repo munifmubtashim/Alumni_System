@@ -335,6 +335,40 @@ describe('DirectoryPage', () => {
     expect(await screen.findByRole('link', { name: card('Second 1') })).toBeInTheDocument();
   });
 
+  it('moves focus to the heading on a page change, while the new page loads', async () => {
+    const user = userEvent.setup();
+    let answerSecond: () => void = () => undefined;
+    mockApi((config) => {
+      const params = config.params as { page: number };
+      if (params.page === 1) return ok(page(alumni(12, 'First'), 20))(config);
+      return new Promise((resolve) => {
+        answerSecond = () => {
+          resolve({
+            data: page(alumni(8, 'Second'), 20),
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+          });
+        };
+      });
+    });
+    renderAt('/directory');
+
+    await screen.findByRole('link', { name: card('First 1') });
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+
+    expect(await screen.findByText('Loading alumni…')).toBeInTheDocument();
+    const title = await heading();
+    expect(title).toHaveFocus();
+
+    act(() => {
+      answerSecond();
+    });
+    expect(await screen.findByRole('link', { name: card('Second 1') })).toBeInTheDocument();
+    expect(title).toHaveFocus();
+  });
+
   it('changing a filter goes back to page 1', async () => {
     const user = userEvent.setup();
     mockApi(byPage([page(alumni(12), 30), page(alumni(12, 'Second'), 30)]));

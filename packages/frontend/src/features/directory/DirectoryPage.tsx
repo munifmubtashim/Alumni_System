@@ -67,11 +67,15 @@ function ResultCount({ page, data }: CountProps) {
 export function DirectoryPage() {
   const titleId = useId();
   const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const { params, setQuery, setFilters, setPage, clearAll } = useDirectoryParams();
   const { data, isPending, isError, isFetching, refetch } = useAlumniSearch(params);
 
+  // The clicked page button is replaced by skeletons while the new page loads,
+  // so focus moves to the heading instead of falling to <body> (UI-001).
   const goToPage = (page: number) => {
     setPage(page);
+    titleRef.current?.focus({ preventScroll: true });
     sectionRef.current?.scrollIntoView({ block: 'start' });
   };
 
@@ -118,7 +122,7 @@ export function DirectoryPage() {
   return (
     <section ref={sectionRef} className={styles.page} aria-labelledby={titleId}>
       <div className={styles.headingRow}>
-        <h1 id={titleId} className={styles.title}>
+        <h1 id={titleId} ref={titleRef} className={styles.title} tabIndex={-1}>
           Alumni Directory
         </h1>
         <ResultCount page={params.page} data={isError ? undefined : data} />

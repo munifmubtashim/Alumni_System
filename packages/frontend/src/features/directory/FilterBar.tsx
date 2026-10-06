@@ -9,6 +9,8 @@ import {
   MIN_GRADUATION_YEAR,
   parseDirectoryParams,
   Q_MAX_LENGTH,
+  stripControlCharacters,
+  toSearchParams,
   UNIVERSITY_MAX_LENGTH,
   type DirectoryParams,
 } from './params';
@@ -92,6 +94,16 @@ const FILTERS: readonly FilterSpec[] = [
   },
 ];
 
+/**
+ * What the box last saw of the URL: its `q`, the `q` our pending write sent
+ * (until the URL shows it) and how many times `q` changed from outside.
+ */
+interface SyncState {
+  q: string;
+  sent: string | null;
+  outsideChanges: number;
+}
+
 /** Where focus goes once the URL change has rendered (ADV-002). */
 type PendingFocus = { to: 'chip' | 'pill'; key: FilterKey } | { to: 'search' };
 
@@ -101,22 +113,33 @@ type PendingFocus = { to: 'chip' | 'pill'; key: FilterKey } | { to: 'search' };
  * and calls back.
  *
  * Typing is debounced: the URL write is scheduled from the change handler and
- * runs only if the URL's `q` is still what it was at that keystroke, so Back,
+ * runs only if no outside change of `q` came after that keystroke, so Back,
  * Clear all or Apply during the wait are never undone by a stale write
- * (ADV-001). When `q` changes from outside, the box shows the new value.
+ * (ADV-001). When `q` changes from outside, the box shows the new value. Our
+ * own write is recognised by its value, so a key typed while it lands is kept,
+ * and so is that key's own pending write (CORR-001).
  */
 export function FilterBar({ params, onQueryChange, onFilterChange, onClearAll }: FilterBarProps) {
   const urlQ = params.q ?? '';
   const [text, setText] = useState(urlQ);
-  const [syncedQ, setSyncedQ] = useState(urlQ);
-  // The URL moved: show its `q`, unless the box already says the same (our own write).
-  if (urlQ !== syncedQ) {
-    setSyncedQ(urlQ);
-    if (text.trim() !== urlQ) setText(urlQ);
+  const [sync, setSync] = useState<SyncState>({ q: urlQ, sent: null, outsideChanges: 0 });
+  // The URL moved. Our own write (it carries the `q` we sent) leaves the box
+  // alone, as it may already hold newer keys; an outside change shows its `q`.
+  if (urlQ !== sync.q) {
+    const own = urlQ === sync.sent;
+    setSync({
+      q: urlQ,
+      sent: null,
+      outsideChanges: own ? sync.outsideChanges : sync.outsideChanges + 1,
+    });
+    if (!own && text.trim() !== urlQ) setText(urlQ);
   }
 
-  const writeQuery = useDebouncedCallback((next: string, qWhenTyped: string) => {
-    if ((params.q ?? '') !== qWhenTyped) return;
+  const writeQuery = useDebouncedCallback((next: string, outsideChangesWhenTyped: number) => {
+    if (sync.outsideChanges !== outsideChangesWhenTyped) return;
+    // Set in the same tick as the navigation, so it is in place when the URL change renders.
+    const sent = parseDirectoryParams(toSearchParams({ q: next, page: 1 })).q ?? '';
+    setSync((current) => ({ ...current, sent }));
     onQueryChange(next);
   }, SEARCH_DEBOUNCE_MS);
 
@@ -158,9 +181,10 @@ export function FilterBar({ params, onQueryChange, onFilterChange, onClearAll }:
   });
 
   function handleTextChange(event: ChangeEvent<HTMLInputElement>) {
-    const next = event.target.value;
+    // A pasted tab or line break becomes a space, so the box and the URL agree (CORR-002).
+    const next = stripControlCharacters(event.target.value);
     setText(next);
-    writeQuery.run(next, urlQ);
+    writeQuery.run(next, sync.outsideChanges);
   }
 
   /** A filter change also carries the box text, so a pending search write is not lost. */

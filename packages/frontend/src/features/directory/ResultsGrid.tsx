@@ -1,4 +1,5 @@
 import type { AlumniListItem } from '@alumni/shared';
+import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { AlumniCard, AlumniCardSkeleton } from './AlumniCard';
 import styles from './ResultsGrid.module.css';
 
@@ -19,9 +20,9 @@ export function ResultsGrid(props: ResultsGridProps) {
     const count = props.skeletonCount ?? DEFAULT_SKELETON_COUNT;
     return (
       <div aria-busy="true">
-        <p role="status" className={styles.visuallyHidden}>
+        <VisuallyHidden as="p" role="status">
           Loading alumni…
-        </p>
+        </VisuallyHidden>
         <div className={styles.grid}>
           {Array.from({ length: count }, (_, index) => (
             <AlumniCardSkeleton key={index} />

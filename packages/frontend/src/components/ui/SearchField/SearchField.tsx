@@ -1,5 +1,6 @@
 import { useId, type ComponentPropsWithRef, type ReactNode } from 'react';
 import { cx } from '../cx';
+import { VisuallyHidden } from '../VisuallyHidden';
 import styles from './SearchField.module.css';
 
 export interface SearchFieldProps extends Omit<ComponentPropsWithRef<'input'>, 'type'> {
@@ -20,9 +21,9 @@ export function SearchField({ label, id, className, ...rest }: SearchFieldProps)
 
   return (
     <div className={styles.field}>
-      <label className={styles.visuallyHidden} htmlFor={inputId}>
+      <VisuallyHidden as="label" htmlFor={inputId}>
         {label}
-      </label>
+      </VisuallyHidden>
       <SearchIcon />
       <input {...rest} id={inputId} type="search" className={cx(styles.input, className)} />
     </div>

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router';
+import { cx } from '@/components/ui/cx';
 import { useHasSession } from '@/features/auth';
 import styles from './MainNav.module.css';
 
@@ -22,9 +23,7 @@ export function MainNav() {
         <NavLink
           key={item.to}
           to={item.to}
-          className={({ isActive }) =>
-            [styles.link, isActive && styles.active].filter(Boolean).join(' ')
-          }
+          className={({ isActive }) => cx(styles.link, isActive && styles.active)}
         >
           {item.label}
         </NavLink>

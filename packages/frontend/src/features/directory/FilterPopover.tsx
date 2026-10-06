@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type Ref, type SubmitEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Popover } from '@/components/ui/Popover';
-import styles from './FilterBar.module.css';
+import styles from './FilterPopover.module.css';
 
 export interface FilterPopoverProps {
   /** Pill text, e.g. "Department". Also names the panel ("Department filter"). */
