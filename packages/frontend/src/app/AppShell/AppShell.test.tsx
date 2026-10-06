@@ -106,7 +106,7 @@ function renderAt(path: string, routeTree: RouteObject[] = routes) {
 async function renderSignedIn() {
   setToken(makeToken());
   const rendered = renderAt('/');
-  await screen.findByRole('heading', { name: 'Welcome, Amina' });
+  await screen.findByRole('heading', { name: 'Welcome back, Amina' });
   return rendered;
 }
 
@@ -350,6 +350,67 @@ describe('Header main nav', () => {
   });
 });
 
+describe('Bottom tab bar (phone)', () => {
+  function tabs() {
+    return screen.getByRole('navigation', { name: 'Main tabs' });
+  }
+
+  it('is hidden from a guest', () => {
+    renderAt('/directory', createRoutes(NAV_TEST_ROUTES));
+
+    expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
+  });
+
+  it('lists the same pages as the header nav, and only those that exist', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    const labels = within(tabs())
+      .getAllByRole('link')
+      .map((link) => link.textContent);
+    expect(labels).toEqual(['Directory']);
+    expect(labels).toEqual(
+      within(mainNav())
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    );
+    expect(within(tabs()).getByRole('link', { name: 'Directory' })).toHaveAttribute(
+      'href',
+      '/directory',
+    );
+  });
+
+  it('sits outside the header, after the page', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    expect(
+      within(screen.getByRole('banner')).queryByRole('navigation', { name: 'Main tabs' }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('main').compareDocumentPosition(tabs()) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('marks the current page, with a decorative icon above the label', async () => {
+    renderNavAt('/directory?page=2');
+    await screen.findByRole('heading', { name: 'Directory stub' });
+
+    const link = within(tabs()).getByRole('link', { name: 'Directory' });
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('is not marked current on another page', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    expect(within(tabs()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+});
+
 describe('Header auth area', () => {
   it('shows Log in and Sign up links to a guest', () => {
     renderAt('/does-not-exist');
@@ -360,23 +421,26 @@ describe('Header auth area', () => {
       'href',
       '/register',
     );
-    expect(within(banner).queryByRole('button', { name: 'Amina' })).not.toBeInTheDocument();
+    expect(
+      within(banner).queryByRole('button', { name: 'Account menu for Amina' }),
+    ).not.toBeInTheDocument();
   });
 
-  it('shows a user menu with the name and role to a signed-in user', async () => {
+  it('shows an avatar menu with the name and email to a signed-in user', async () => {
     const user = userEvent.setup();
     await renderSignedIn();
 
     const banner = screen.getByRole('banner');
     expect(within(banner).queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument();
-    const trigger = within(banner).getByRole('button', { name: 'Amina' });
+    const trigger = within(banner).getByRole('button', { name: 'Account menu for Amina' });
     expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
 
     await user.click(trigger);
 
     const menu = await screen.findByRole('menu');
     expect(within(menu).getByText('Amina')).toBeInTheDocument();
-    expect(within(menu).getByText('Alumni')).toBeInTheDocument();
+    expect(within(menu).getByText('amina@example.com')).toBeInTheDocument();
+    expect(within(menu).queryByText('Alumni')).not.toBeInTheDocument();
     expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument();
   });
 
@@ -384,17 +448,66 @@ describe('Header auth area', () => {
     const user = userEvent.setup();
     await renderSignedIn();
 
-    screen.getByRole('button', { name: 'Amina' }).focus();
+    screen.getByRole('button', { name: 'Account menu for Amina' }).focus();
     await user.keyboard('{Enter}');
 
     expect(await screen.findByRole('menuitem', { name: 'Log out' })).toHaveFocus();
+  });
+
+  it('shows initials in the avatar button, named for the user', async () => {
+    await renderSignedIn();
+
+    const trigger = within(screen.getByRole('banner')).getByRole('button', {
+      name: 'Account menu for Amina',
+    });
+    expect(trigger).toHaveTextContent('A');
+    expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('offers only Log out for now (no View profile or Admin settings)', async () => {
+    const user = userEvent.setup();
+    await renderSignedIn();
+
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
+
+    const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual(['Log out']);
+  });
+
+  it('closes the avatar menu on Escape and returns focus to the button', async () => {
+    const user = userEvent.setup();
+    await renderSignedIn();
+    const trigger = screen.getByRole('button', { name: 'Account menu for Amina' });
+
+    await user.click(trigger);
+    await screen.findByRole('menu');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+    expect(trigger).toHaveFocus();
+  });
+
+  it('closes the avatar menu on an outside click', async () => {
+    const user = userEvent.setup();
+    await renderSignedIn();
+
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
+    await screen.findByRole('menu');
+    await user.click(screen.getByRole('heading', { name: 'Welcome back, Amina' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+    expect(getToken()).not.toBeNull();
   });
 
   it('Log out clears the token and goes to /login', async () => {
     const user = userEvent.setup();
     const { router, visits } = await renderSignedIn();
 
-    await user.click(screen.getByRole('button', { name: 'Amina' }));
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
 
     expect(await screen.findByRole('button', { name: 'Log in' })).toBeInTheDocument();
@@ -406,14 +519,20 @@ describe('Header auth area', () => {
     expect(screen.queryByRole('banner')).not.toBeInTheDocument();
   });
 
-  it('reads "Account" and still offers Log out while /me has failed', async () => {
+  it('reads "Account menu" and still offers Log out while /me has failed', async () => {
     mockApi({ 'GET /me': fail(404) });
     setToken(makeToken());
     const user = userEvent.setup();
     const { router } = renderAt('/');
 
     await screen.findByRole('alert');
-    await user.click(within(screen.getByRole('banner')).getByRole('button', { name: 'Account' }));
+    // Never an empty circle while the profile is missing.
+    expect(
+      within(screen.getByRole('banner')).getByRole('button', { name: 'Account menu' }),
+    ).toHaveTextContent('?');
+    await user.click(
+      within(screen.getByRole('banner')).getByRole('button', { name: 'Account menu' }),
+    );
     await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
 
     await waitFor(() => {
@@ -437,18 +556,18 @@ describe('App routes', () => {
     await user.type(screen.getByLabelText('Password'), 'correct-horse');
     await user.click(screen.getByRole('button', { name: 'Log in' }));
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, Amina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Amina' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
-    expect(screen.getByText("You're signed in as an alumnus.")).toBeInTheDocument();
+    expect(screen.getByText("Here's what's happening in your alumni network.")).toBeInTheDocument();
     expect(getToken()).toBe(token);
-    expect(screen.getByRole('button', { name: 'Amina' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Account menu for Amina' })).toBeInTheDocument();
   });
 
   it('sends a signed-in user from /login to /', async () => {
     setToken(makeToken());
     const { router } = renderAt('/login');
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, Amina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Amina' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
   });
 
@@ -456,7 +575,7 @@ describe('App routes', () => {
     setToken(makeToken());
     const { router } = renderAt('/register');
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, Amina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Amina' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
   });
 
@@ -569,7 +688,9 @@ describe('Directory route', () => {
 
     // Wait out RequireAuth's own "Loading…" (the ['me'] query) first.
     const banner = screen.getByRole('banner');
-    expect(await within(banner).findByRole('button', { name: 'Amina' })).toBeInTheDocument();
+    expect(
+      await within(banner).findByRole('button', { name: 'Account menu for Amina' }),
+    ).toBeInTheDocument();
     const main = screen.getByRole('main');
     expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
     expect(within(banner).getByRole('link', { name: 'Alma' })).toBeInTheDocument();

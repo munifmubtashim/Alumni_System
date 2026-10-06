@@ -7,7 +7,7 @@
 Applies to `packages/frontend` (rebuilt in REQ-001). Each `src/` folder has a `README.md` with its own rules; this is the summary.
 
 - **Folder purposes:**
-  - `app/` — App root, providers (TanStack Query → Jotai), router, shared `QueryClient`, `RootLayout` (theme + `SessionBridge`, once, above both shells), `AuthShell` (auth pages: no header, top-right theme toggle) and `AppShell` (header) layouts, `RouteError`. Nothing in `features/`, `store/`, `services/` or `components/` may import it; in practice only `main.tsx` does.
+  - `app/` — App root, providers (TanStack Query → Jotai), router, shared `QueryClient`, `RootLayout` (theme + `SessionBridge`, once, above both shells), `AuthShell` (auth pages: no header, top-right theme toggle) and `AppShell` (header; bottom tab bar on phones) layouts, `RouteError`. Nothing in `features/`, `store/`, `services/` or `components/` may import it; in practice only `main.tsx` does.
   - `config/` — app-wide constants several layers share (`brand.ts`: `BRAND_NAME`, `SUPPORT_EMAIL`, `supportMailto`). Constants and small pure helpers only; imports nothing internal. `app/` and `features/` read it; `components/ui/` may not (pass brand text as props).
   - `features/<domain>/` — a domain's hooks, queries and domain components; wires primitives to state and services. May not import `app/`. Today: `theme/`, `auth/`, `home/`, `directory/` (the alumni directory page, REQ-006: URL-held search/filters/page, `useAlumniSearch`, card, grid, filter bar, pagination; it has no `index.ts` on purpose, see Lazy routes).
   - `components/ui/<Name>/` — design-system primitives, one folder each with `Name.tsx`, `Name.module.css`, `Name.test.tsx`, `index.ts`. Props in, events out.

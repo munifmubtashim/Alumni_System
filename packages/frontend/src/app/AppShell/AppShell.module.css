@@ -1,8 +1,11 @@
-/* App frame: full-width header with a hairline, content in a centered column.
-   Header follows docs/design/screens/app/S1-* (raised surface, hairline, logo
-   and main nav left, actions right; 4rem tall from 48rem up).
-   Gutters are space-4 on small screens and space-6 from 48rem up. Everything
-   wraps rather than overflowing, down to 360px and at 200% zoom. */
+/* App frame after docs/design/screens/app/S1-*. Phone: a top bar (logo, theme
+   toggle, avatar) and a bottom tab bar (BottomTabs). From 48rem: a 4rem
+   header, full width, with the nav beside the logo and the toggle and avatar
+   menu on the right. Content sits in a full-width column with S1's gutters;
+   each page caps its own width. Everything wraps rather than overflowing, down
+   to 360px and at 200% zoom.
+   Sizes with no token use a calc() of tokens: 14px = space-3 + space-1 / 2,
+   20px = space-4 + space-1. */
 
 .shell {
   display: flex;
@@ -15,7 +18,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 2;
   padding: var(--space-2) var(--space-4);
   background: var(--surface-raised);
   color: var(--accent);
@@ -31,27 +34,27 @@
 
 .header {
   display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface-raised);
-}
-
-.headerInner,
-.main {
-  width: min(100%, 72rem);
-  margin-inline: auto;
-}
-
-.headerInner {
-  display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-4);
+  padding: calc(var(--space-3) + var(--space-1) / 2) var(--space-4);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-/* Brand link home: the Logo with its wordmark, which gives the link its name. */
+/* Brand + main nav. The nav stretches to the header's full height so its
+   underline sits on the header's hairline. */
+.headerStart {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--space-6);
+}
+
+/* Brand link home: the Logo with its wordmark, which gives the link its name.
+   Phone sizes (26px mark, 14px wordmark) come from S1-Phone; the desktop ones
+   (28px, 16px) are the Logo's own. */
 .brand {
   display: inline-flex;
   color: var(--ink-primary);
@@ -59,42 +62,68 @@
   border-radius: var(--radius-sm);
 }
 
-/* Brand + main nav (signed in only). The nav wraps under the brand when the
-   row runs out of room. */
-.headerStart {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4) var(--space-6);
+.brand svg {
+  inline-size: 1.625rem;
+  block-size: 1.625rem;
 }
 
-/* Auth area + theme toggle. Wraps under the brand on narrow widths. */
+.brand span:last-child {
+  font: var(--text-body-sm);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+/* Theme toggle + account area. */
 .headerActions,
 .authLinks {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
 }
 
 .headerActions {
   gap: var(--space-4);
+  margin-inline-start: auto;
 }
 
-/* Who is signed in, inside the user menu: name, then role. */
+/* The account button: avatar and chevron, no box until hovered. The Menu
+   primitive's trigger rules are overridden with a tag-qualified selector. */
+button.accountButton {
+  gap: calc(var(--space-1) * 1.5);
+  padding: var(--space-1);
+  color: var(--ink-secondary);
+}
+
+/* Phone avatar 30px; from 48rem the Avatar's own xs size (32px). Qualified
+   with the span and data-size so it outranks the Avatar's size rule. */
+span.avatar[data-size='xs'] {
+  inline-size: 1.875rem;
+  block-size: 1.875rem;
+  font: var(--text-caption);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+/* S1-Phone shows the avatar alone. */
+.chevron {
+  display: none;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+}
+
+/* Who is signed in, inside the account menu: name, then email. */
 .menuName {
   display: block;
   color: var(--ink-primary);
   font: var(--text-label);
 }
 
-.menuRole {
+.menuEmail {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .main {
   flex: 1;
-  padding: var(--space-6) var(--space-4);
+  padding: calc(var(--space-4) + var(--space-1)) var(--space-4);
 }
 
 .main:focus {
@@ -103,11 +132,42 @@
 
 @media (width >= 48rem) {
   .header {
-    min-height: 4rem;
-    padding: var(--space-3) var(--space-6);
+    flex-wrap: nowrap;
+    gap: var(--space-5);
+    min-height: calc(4rem + 1px);
+    padding: 0 var(--space-6);
+  }
+
+  .headerStart {
+    gap: var(--space-6);
+  }
+
+  .brand svg {
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+  }
+
+  /* S1-Desktop puts 10px between the mark and the name (phone: 8px). */
+  .brand > span {
+    gap: calc(var(--space-2) + var(--space-1) / 2);
+  }
+
+  .brand span:last-child {
+    font: var(--text-heading-sm);
+  }
+
+  span.avatar[data-size='xs'] {
+    inline-size: 2rem;
+    block-size: 2rem;
+    font: var(--text-label);
+    font-weight: var(--text-heading-sm-weight);
+  }
+
+  .chevron {
+    display: block;
   }
 
   .main {
-    padding: var(--space-7) var(--space-6);
+    padding: var(--space-6);
   }
 }

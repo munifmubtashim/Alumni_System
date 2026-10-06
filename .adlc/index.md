@@ -22,6 +22,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | merged 2026-10-06 (PR #17) | specs/_archive/2026-10/m/REQ-004-alma-rebrand-auth-shell |
 | REQ-005 | Search, filters and paging for the alumni directory API | merged 2026-10-06 (PR #18) | specs/_archive/2026-10/m/REQ-005-alumni-search-filters |
 | REQ-006 | Alumni directory page at /directory (lazy route, URL-held search and filters, Directory nav link) | merged 2026-10-06 (PR #19) | specs/_archive/2026-10/m/REQ-006-alumni-directory-page |
+| REQ-007 | App shell and Home match S1 (avatar menu, phone tab bar, quick-link cards) | ship gate cleared 2026-10-06 (merge pending) | specs/2026-10/m/REQ-007-app-shell-home-s1 |
 
 ## ADRs
 

@@ -1,6 +1,7 @@
 import type { MyProfile } from '@alumni/shared';
 import { render, screen } from '@testing-library/react';
 import { createStore } from 'jotai';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { AppProviders } from '@/app/providers';
 import { createQueryClient } from '@/app/queryClient';
@@ -26,27 +27,52 @@ function renderWith(user: MyProfile | undefined) {
   if (user) queryClient.setQueryData(CURRENT_USER_QUERY_KEY, user);
   return render(
     <AppProviders queryClient={queryClient} store={createStore()}>
-      <HomePage />
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
     </AppProviders>,
   );
 }
 
 describe('HomePage', () => {
-  it('greets an alumnus by name and role', () => {
-    renderWith(profile('Amina', 'alumni'));
+  it('greets the user by first name with the subtitle', () => {
+    renderWith(profile('Amina Rao', 'alumni'));
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Welcome, Amina' })).toBeInTheDocument();
-    expect(screen.getByText("You're signed in as an alumnus.")).toBeInTheDocument();
     expect(
-      screen.getByText('More is coming soon: the feed, directory and profiles.'),
+      screen.getByRole('heading', { level: 1, name: 'Welcome back, Amina' }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Here's what's happening in your alumni network.")).toBeInTheDocument();
   });
 
-  it('greets a student by name and role', () => {
+  it('uses a one-word name as it is', () => {
     renderWith(profile('Jonas', 'student'));
 
-    expect(screen.getByRole('heading', { name: 'Welcome, Jonas' })).toBeInTheDocument();
-    expect(screen.getByText("You're signed in as a student.")).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Welcome back, Jonas' })).toBeInTheDocument();
+  });
+
+  it('greets without a name when the name is blank', () => {
+    renderWith(profile('  ', 'alumni'));
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Welcome back' })).toBeInTheDocument();
+  });
+
+  it('shows only the cards for pages that exist: the directory', () => {
+    renderWith(profile('Amina', 'alumni'));
+
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute('href', '/directory');
+    expect(links[0]).toHaveTextContent('Browse the directory');
+    expect(links[0]).toHaveTextContent('Find classmates by year, department or field');
+    expect(screen.queryByText('Catch up on the feed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Update your profile')).not.toBeInTheDocument();
+  });
+
+  it('drops the old role line and coming-soon note', () => {
+    renderWith(profile('Amina', 'alumni'));
+
+    expect(screen.queryByText(/signed in as/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/coming soon/)).not.toBeInTheDocument();
   });
 
   it('renders nothing without a loaded profile', () => {

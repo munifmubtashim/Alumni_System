@@ -421,9 +421,9 @@ describe('logout', () => {
         <RouterProvider router={router} />
       </AppProviders>,
     );
-    await screen.findByRole('heading', { name: 'Welcome, Amina' });
+    await screen.findByRole('heading', { name: 'Welcome back, Amina' });
 
-    await user.click(screen.getByRole('button', { name: 'Amina' }));
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
     await screen.findByRole('textbox', { name: 'Email' });
 
@@ -434,7 +434,7 @@ describe('logout', () => {
     await user.type(screen.getByLabelText('Password'), 'correct-horse');
     await user.click(screen.getByRole('button', { name: 'Log in' }));
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, Amina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back, Amina' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
   });
 });

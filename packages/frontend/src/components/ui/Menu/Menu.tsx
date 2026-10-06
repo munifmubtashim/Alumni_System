@@ -4,8 +4,10 @@ import { cx } from '../cx';
 import styles from './Menu.module.css';
 
 export interface MenuProps {
-  /** Content of the trigger button; its text is the button's accessible name. */
+  /** Content of the trigger button; its text is its accessible name unless `label` is given. */
   trigger: ReactNode;
+  /** Accessible name for the trigger, for when it holds only an icon or an avatar. */
+  label?: string;
   /** `MenuItem` and `MenuLabel` elements. */
   children: ReactNode;
   /** Which edge of the trigger the popup lines up with. */
@@ -19,10 +21,12 @@ export interface MenuProps {
  * move between items; Enter picks one and closes; Escape closes and returns
  * focus to the trigger. Base UI supplies the behaviour; its types stay inside.
  */
-export function Menu({ trigger, children, align = 'start', className }: MenuProps) {
+export function Menu({ trigger, label, children, align = 'start', className }: MenuProps) {
   return (
     <BaseMenu.Root>
-      <BaseMenu.Trigger className={cx(styles.trigger, className)}>{trigger}</BaseMenu.Trigger>
+      <BaseMenu.Trigger className={cx(styles.trigger, className)} aria-label={label}>
+        {trigger}
+      </BaseMenu.Trigger>
       <BaseMenu.Portal>
         {/* 4px = --space-1; Base UI takes the offset as a number. */}
         <BaseMenu.Positioner align={align} sideOffset={4} className={styles.positioner}>
@@ -65,4 +69,9 @@ export function MenuLabel({ children }: MenuLabelProps) {
       <BaseMenu.GroupLabel className={styles.label}>{children}</BaseMenu.GroupLabel>
     </BaseMenu.Group>
   );
+}
+
+/** A hairline between groups of items, or between a label and the items. */
+export function MenuSeparator() {
+  return <BaseMenu.Separator className={styles.separator} />;
 }

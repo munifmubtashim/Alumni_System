@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Menu, MenuItem, MenuLabel } from './Menu';
+import { Menu, MenuItem, MenuLabel, MenuSeparator } from './Menu';
 
 function renderMenu() {
   const onProfile = vi.fn();
@@ -126,5 +126,31 @@ describe('Menu', () => {
     await user.click(item);
 
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('names an icon-only trigger with label', () => {
+    render(
+      <Menu trigger={<span aria-hidden="true">JD</span>} label="Account menu for Jane Doe">
+        <MenuItem onSelect={vi.fn()}>Log out</MenuItem>
+      </Menu>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Account menu for Jane Doe' })).toBeInTheDocument();
+  });
+
+  it('draws a separator that is not an item and not focusable', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu trigger="Account">
+        <MenuLabel>Jane Doe</MenuLabel>
+        <MenuSeparator />
+        <MenuItem onSelect={vi.fn()}>Log out</MenuItem>
+      </Menu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+
+    expect(await screen.findByRole('separator')).toBeInTheDocument();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(1);
   });
 });
