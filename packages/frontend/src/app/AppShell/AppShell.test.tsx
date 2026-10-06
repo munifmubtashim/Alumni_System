@@ -1,5 +1,5 @@
 import type { MyProfile } from '@alumni/shared';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   AxiosError,
@@ -133,9 +133,9 @@ describe('AppShell', () => {
   // Was rendered at `/`; that is now behind RequireAuth, so a guest is shown
   // the shell at /login instead. Same header, toggle, main and skip link.
   it('renders the header, theme toggle, main area and skip link', () => {
-    renderAt('/login');
+    renderAt('/does-not-exist');
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Alumni Network');
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
     expect(
       within(screen.getByRole('banner')).getByRole('radiogroup', { name: 'Theme' }),
     ).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('AppShell', () => {
   it('still renders the empty shell at an unknown path', () => {
     renderAt('/does-not-exist');
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Alumni Network');
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
     expect(screen.getByRole('main')).toBeEmptyDOMElement();
     expect(screen.queryByText('Something went wrong.')).not.toBeInTheDocument();
   });
@@ -180,7 +180,7 @@ describe('AppShell', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     renderAt('/boom', createRoutes([{ path: 'boom', element: <Boom /> }]));
 
-    expect(screen.getByRole('banner')).toHaveTextContent('Alumni Network');
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
     const main = screen.getByRole('main');
     expect(
       within(main).getByRole('heading', { name: 'Something went wrong.' }),
@@ -189,6 +189,36 @@ describe('AppShell', () => {
       'href',
       '/',
     );
+  });
+
+  // AC7: S1's Directory/Feed/My Profile/Admin links stay out until their pages
+  // exist. The banner's only nav is the guest "Account" one from HeaderAuth.
+  it('has no nav links in the header, only the brand link home and the auth area', async () => {
+    renderAt('/does-not-exist');
+
+    let banner = screen.getByRole('banner');
+    expect(
+      within(banner)
+        .getAllByRole('navigation')
+        .map((nav) => nav.ariaLabel),
+    ).toEqual(['Account']);
+    expect(
+      within(banner)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Alma', 'Log in', 'Sign up']);
+    expect(within(banner).getByRole('link', { name: 'Alma' })).toHaveAttribute('href', '/');
+    cleanup();
+
+    await renderSignedIn();
+
+    banner = screen.getByRole('banner');
+    expect(within(banner).queryByRole('navigation')).not.toBeInTheDocument();
+    expect(
+      within(banner)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Alma']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -209,7 +239,7 @@ describe('AppShell', () => {
 
 describe('Header auth area', () => {
   it('shows Log in and Sign up links to a guest', () => {
-    renderAt('/login');
+    renderAt('/does-not-exist');
 
     const banner = screen.getByRole('banner');
     expect(within(banner).getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
@@ -259,9 +289,8 @@ describe('Header auth area', () => {
     expect(visits).toEqual(['/login']);
     expect(getToken()).toBeNull();
     expect(screen.queryByText(SESSION_EXPIRED_MESSAGE)).not.toBeInTheDocument();
-    expect(
-      within(screen.getByRole('banner')).getByRole('link', { name: 'Sign up' }),
-    ).toBeInTheDocument();
+    // Log out lands on the login page, which has no app header.
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
   });
 
   it('reads "Account" and still offers Log out while /me has failed', async () => {

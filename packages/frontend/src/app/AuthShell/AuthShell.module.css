@@ -1,0 +1,46 @@
+/* Auth page frame: full height, no header. The theme toggle sits in the
+   top-right corner, above the page; the page itself fills <main>. On phones
+   it scrolls away with the page (the page clears room for it under the
+   toggle); from 84rem it is fixed, so it stays put beside the pinned brand
+   panel while a long form (sign-up) scrolls. */
+
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.toggle {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 1;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (width >= 48rem) {
+  .toggle {
+    top: var(--space-5);
+    right: var(--space-5);
+  }
+}
+
+/* Fixed only where it can't cover the form: the 380px form column ends at
+   about 72.5% of the width + 190px, and the toggle starts ~10rem from the
+   right edge, so they clear each other from ~83rem. Narrower desktops let
+   it scroll away with the page rather than sit on a field. */
+@media (width >= 84rem) {
+  .toggle {
+    position: fixed;
+  }
+}

@@ -1,9 +1,17 @@
-/* Login form: fields on the space-5 rhythm, full-width submit. */
+/* Login form: fields on the space-5 rhythm, full-width submit. The
+   "Forgot password?" disclosure hugs the password field (space-2), as in
+   the login design, instead of floating on the form rhythm. */
 
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+}
+
+.passwordGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .submit {

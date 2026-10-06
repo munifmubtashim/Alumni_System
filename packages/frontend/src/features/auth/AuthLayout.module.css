@@ -1,29 +1,64 @@
-/* Login and sign-up frame: one centered card on tokens only. The stack sets
-   the space-5 rhythm itself, so it doesn't depend on Card's own gap. */
+/* Login and sign-up frame (docs/design/screens/login, signup), tokens only.
+   Phones and narrow windows (incl. 200% zoom): the logo row, centred, then
+   the form. From 60rem: a full-height grid, brand panel and form column at
+   45/55, edge to edge. The panel is surface-sunken with ink text in both
+   themes (architect-gate decision), not the design's dark panel. The design's
+   24px/34px headings map to heading-md/heading-lg. Layout sizes stay literal. */
 
 .layout {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--space-6);
+  padding-block-end: var(--space-6);
 }
 
-.card {
-  width: min(100%, 26rem);
-  min-width: 0;
-}
-
-.stack {
+/* Narrow: only the logo row shows. The top padding is here, not in
+   AuthShell, because it is the logo row that must clear AuthShell's theme
+   toggle: below ~27rem the centred logo and the top-right toggle share the
+   same columns, so the logo starts under the toggle (its top offset
+   --space-4, plus its 3rem height with 2.5rem segments, plus a --space-3
+   gap). From 60rem the panel has its own padding and the toggle sits over
+   the form column, so nothing is reserved there. */
+.panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  align-items: center;
   min-width: 0;
-}
-
-.title {
-  font: var(--text-heading-lg);
+  padding: calc(var(--space-4) + 3rem + var(--space-3)) var(--space-5) 0;
   color: var(--ink-primary);
 }
 
-.footer {
+.column {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--space-5);
+}
+
+/* No card or border: a plain centred block. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: min(100%, 380px);
+  min-width: 0;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.title {
+  font: var(--text-heading-md);
+  color: var(--ink-primary);
+}
+
+.prompt {
   font: var(--text-body-sm);
   color: var(--ink-secondary);
 }
@@ -31,4 +66,99 @@
 .link {
   color: var(--accent);
   font: var(--text-label);
+}
+
+.pitch {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.headline {
+  /* Wraps after "your", as in the login design. */
+  max-width: 20rem;
+  font: var(--text-heading-lg);
+  color: var(--ink-primary);
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.point {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font: var(--text-body-sm);
+  color: var(--ink-secondary);
+}
+
+/* ink-secondary, not the design's muted grey: ink-muted on surface-sunken is
+   under 4.5:1 in the light theme. */
+.copyright {
+  display: none;
+  font: var(--text-caption);
+  color: var(--ink-secondary);
+}
+
+/* A bullet, not information: the text beside it says everything. As tall as
+   one text line, so the mark centres on the first line however the text wraps. */
+.check {
+  flex: none;
+  width: 1.125rem;
+  height: var(--text-body-sm-line);
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (width >= 60rem) {
+  .layout {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+    align-content: stretch;
+    gap: 0;
+    padding-block-end: 0;
+  }
+
+  /* Pinned to the viewport, so the logo and the copyright line stay put
+     while a long form (sign-up) scrolls past. */
+  .panel {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: var(--space-7);
+    min-height: 100vh;
+    padding: var(--space-7);
+    background: var(--surface-sunken);
+  }
+
+  .pitch {
+    display: flex;
+  }
+
+  .copyright {
+    display: block;
+  }
+
+  .logo {
+    align-self: flex-start;
+  }
+
+  .column {
+    align-items: center;
+    padding: var(--space-7);
+  }
+
+  .intro {
+    text-align: start;
+  }
 }

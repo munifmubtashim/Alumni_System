@@ -144,9 +144,14 @@ describe('LoginPage', () => {
     expect(emailField()).toHaveAttribute('autocomplete', 'email');
     expect(passwordField()).toHaveAttribute('type', 'password');
     expect(passwordField()).toHaveAttribute('autocomplete', 'current-password');
-    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(
+      screen.getAllByRole('button').filter((button) => button.getAttribute('type') === 'submit'),
+    ).toHaveLength(1);
     expect(submitButton()).toHaveAttribute('type', 'submit');
-    expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute('href', '/register');
+    expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute(
+      'href',
+      '/register',
+    );
   });
 
   it('stores the token on success and GuestOnly sends the user home', async () => {
@@ -318,7 +323,7 @@ describe('LoginPage', () => {
 
       expect(screen.getByRole('status')).toHaveTextContent(SESSION_EXPIRED_MESSAGE);
 
-      await user.click(screen.getByRole('link', { name: 'Sign up' }));
+      await user.click(screen.getByRole('link', { name: 'Create an account' }));
       expect(await screen.findByRole('heading', { name: 'Register page' })).toBeInTheDocument();
       expect(store.get(sessionNoticeAtom)).toBeNull();
 
@@ -331,5 +336,60 @@ describe('LoginPage', () => {
   it('shows no notice when none is set', () => {
     renderLogin('/login', { strict: true });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('has a show/hide button on the password field and the forgot-password help', async () => {
+    const { user } = renderLogin();
+
+    await user.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(passwordField()).toHaveAttribute('type', 'text');
+    await user.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(passwordField()).toHaveAttribute('type', 'password');
+
+    const forgot = screen.getByRole('button', { name: 'Forgot password?' });
+    expect(forgot).toHaveAttribute('type', 'button');
+    await user.click(forgot);
+    expect(forgot).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'support@alma.app' })).toBeInTheDocument();
+  });
+
+  it('puts the sign-up prompt right under the heading, and the brand panel beside the form', () => {
+    renderLogin();
+
+    const heading = screen.getByRole('heading', { level: 1, name: 'Log in' });
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    const prompt = heading.nextElementSibling;
+    expect(prompt).toHaveTextContent('New here? Create an account');
+    expect(prompt).toContainElement(screen.getByRole('link', { name: 'Create an account' }));
+    // The prompt comes before the form's first field.
+    expect(prompt?.compareDocumentPosition(emailField())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(screen.getByText('Welcome back to your alumni network.')).toBeInTheDocument();
+    expect(screen.getByText(`© ${String(new Date().getFullYear())} Alma`)).toBeInTheDocument();
+    expect(screen.getByText('Alma', { selector: 'span' })).toBeInTheDocument();
+  });
+
+  it('puts "Forgot password?" right after the password field, with its message below it', async () => {
+    const { user } = renderLogin();
+
+    const forgot = screen.getByRole('button', { name: 'Forgot password?' });
+    // The password field's wrapper is followed directly by the help block.
+    const passwordWrapper = passwordField().closest('.field');
+    expect(passwordWrapper?.nextElementSibling).toContainElement(forgot);
+    // Tab order: password, its show/hide button, then the help.
+    passwordField().focus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Show password' })).toHaveFocus();
+    await user.tab();
+    expect(forgot).toHaveFocus();
+
+    await user.click(forgot);
+    const link = screen.getByRole('link', { name: 'support@alma.app' });
+    expect(forgot.compareDocumentPosition(link)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('suggests a university address in the email field', () => {
+    renderLogin();
+    expect(emailField()).toHaveAttribute('placeholder', 'you@university.edu');
   });
 });

@@ -7,14 +7,17 @@ import { ThemeToggle, type ThemeToggleValue } from './ThemeToggle';
 function Controlled({
   initial,
   onChange,
+  variant,
 }: {
   initial: ThemeToggleValue;
   onChange: (value: ThemeToggleValue) => void;
+  variant?: 'full' | 'compact';
 }) {
   const [value, setValue] = useState(initial);
   return (
     <ThemeToggle
       value={value}
+      variant={variant}
       onValueChange={(next) => {
         setValue(next);
         onChange(next);
@@ -103,5 +106,58 @@ describe('ThemeToggle', () => {
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
 
     expect(document.documentElement).not.toHaveAttribute('data-theme');
+  });
+
+  describe('compact variant', () => {
+    it('keeps the names Light, Dark and System on icon-only radios', () => {
+      render(<ThemeToggle value="dark" onValueChange={vi.fn()} variant="compact" />);
+
+      expect(screen.getByRole('radiogroup', { name: 'Theme' })).toBeInTheDocument();
+      const radios = screen.getAllByRole('radio');
+      expect(radios).toHaveLength(3);
+      for (const radio of radios) {
+        expect(radio).toHaveTextContent('');
+        expect(radio.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+      }
+      expect(screen.getByRole('radio', { name: 'Light' })).toHaveAttribute('aria-checked', 'false');
+      expect(screen.getByRole('radio', { name: 'Dark' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'System' })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      );
+    });
+
+    it('shows the option name in a tooltip when it gets keyboard focus', async () => {
+      const user = userEvent.setup();
+      render(<Controlled initial="system" onChange={vi.fn()} variant="compact" />);
+
+      expect(screen.queryByText('System')).not.toBeInTheDocument();
+      await user.tab();
+      expect(screen.getByRole('radio', { name: 'System' })).toHaveFocus();
+      expect(await screen.findByText('System')).toBeVisible();
+
+      await user.keyboard('{ArrowLeft}');
+      expect(screen.getByRole('radio', { name: 'Dark' })).toHaveFocus();
+      expect(await screen.findByText('Dark')).toBeVisible();
+    });
+
+    it('shows the option name in a tooltip on hover', async () => {
+      const user = userEvent.setup();
+      render(<ThemeToggle value="light" onValueChange={vi.fn()} variant="compact" />);
+
+      await user.hover(screen.getByRole('radio', { name: 'Dark' }));
+
+      expect(await screen.findByText('Dark')).toBeVisible();
+    });
+
+    it('calls onValueChange when an icon is clicked', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(<ThemeToggle value="light" onValueChange={onValueChange} variant="compact" />);
+
+      await user.click(screen.getByRole('radio', { name: 'System' }));
+
+      expect(onValueChange).toHaveBeenCalledWith('system');
+    });
   });
 });
