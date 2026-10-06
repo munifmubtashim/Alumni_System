@@ -1,0 +1,62 @@
+/* Design: docs/design/screens/app/S2-NoResults. Nearest tokens: vertical
+   padding space-8 (design 80px), heading text-heading-sm (17px), text gap
+   space-2 (6px). The 64px circle is space-8; the 28px icon is 1.75rem. The
+   text column is 22.5rem (design 360px) so it scales with zoom. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.iconCircle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+}
+
+.icon {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.heading {
+  margin: 0;
+  font: var(--text-heading-sm);
+}
+
+.text {
+  max-inline-size: 22.5rem;
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+  overflow-wrap: anywhere;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.retry {
+  padding: var(--space-2) var(--space-4);
+}

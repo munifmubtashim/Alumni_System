@@ -26,6 +26,21 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ## Entries
 
+## [2026-10-06] config-budgets | context/conventions.md: 23888 B → 7336 B, moved verbatim to conventions-api.md (5066), conventions-frontend.md (7245), conventions-testing.md (5844)
+## [2026-10-06] ship-gate-cleared | REQ-006-alumni-directory-page
+## [2026-10-06] req-ready-to-merge | REQ-006-alumni-directory-page | /directory alumni directory page: URL-held search/filters/page, lazy route, Directory nav link (stacked on REQ-005)
+## [2026-10-06] lesson | L-REQ-006-1..3 — URL-mirrored input own-write tracking, skeleton swaps strand focus, client copies of API limits
+## [2026-10-06] gotcha | G25–G27 — Base UI Popover focus, list-page test traps, component and lint traps (G19 extended)
+## [2026-10-06] concept | route-layout — updated for MainNav and the lazy directory route
+## [2026-10-06] component | frontend — updated to REQ-006; conventions.md Frontend/Testing sections updated
+## [2026-10-06] verify-gate-cleared | REQ-006-alumni-directory-page | findings: C0/M0/m5/t2 open (your-call); 11 fixed in 2 rounds
+## [2026-10-06] config | git.mode=commit
+## [2026-10-06] implement-gate-cleared | REQ-006-alumni-directory-page
+## [2026-10-06] adr-accepted | ADR-08 route code splitting with lazy; list state in the URL
+## [2026-10-06] architect-gate-cleared | REQ-006-alumni-directory-page
+## [2026-10-06] spec-gate-cleared | REQ-006-alumni-directory-page
+## [2026-10-06] work-path-set | REQ-006-alumni-directory-page | worktree at .worktrees/REQ-006-alumni-directory-page (off feat/REQ-005-alumni-search-filters)
+
 <!-- Newest entries below this line, newest first. Each entry is a level-2 heading. -->
 
 ## [2026-10-06] ship-gate-cleared | REQ-004-alma-rebrand-auth-shell

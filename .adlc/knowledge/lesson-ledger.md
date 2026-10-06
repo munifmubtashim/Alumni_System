@@ -38,3 +38,6 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-004-3 | When code moves between layers, grep the ADRs and context pages for its old home in the same change | adr, docs, architecture | nice-to-know | REQ-004 |
 | LESSON-REQ-005-1 | Paged list endpoints: single-value query checks, a stable order, a separate count, `{ items, total }` | backend, api, pagination, validation | guideline | REQ-005 |
 | LESSON-REQ-005-2 | Mocked query tests never run the SQL: check new SQL once against a real database | backend, testing, sql, postgres | trap | REQ-005 |
+| LESSON-REQ-006-1 | An input that mirrors a URL param must track its own last write | frontend, url-state, debounce, search | trap | REQ-006 |
+| LESSON-REQ-006-2 | A list that swaps to skeletons on every query change strands keyboard focus | frontend, accessibility, focus, pagination | trap | REQ-006 |
+| LESSON-REQ-006-3 | A client copy of an API's validation limits needs a pointer to its source | frontend, backend, validation, api | guideline | REQ-006 |

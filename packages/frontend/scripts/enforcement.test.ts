@@ -250,6 +250,51 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
   });
 });
 
+// ADR-08: features/directory is reached only through the router's lazy import().
+// This ban is the typescript-eslint copy of the rule, so it has its own rule id.
+describe('ESLint lazy-feature boundary (features/directory)', () => {
+  const LAZY_RULE = '@typescript-eslint/no-restricted-imports';
+
+  it.each([
+    ['src/app/__fixture__', "import { DirectoryPage } from '@/features/directory/DirectoryPage';"],
+    ['src/app/__fixture__', "import { x } from '../../features/directory/params';"],
+    ['src/app/__fixture__', "import '@/features/directory/DirectoryPage.module.css';"],
+    ['src/app/__fixture__', "export * from '@/features/directory';"],
+    ['src', "import { x } from './features/directory/params';"],
+    ['src/features/home', "import { x } from '../directory/params';"],
+    ['src/features/home/__fixture__', "import { x } from '../../directory';"],
+    ['src/components/ui/__fixture__', "import { x } from '@/features/directory/params';"],
+  ])('rejects a static import in %s: %s', async (dir, imports) => {
+    const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', dir);
+    expect(ruleIds(messages)).toContain(LAZY_RULE);
+  });
+
+  it.each([
+    [
+      'src/app/__fixture__',
+      "export const page = () => import('@/features/directory/DirectoryPage');",
+    ],
+    ['src/app/__fixture__', "import type { DirectoryParams } from '@/features/directory/params';"],
+    ['src/app/__fixture__', "import { x } from '@/features/directoryHelpers';"],
+    ['src/features/directory', "import { x } from './params';"],
+  ])('allows in %s: %s', async (dir, imports) => {
+    const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Ok.ts', dir);
+    expect(ruleIds(messages)).not.toContain(LAZY_RULE);
+  });
+
+  it('allows a test file to import the feature statically', async () => {
+    const code = "import { x } from '@/features/directory/params';\nexport const y = x;\n";
+    const messages = await eslintMessages(code, 'Ok.test.tsx', 'src/app/__fixture__');
+    expect(ruleIds(messages)).not.toContain(LAZY_RULE);
+  });
+
+  it('keeps the layer bans in force alongside it', async () => {
+    const code = "import { x } from '@/features/directory/params';\nexport const y = x;\n";
+    const ids = ruleIds(await eslintMessages(code, 'Bad.ts', 'src/components/ui/__fixture__'));
+    expect(ids).toEqual(expect.arrayContaining(['no-restricted-imports', LAZY_RULE]));
+  });
+});
+
 describe('Stylelint enforcement', () => {
   it.each([
     ['a hex color', '.box {\n  color: #fff;\n}\n', 'color-no-hex'],

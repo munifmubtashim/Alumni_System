@@ -1,6 +1,6 @@
 /* App frame: full-width header with a hairline, content in a centered column.
    Header follows docs/design/screens/app/S1-* (raised surface, hairline, logo
-   left, actions right; 4rem tall from 48rem up), without its nav links.
+   and main nav left, actions right; 4rem tall from 48rem up).
    Gutters are space-4 on small screens and space-6 from 48rem up. Everything
    wraps rather than overflowing, down to 360px and at 200% zoom. */
 
@@ -57,6 +57,15 @@
   color: var(--ink-primary);
   text-decoration: none;
   border-radius: var(--radius-sm);
+}
+
+/* Brand + main nav (signed in only). The nav wraps under the brand when the
+   row runs out of room. */
+.headerStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
 }
 
 /* Auth area + theme toggle. Wraps under the brand on narrow widths. */

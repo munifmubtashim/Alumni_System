@@ -1,0 +1,31 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light (result card avatar).
+   Sizes are in rem so they scale with zoom; the design's 44px has no token. */
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font: var(--text-heading-sm);
+  user-select: none;
+}
+
+.avatar[data-size='sm'] {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  font: var(--text-label);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+.photo {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}

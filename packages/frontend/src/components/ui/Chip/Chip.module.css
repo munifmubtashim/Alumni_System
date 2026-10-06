@@ -1,0 +1,52 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light (filter chips): an
+   accent-soft pill, accent-strong text, a small x button at the end. */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-inline-size: 100%;
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font: var(--text-label);
+}
+
+/* A long value wraps rather than pushing the chip past a narrow screen. */
+.label {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 1.75rem square: a bigger target than the design's 16px, inside the pill. */
+.remove {
+  appearance: none;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* :where() keeps the hover at single-class weight (G04). */
+.remove:where(:hover) {
+  background: var(--surface-raised);
+}
+
+.icon {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}

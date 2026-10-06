@@ -456,7 +456,7 @@ Use both. They serve different purposes.
 - `queryByText` ignores `aria-hidden`, so it can't prove text is hidden from assistive tech; use role queries or check the hidden ancestor.
 - "Exactly one button" assertions break when a page gains a disclosure or a show/hide toggle; count `type="submit"` buttons instead.
 - `/login` and `/register` render in `AuthShell` (no header). To test "a guest sees the header", use an unknown path such as `/does-not-exist`.
-- A guest header has `HeaderAuth`'s `<nav aria-label="Account">`; "no nav links" tests must allow it.
+- A guest header has `HeaderAuth`'s `<nav aria-label="Account">`; "no nav links" tests must allow it. A signed-in header also has `MainNav` (`<nav aria-label="Main">`, REQ-006). Stand-in routes passed to `createRoutes` are not under `RequireAuth`, so the user menu reads "Account" until /me resolves: find it with `findByRole`.
 
 **Where:** `LoginPage.test.tsx`, `RegisterPage.test.tsx`, `AppShell.test.tsx`
 
@@ -553,4 +553,78 @@ Use both. They serve different purposes.
 **Don't:** Sweep `TestManager.ts` in the same change (REQ-003 and REQ-005 both had to).
 
 **Related:** [[REQ-003]] · [[REQ-005]]
+
+---
+
+## G25 — Base UI 1.8 Popover: the dialog needs a name, and focus goes to the first field on open ^g25
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-006 |
+| Component | frontend components/ui (Popover) |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `Popover.Popup` is `role="dialog"` with no accessible name unless you render `Popover.Title` or pass `aria-label`; our `Popover` takes a required `label` for that. Opening by mouse or keyboard focuses the first tabbable element in the panel (the popup itself on touch). On close, focus returns to the trigger unless `finalFocus` says otherwise.
+
+**Where:** `components/ui/Popover/Popover.tsx`; `node_modules/@base-ui/react/popover/popup/PopoverPopup.js`, `utils/popups/popupStoreUtils.js`.
+
+**Why it's surprising:** the default return-focus is wrong when applying the popover's value removes its trigger (a filter pill becomes a chip): focus lands on `<body>`.
+
+**Don't:** rely on the default when the trigger can unmount: pass `finalFocus={false}` and focus the replacement yourself, or pass a ref. Use `open`/`onOpenChange` so Apply can close it.
+
+**Related:** [[knowledge/gotchas#^g09|G09]] · [[knowledge/lessons/LESSON-REQ-006-2-list-skeletons-strand-focus|L-REQ-006-2]] · [[REQ-006]]
+
+---
+
+## G26 — Test traps for list pages: adapters, fake timers, scrollIntoView, retries ^g26
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-006 |
+| Component | frontend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- A fake axios adapter must reject non-2xx itself; returning `{ status: 400 }` resolves (see also [[knowledge/gotchas#^g11|G11]]).
+- Vitest fake timers with user-event: `vi.useFakeTimers({ shouldAdvanceTime: true })` and `act(() => vi.advanceTimersByTimeAsync(ms))`; plain fake timers hang every `findBy*`/user-event call.
+- jsdom has no `Element.prototype.scrollIntoView`; stub it in any test that changes the directory page.
+- Test a query's error state with a 4xx. The shared client retries a 5xx twice (1 s and 2 s back-off), past `findBy*`'s 1 s timeout; in the app the same retries keep skeletons on screen for about 3 s before a server error shows.
+- `await act(() => fn())` with a sync callback fails type-aware lint; use `act(async () => { fn(); await Promise.resolve(); })`.
+- `src/` tests cannot use `node:fs` (no Node types in `tsconfig.app.json`); read source text with `import.meta.glob('...', { query: '?raw', import: 'default', eager: true })` (see `app/lazyRoutes.test.ts`). `scripts/` tests can use `node:fs`.
+
+**Where:** `services/alumniApi.test.ts`, `features/directory/{FilterBar,DirectoryPage,useDirectoryParams}.test.tsx`, `app/queryClient.ts`, `app/lazyRoutes.test.ts`.
+
+**Don't:** copy these into a seventh test file: the token builder and adapter switch are already repeated in six (a shared `src/test/` helper is an open follow-up, QUAL-002).
+
+**Related:** [[knowledge/gotchas#^g12|G12]] · [[knowledge/gotchas#^g19|G19]] · [[REQ-006]]
+
+---
+
+## G27 — Frontend component and lint traps found building the directory ^g27
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-06 |
+| REQ | REQ-006 |
+| Component | frontend components, lint |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Two single-class rules from different CSS Modules tie on specificity, so overriding a primitive through `className` (e.g. Pagination shrinking a Button's padding) works only by bundle order. Put a primitive's default sizes inside `:where()` when callers will size it, or add a size prop.
+- CSS Modules `composes:` fails our Stylelint (`property-no-unknown`, `value-keyword-case`); share a rule with a small component instead (`VisuallyHidden`).
+- `react-refresh/only-export-components` fails a `.tsx` that also exports a helper function (constants pass): keep helpers private and test them through the component, or put them in a sibling `.ts` file.
+- Inside a card link, give each line its own block element (`div`/`p`); with `span`s the link's accessible name runs words together ("Amira MendesClass of 2017").
+- To ban an import across `src/` next to the per-layer blocks, use `@typescript-eslint/no-restricted-imports` (a different rule id): flat config keeps only the last matching block's options per rule, so a second core `no-restricted-imports` block would silently drop the layer bans.
+- Use `cx` (`components/ui/cx.ts`) for conditional class names everywhere, `app/` included; CSS-module values are `string | undefined`, so template literals fail `restrict-template-expressions`.
+- `ink-muted` on `surface-sunken` is below 3:1 ([[knowledge/lessons/LESSON-REQ-004-2-check-design-colours-against-token-pairs|L-REQ-004-2]]): fine only on `aria-hidden` decoration (the search icon, the no-results icon), never for text.
+- A new `contrast.test.ts` row must differ from the existing ones in colours or minimum, or it adds no coverage.
+
+**Where:** `features/directory/{Pagination.module.css,AlumniCard.tsx,DirectoryStates.tsx}`, `components/ui/{Skeleton,VisuallyHidden}`, `eslint.config.js` (`LAZY_DIRECTORY_BAN`), `app/AppShell/MainNav.tsx`.
+
+**Related:** [[knowledge/gotchas#^g04|G04]] · [[knowledge/gotchas#^g07|G07]] · [[knowledge/gotchas#^g10|G10]] · [[REQ-006]]
 

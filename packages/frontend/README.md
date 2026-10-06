@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), and a signed-in Home page, on top of the design system. Feed and profiles come in later REQs.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page and the alumni Directory (search, filters, pages), on top of the design system. Feed and profiles come in later REQs.
 
 ## Stack
 
@@ -12,7 +12,7 @@ Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a she
 | Routing       | React Router 8 (`react-router`, data router)                              |                                                                              |
 | State         | Jotai 3 (client-only state), TanStack Query 5 (server state)              | ADR-02                                                                       |
 | HTTP          | axios, one instance (`src/services/httpClient.ts`)                        | Attaches the auth header in one interceptor                                  |
-| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu` and `SegmentedControl` (and so `ThemeToggle`)         |
+| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu`, `SegmentedControl` (so `ThemeToggle`) and `Popover`  |
 | Styling       | CSS Modules + design tokens (CSS custom properties)                       | No component library; no raw colors or shadows                               |
 | Font          | Inter, self-hosted via `@fontsource-variable/inter`                       | No third-party font request                                                  |
 | Lint / format | ESLint **9** (not 10), Stylelint 17, Prettier 3                           | `eslint-plugin-jsx-a11y` only supports ESLint ≤ 9                            |
@@ -55,13 +55,16 @@ packages/frontend/
   scripts/            generate-tokens.ts (+ test), enforcement.test.ts (lint rules self-test)
   src/
     main.tsx          imports the font, tokens.css, global.css (in that order), renders <App/>
-    app/              App, providers, router, QueryClient, RootLayout, AuthShell and AppShell layouts, RouteError
+    app/              App, providers, router, QueryClient, RootLayout, AuthShell and AppShell layouts,
+                      MainNav, HydrateFallback, RouteError
     config/           app-wide constants: brand.ts (BRAND_NAME, SUPPORT_EMAIL, supportMailto)
-    features/         one folder per domain: theme/, auth/ (session, guards, pages), home/
+    features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
+                      directory/ (lazy-loaded alumni directory page)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
-                      Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle
+                      Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle, Avatar, Chip,
+                      Skeleton, SearchField, Popover
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
-    services/         httpClient (axios), authToken (token in localStorage), authApi
+    services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi
     styles/           tokens.css (generated), global.css, contrast test
     test/             Vitest setup and harness smoke test
 ```
@@ -87,7 +90,7 @@ Each folder's README says what belongs there and what may import it:
 
 ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log out, and get sent to `/login` with a notice when the session ends.
 
-- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home). An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
+- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home) and `/directory`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
 - **Endpoints:** `services/authApi.ts` has `login`, `register` and `getMe` (`GET /me`). They only return data.
 - **Token store:** `services/authToken.ts` keeps the token in `localStorage['token']`. `subscribe(listener)` fires on `setToken`/`clearToken` and on another tab's change. `isTokenExpired(token)` decodes the JWT `exp` (10 s leeway; a malformed token counts as expired). `getLiveToken()` returns the token only if it is present and not expired, with no side effects. `features/auth` reads it with `useLiveToken()` / `useHasSession()` (`useSyncExternalStore`).
 - **401s:** `httpClient` has one response interceptor. On a 401 from a request that carried a token (not `/auth/login` or `/auth/register`), it calls the handler registered with `setUnauthorizedHandler(fn)`, passing that request's token, then re-throws. `services/` never imports app or feature code.
@@ -102,6 +105,16 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 - **Logout:** `useLogout()` clears the token first, then goes to `/login`; the bridge clears the cache. The header menu and the RequireAuth error state both offer it.
 - **Session notice:** `LoginPage` shows "Your session has expired, please log in again" and clears it when it unmounts.
 - **`react-router/dom`:** `App.tsx` imports `RouterProvider` from `react-router/dom`, not `react-router`. The bridge and `useLogout` navigate with `flushSync: true`; without the DOM provider, `RequireAuth` fires a second redirect. Tests that check navigation counts must use it too.
+
+## Directory and lazy routes
+
+REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
+
+- **Lazy route:** `app/router.tsx` loads the page with the route's `lazy` (`import('@/features/directory/DirectoryPage')`), so it is a separate chunk in `dist/assets`. Nothing else may import `features/directory` statically: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every file in `src/` (except that folder and tests) and fails if one does. New large pages follow the same pattern; Home stays eager.
+- **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of the `directory` route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
+- **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
+- **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
+- **Header:** `MainNav` shows the Directory link to signed-in users only, marked current on `/directory` and below. On phones it wraps under the brand (no bottom tab bar yet).
 
 ## Forms
 
@@ -165,6 +178,10 @@ Three choices: Light, Dark, System, picked with the toggle in the header.
 - `useApplyTheme` (`src/features/theme/`) sets `data-theme="light|dark"` on `<html>`. In System mode it follows `prefers-color-scheme` and updates live when the OS setting changes.
 - **No flash:** an inline script in `index.html` reads the same key and sets `data-theme` before first paint. The key appears in both places; `src/store/themeAtom.test.ts` checks they match.
 
+## Primitives added in REQ-006
+
+- `Avatar` (photo or initials), `Chip` (active filter with a remove button), `Skeleton` (loading placeholder), `SearchField` (search input with icon and hidden label), `Popover` (Base UI Popover with a pill trigger). Details in [components/ui](src/components/ui/README.md).
+
 ## Testing
 
 - Tests sit next to the code: `Button.tsx` → `Button.test.tsx`.
@@ -172,4 +189,5 @@ Three choices: Light, Dark, System, picked with the toggle in the header.
 - Tests in `scripts/` run in Node: their first line must be `// @vitest-environment node`. Vitest 5 has no `environmentMatchGlobs`, so without that line they run in jsdom.
 - Vitest globals are off: import `describe`/`it`/`expect` from `vitest`.
 - CSS Module class names are not hashed in tests (`.primary`, not `._primary_x1y2`), so tests can assert on them.
-- Vitest stubs CSS imports (`import css from './x.css?raw'` is `''` in tests); read the file from disk if a test needs its contents.
+- Vitest stubs CSS imports (`import css from './x.css?raw'` is `''` in tests); read the file from disk if a test needs its contents. `?raw` does work for `.ts`/`.tsx`: `src/app/lazyRoutes.test.ts` reads source files with `import.meta.glob(..., { query: '?raw' })`, since `src/` tests have no Node types.
+- jsdom has no `Element.prototype.scrollIntoView`; tests that change the directory's page number stub it (the page scrolls to its top).

@@ -21,6 +21,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-003 | Require sign-in on every non-public backend route | merged 2026-10-06 (PR #16) | specs/_archive/2026-10/m/REQ-003-backend-route-auth |
 | REQ-004 | Rebrand to Alma; restyle login, sign-up and the app shell | merged 2026-10-06 (PR #17) | specs/_archive/2026-10/m/REQ-004-alma-rebrand-auth-shell |
 | REQ-005 | Search, filters and paging for the alumni directory API | ready to merge 2026-10-06 | specs/2026-10/m/REQ-005-alumni-search-filters |
+| REQ-006 | Alumni directory page at /directory (lazy route, URL-held search and filters, Directory nav link) | ready to merge 2026-10-06 (stacked on REQ-005) | specs/2026-10/m/REQ-006-alumni-directory-page |
 
 ## ADRs
 
@@ -33,6 +34,7 @@ _(REQ pages by id, with a one-line summary)_
 | [[architecture/adr-05-backend-tests-vitest-supertest\|ADR-05]] | Backend tests: Vitest + supertest, one mocked boundary per level, no DB | accepted | 2026-10-05 |
 | [[architecture/adr-06-config-leaf-layer\|ADR-06]] | `src/config/` leaf layer for app-wide constants | accepted | 2026-10-06 |
 | [[architecture/adr-07-root-layout-and-headerless-auth\|ADR-07]] | Root layout above two shells; header-less auth pages | accepted | 2026-10-06 |
+| [[architecture/adr-08-route-code-splitting-and-url-list-state\|ADR-08]] | Route `lazy` splitting; list state in the URL | accepted | 2026-10-06 |
 
 ## Concepts
 

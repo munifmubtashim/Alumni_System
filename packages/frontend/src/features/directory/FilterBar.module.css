@@ -1,0 +1,38 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light, S2-Phone-Light and
+   S2-NoResults (the search box and the filter row under it). The search box
+   is at most 480px wide (30rem). The row's 10px gap (8px on phones) maps to
+   space-2. "Clear all" reads as a link: accent text, no box, 4px (space-1)
+   after the last pill. The chip and pill looks come from Chip and Popover. */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.search {
+  max-width: 30rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.clearAll {
+  appearance: none;
+  margin-inline-start: var(--space-1);
+  padding: var(--space-1) 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: var(--text-label);
+  color: var(--accent);
+}
+
+.clearAll:where(:hover) {
+  color: var(--accent-strong);
+}
