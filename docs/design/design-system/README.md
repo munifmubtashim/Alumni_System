@@ -29,6 +29,8 @@ Two themes, one accent. Light is warm off-white and charcoal ink; dark is warm c
 | `accent-ink` | `#fdf8f3` | `#1d1a17` | Text on a solid accent fill |
 | `accent-soft` | `#f3e4d9` | `#3a2c23` | Accent tint — selected tags, highlighted rows |
 | `success` | `#5f7a56` | `#93b188` | Positive status |
+| `success-soft` | `#e9efe5` | `#2a3326` | Sage tint behind a positive badge (mentorship pill) |
+| `success-strong` | `#4f6947` | `#93b188` | Text and dot on `success-soft` |
 | `warning` | `#a9813f` | `#d7ac6e` | Caution status |
 | `error` | `#a3503f` | `#d1796a` | Error / destructive |
 
