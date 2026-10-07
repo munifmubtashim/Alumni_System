@@ -7,6 +7,7 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] verify-gate-cleared | REQ-009-post-feed-page | findings: C0/M1/m8 open (fix round: m1,m2,m3,m11 fixed)
 ## [2026-10-07] implement-gate-cleared | REQ-009-post-feed-page | 9 tasks; frontend 1047 + backend 369 tests pass
 ## [2026-10-07] adr-accepted | ADR-09 optimistic updates by editing the TanStack Query cache
 ## [2026-10-07] architect-gate-cleared | REQ-009-post-feed-page | adversary: 0 critical, 5 major fixed, 4 minor handled

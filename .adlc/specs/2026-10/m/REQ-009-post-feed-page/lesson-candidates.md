@@ -103,3 +103,68 @@
 **Claim:** The nav and tab tests live in AppShell.test.tsx; there is no MainNav.test.tsx or BottomTabs.test.tsx, so task files naming those mean that file.
 **Saw it in:** `packages/frontend/src/app/AppShell/AppShell.test.tsx` ('Header main nav', 'Bottom tab bar')
 **Context:** TASK-006 listed the per-component test files "if present"; none are.
+
+## CAND-022 [review-qual]
+**Claim:** When a helper is needed by two features, move it to `config/` in the same task instead of copying it.
+**Saw it in:** `packages/frontend/src/features/feed/feedFormat.ts:18` (copy of `features/profile/PostCard.tsx:14`)
+**Context:** `relativeTime` was moved; `isoDate`, `serverMessage` and `firstName` beside it were copied.
+
+## CAND-023 [review-qual]
+**Claim:** Build a shared test helper before the second test file needs it, and make every new test file use it.
+**Saw it in:** `packages/frontend/src/features/feed/useFeedMutations.test.tsx:23`
+**Context:** `base64url` now has 10 copies; `testKit.ts` exists but one feed test file kept its own.
+
+## CAND-024 [review-qual]
+**Claim:** Give every non-trivial presentational component in a feature its own test file, not only caller coverage.
+**Saw it in:** `packages/frontend/src/features/feed/EditBox.tsx`
+**Context:** EditBox and Byline are tested only through PostCard and CommentThread.
+
+## CAND-022 [review-arch]
+**Claim:** When a helper is moved to `config/` so two lazy features can share it, move its sibling helpers in the same change.
+**Saw it in:** `packages/frontend/src/features/feed/feedFormat.ts:18`
+**Context:** `relativeTime` moved to `config/`, but `isoDate` stayed copied in profile and feed.
+
+## CAND-023 [review-arch]
+**Claim:** A SQL join rule used by several queries (such as "which alumni row") should be one exported helper in `dal/`, not copied per query file.
+**Saw it in:** `packages/backend/src/dal/query/PostQuery.ts:12`
+**Context:** `author_alumni_id` subquery is duplicated in `CommentQuery.ts:8`.
+
+## CAND-022 [review-reflect]
+**Claim:** A REQ that adds a lazy feature must amend ADR-08's count ("second lazy page"), route-layout.md's route tree and frontend.md's feature list in the same wrapup.
+**Saw it in:** `.adlc/architecture/adr-08-route-code-splitting-and-url-list-state.md:44`, `.adlc/knowledge/concepts/route-layout.md:21`
+**Context:** Code-side lists are test-enforced (CAND-019/020) but the vault copies of the same count have no check and went stale in REQ-008 and REQ-009.
+
+## CAND-023 [review-reflect]
+**Claim:** Write a concept page for optimistic cache edits (pure edit fn, inverse rollback, isMutating === 1 settle) so My Profile and Admin reuse it rather than re-read ADR-09.
+**Saw it in:** `packages/frontend/src/features/feed/useFeedMutations.ts:3177`, `features/feed/cacheEdits.ts`
+**Context:** ADR-09 holds the decision; the how-to (temp ids, clientKey, 401 skip, test style) lives only in code comments.
+
+## CAND-024 [review-reflect]
+**Claim:** Offset-paged infinite lists need an id tie-break in ORDER BY plus a client dedupe by id, because an insert or delete shifts later pages.
+**Saw it in:** `packages/backend/src/dal/query/PostQuery.ts` (getAllPosts), `features/feed/usePosts.ts:11`
+**Context:** Extends L-REQ-005-1 (tie-break) to the client half, which that lesson does not cover.
+
+## CAND-025 [review-corr]
+**Claim:** Optimistic rollback must undo only what this mutation wrote (compare the cached value first), not restore a pre-mutation snapshot.
+**Saw it in:** `packages/frontend/src/features/feed/useFeedMutations.ts:3312`
+**Context:** Edit rollback restores `before` and can overwrite a newer overlapping edit of the same item.
+
+## CAND-026 [review-corr]
+**Claim:** `isMutating` counts paused (offline) mutations, so "invalidate when I am the last one" gates stall while any write is paused.
+**Saw it in:** `packages/frontend/src/features/feed/useFeedMutations.ts:3219`
+**Context:** ADR-09 settle logic uses `isMutating(...) === 1`.
+
+## CAND-025 [ui-review]
+**Claim:** Text-only inline action buttons (Reply · Edit · Delete) need a phone-size min target; padding 0 leaves them about 16px tall.
+**Saw it in:** `packages/frontend/src/features/feed/CommentThread.module.css:93`
+**Context:** Destructive Delete sits next to Edit with no confirm for comments.
+
+## CAND-027 [implement-task]
+**Claim:** To test "a paused mutation is ignored", seed one with `client.getMutationCache().build(client, { mutationKey }, { status: 'pending', isPaused: true, ... })` instead of toggling `onlineManager`.
+**Saw it in:** `packages/frontend/src/features/feed/useFeedMutations.test.tsx` (CORR-003 test)
+**Context:** Going offline pauses every mutation in the test, and a mounted client resumes them all when back online.
+
+## CAND-028 [implement-task]
+**Claim:** Enlarge inline text-button hit areas with min-block-size plus a negative margin no bigger than the gap to the nearest link, or the button covers that link.
+**Saw it in:** `packages/frontend/src/features/feed/CommentThread.module.css` (`.action`)
+**Context:** A full -8px margin on Reply/Edit/Delete would overlap the author name link 4px above.

@@ -16,7 +16,7 @@ The feed (REQ-009) must show a new post or comment at once and undo it if the AP
 ## Considered options
 
 ### Option 1 — Edit the query cache in `onMutate`, roll back in `onError`, refetch in `onSettled`
-Cancel in-flight reads of the exact key, write the expected result (a temporary negative id for creates), undo with the *inverse edit* on error (never a whole-cache snapshot, so overlapping mutations do not wipe or resurrect each other's rows), and invalidate on settle only when no other mutation on that key is still running (`queryClient.isMutating` is 1), so a refetch cannot hide a pending row.
+Cancel in-flight reads of the exact key, write the expected result (a temporary negative id for creates), undo with the *inverse edit* on error (never a whole-cache snapshot, so overlapping mutations do not wipe or resurrect each other's rows), and invalidate on settle only when no other mutation on that key is still running (the count of running, not paused, mutations on that key is 1), so a refetch cannot hide a pending row.
 **Pros:** one source of truth (the cache); no new library; the same code path serves loading and optimistic states; works with `useInfiniteQuery`.
 **Cons:** every mutation needs a small pure cache-edit function, tested on its own.
 
