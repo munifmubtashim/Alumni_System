@@ -19,7 +19,14 @@ import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
-import { createRoutes, DIRECTORY_ROUTE, FEED_ROUTE, PROFILE_ROUTE, routes } from '../router';
+import {
+  createRoutes,
+  DIRECTORY_ROUTE,
+  FEED_ROUTE,
+  ME_ROUTE,
+  PROFILE_ROUTE,
+  routes,
+} from '../router';
 
 // ---- tokens and a fake API at the axios adapter (the REQ-001 test policy) ----
 
@@ -192,7 +199,7 @@ describe('AppShell', () => {
   });
 
   // REQ-004 AC7 kept S1's nav links out until their pages exist. REQ-006 AC2
-  // adds Directory, REQ-009 Feed: a guest's banner has only the "Account" nav from
+  // adds Directory, REQ-009 Feed, REQ-010 My Profile: a guest's banner has only the "Account" nav from
   // HeaderAuth; a signed-in user's has only the "Main" nav.
   it('shows the guest only the Account nav, and a signed-in user only the Main nav', async () => {
     renderAt('/does-not-exist');
@@ -223,7 +230,7 @@ describe('AppShell', () => {
       within(banner)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Alma', 'Directory', 'Feed']);
+    ).toEqual(['Alma', 'Directory', 'Feed', 'My Profile']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -252,6 +259,14 @@ function FeedStub() {
   return <h1>Feed stub</h1>;
 }
 
+function MeStub() {
+  return <h1>Me stub</h1>;
+}
+
+function ProfileStub() {
+  return <h1>Profile stub</h1>;
+}
+
 function OtherStub() {
   return <h1>Other stub</h1>;
 }
@@ -259,6 +274,8 @@ function OtherStub() {
 const NAV_TEST_ROUTES: RouteObject[] = [
   { path: 'directory/*', element: <DirectoryStub /> },
   { path: 'feed', element: <FeedStub /> },
+  { path: 'me', element: <MeStub /> },
+  { path: 'alumni/:id', element: <ProfileStub /> },
   { path: 'other', element: <OtherStub /> },
 ];
 
@@ -325,6 +342,18 @@ describe('Header main nav', () => {
     );
   });
 
+  it('links to /me and marks only My Profile current there', async () => {
+    renderNavAt('/me');
+    await screen.findByRole('heading', { name: 'Me stub' });
+
+    const me = within(mainNav()).getByRole('link', { name: 'My Profile' });
+    expect(me).toHaveAttribute('href', '/me');
+    expect(me).toHaveAttribute('aria-current', 'page');
+    for (const name of ['Directory', 'Feed']) {
+      expect(within(mainNav()).getByRole('link', { name })).not.toHaveAttribute('aria-current');
+    }
+  });
+
   it('goes to the directory on click and becomes current', async () => {
     const user = userEvent.setup();
     const { router } = renderNavAt('/other');
@@ -385,7 +414,7 @@ describe('Bottom tab bar (phone)', () => {
     const labels = within(tabs())
       .getAllByRole('link')
       .map((link) => link.textContent);
-    expect(labels).toEqual(['Directory', 'Feed']);
+    expect(labels).toEqual(['Directory', 'Feed', 'My Profile']);
     expect(labels).toEqual(
       within(mainNav())
         .getAllByRole('link')
@@ -396,6 +425,7 @@ describe('Bottom tab bar (phone)', () => {
       '/directory',
     );
     expect(within(tabs()).getByRole('link', { name: 'Feed' })).toHaveAttribute('href', '/feed');
+    expect(within(tabs()).getByRole('link', { name: 'My Profile' })).toHaveAttribute('href', '/me');
   });
 
   it('sits outside the header, after the page', async () => {
@@ -429,6 +459,16 @@ describe('Bottom tab bar (phone)', () => {
     expect(within(tabs()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
       'aria-current',
     );
+  });
+
+  it('marks the My Profile tab current at /me, with its own decorative icon', async () => {
+    renderNavAt('/me');
+    await screen.findByRole('heading', { name: 'Me stub' });
+
+    const link = within(tabs()).getByRole('link', { name: 'My Profile' });
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(tabs()).getByRole('link', { name: 'Feed' })).not.toHaveAttribute('aria-current');
   });
 
   it('is not marked current on another page', async () => {
@@ -481,10 +521,10 @@ describe('Header auth area', () => {
     screen.getByRole('button', { name: 'Account menu for Amina' }).focus();
     await user.keyboard('{Enter}');
 
-    // Base UI moves focus a tick after the item appears, so wait for it.
-    const logOut = await screen.findByRole('menuitem', { name: 'Log out' });
+    // Base UI moves focus to the first item a tick after it appears, so wait for it.
+    const first = await screen.findByRole('menuitem', { name: 'View profile' });
     await waitFor(() => {
-      expect(logOut).toHaveFocus();
+      expect(first).toHaveFocus();
     });
   });
 
@@ -498,14 +538,66 @@ describe('Header auth area', () => {
     expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('offers only Log out for now (no View profile or Admin settings)', async () => {
+  it('offers View profile, My Profile and Log out to an alumni user (no Admin settings)', async () => {
     const user = userEvent.setup();
     await renderSignedIn();
 
     await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
 
     const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
-    expect(items.map((item) => item.textContent)).toEqual(['Log out']);
+    expect(items.map((item) => item.textContent)).toEqual([
+      'View profile',
+      'My Profile',
+      'Log out',
+    ]);
+  });
+
+  it('hides View profile from a user without an alumni profile', async () => {
+    mockApi({
+      'GET /me': ok({
+        ...AMINA,
+        role: 'student',
+        alumni_id: null,
+        has_alumni_profile: false,
+        student_id: 7,
+        has_student_profile: true,
+      }),
+    });
+    const user = userEvent.setup();
+    await renderSignedIn();
+
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
+
+    const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual(['My Profile', 'Log out']);
+  });
+
+  it('View profile opens the public profile for the alumni id', async () => {
+    mockApi({ 'GET /me': ok({ ...AMINA, alumni_id: 42 }) });
+    const user = userEvent.setup();
+    const { router } = renderNavAt('/other');
+
+    await user.click(await screen.findByRole('button', { name: 'Account menu for Amina' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'View profile' }));
+
+    expect(await screen.findByRole('heading', { name: 'Profile stub' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/alumni/42');
+    expect(getToken()).not.toBeNull();
+  });
+
+  it('My Profile opens /me and marks it current in the nav', async () => {
+    const user = userEvent.setup();
+    const { router } = renderNavAt('/other');
+
+    await user.click(await screen.findByRole('button', { name: 'Account menu for Amina' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'My Profile' }));
+
+    expect(await screen.findByRole('heading', { name: 'Me stub' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/me');
+    expect(within(mainNav()).getByRole('link', { name: 'My Profile' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
   it('closes the avatar menu on Escape and returns focus to the button', async () => {
@@ -553,7 +645,7 @@ describe('Header auth area', () => {
     expect(screen.queryByRole('banner')).not.toBeInTheDocument();
   });
 
-  it('reads "Account menu" and still offers Log out while /me has failed', async () => {
+  it('reads "Account menu" and still offers My Profile and Log out while /me has failed', async () => {
     mockApi({ 'GET /me': fail(404) });
     setToken(makeToken());
     const user = userEvent.setup();
@@ -567,6 +659,8 @@ describe('Header auth area', () => {
     await user.click(
       within(screen.getByRole('banner')).getByRole('button', { name: 'Account menu' }),
     );
+    const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual(['My Profile', 'Log out']);
     await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
 
     await waitFor(() => {
@@ -913,5 +1007,62 @@ describe('Feed route', () => {
     });
 
     expect(await screen.findByRole('heading', { name: 'Feed loaded' })).toBeInTheDocument();
+  });
+});
+
+// ---- the lazy /me route (ADR-08, REQ-010) ----
+
+/** A route tree whose /me route is `ME_ROUTE` with another `lazy`. */
+function meRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
+  return createRoutes([{ element: <RequireAuth />, children: [{ ...ME_ROUTE, lazy }] }]);
+}
+
+describe('My Profile route', () => {
+  beforeEach(() => {
+    mockApi({ 'GET /me': ok(AMINA) });
+  });
+
+  it('renders the My Profile page for a signed-in visit', async () => {
+    setToken(makeToken());
+    renderAt('/me');
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { level: 1, name: 'My Profile' }),
+    ).toBeInTheDocument();
+  });
+
+  it('sends a guest to /login without loading the profile', async () => {
+    const { router } = renderAt('/me');
+
+    expect(await screen.findByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(apiCalls).not.toContain('GET /me');
+  });
+
+  it('keeps the shell and shows Loading… in main while the page code loads', async () => {
+    const chunk = gate();
+    setToken(makeToken());
+    renderAt(
+      '/me',
+      meRoutesWith(async () => {
+        await chunk.opened;
+        return { Component: () => <h1>My Profile loaded</h1> };
+      }),
+    );
+
+    const banner = screen.getByRole('banner');
+    expect(
+      await within(banner).findByRole('button', { name: 'Account menu for Amina' }),
+    ).toBeInTheDocument();
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
+
+    await act(async () => {
+      chunk.open();
+      await chunk.opened;
+    });
+
+    expect(await screen.findByRole('heading', { name: 'My Profile loaded' })).toBeInTheDocument();
   });
 });

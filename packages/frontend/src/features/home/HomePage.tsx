@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { DIRECTORY_PATH } from '@/config/directoryReturn';
 import { FEED_PATH } from '@/config/feedPath';
+import { ME_PATH } from '@/config/mePath';
 import { useCurrentUser } from '@/features/auth';
 import styles from './HomePage.module.css';
 
@@ -12,8 +13,7 @@ interface QuickLink {
 
 /**
  * The cards under the greeting (docs/design/screens/app/S1-*). Only pages
- * that exist are listed; add the profile and admin cards when those pages are
- * built.
+ * that exist are listed; add the admin card when that page is built.
  */
 const QUICK_LINKS: readonly QuickLink[] = [
   {
@@ -25,6 +25,11 @@ const QUICK_LINKS: readonly QuickLink[] = [
     to: FEED_PATH,
     title: 'Catch up on the feed',
     description: 'See what alumni and students are sharing',
+  },
+  {
+    to: ME_PATH,
+    title: 'My Profile',
+    description: 'Keep your details current so classmates can find you',
   },
 ];
 

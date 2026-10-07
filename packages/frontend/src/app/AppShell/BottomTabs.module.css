@@ -4,13 +4,16 @@
    README notes for placeholders) with the current tab in the accent colour. Sticks to the bottom of the
    shell. Nearest tokens: caption type (12px) for the design's 11px label;
    the design's 10px bottom padding is space-2 + half a space-1.
-   Hidden from 48rem, where the header nav is shown instead. */
+   Hidden from 48rem, where the header nav is shown instead. Its height is
+   --tab-bar-height, set on the shell (AppShell.module.css). */
 
 .tabs {
   position: sticky;
   bottom: 0;
   z-index: 1;
   display: flex;
+  box-sizing: border-box;
+  min-block-size: var(--tab-bar-height);
   padding: var(--space-1) var(--space-2) calc(var(--space-2) + var(--space-1) / 2);
   background: var(--surface-raised);
   border-top: 1px solid var(--border-subtle);

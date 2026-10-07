@@ -788,3 +788,63 @@ Use both. They serve different purposes.
 
 **Don't:** put the delete hook inside the item being deleted.
 **Related:** [[knowledge/gotchas#^g25|G25]] · [[knowledge/gotchas#^g30|G30]]
+
+## G36 — Toast and status-region traps ^g36
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-010 |
+| Component | components/ui/Toast |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- A `role="status"` element that mounts already holding its text may not be announced; keep it mounted and empty, and write the text into it (`Toast` takes `null` to close).
+- Keep the Dismiss button outside the status element, or its name is read with the message.
+- On an `ink-primary` inverse surface the global accent focus ring is too faint: use `currentcolor` for the outline.
+- An auto-close timer that restores focus to the heading must use `focus({ preventScroll: true })` or it scrolls the page to the top; and pause the timer on hover and focus, tracked per toast id.
+
+**Where:** `components/ui/Toast/`, `features/me/ProfileForm.tsx`
+
+**Don't:** key a new Toast per save to replay the animation; it remounts the live region.
+**Related:** [[knowledge/gotchas#^g33|G33]]
+
+## G37 — Test and layout traps found building My Profile ^g37
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-010 |
+| Component | frontend tests, AppShell |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- `import.meta.glob(..., { query: '?raw' })` returns an empty module for a `.css` file under Vitest (it works for `.ts`), so CSS contracts need screenshots, not a test.
+- jsdom cannot check that a page's sticky bottom bar clears the shell's tab bar; both share `--tab-bar-height`, but a tab label that wraps makes the bar taller than the variable.
+- Base UI Menu focuses the first item, so adding an item above Log out breaks a keyboard test that expected Log out.
+- A short lazy-feature name like `me` needs near-miss allow fixtures (`@/features/media`, `../meHelpers`) in `scripts/enforcement.test.ts` and `lazyRoutes.test.ts` to prove the ban matches whole path segments.
+
+**Where:** `app/AppShell/AppShell.module.css`, `scripts/enforcement.test.ts`, `app/lazyRoutes.test.ts`
+
+**Don't:** plan a CSS-text test; take paired screenshots at 390 px instead.
+
+## G38 — Mapping backend error text to form fields ^g38
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-010 |
+| Component | features/me/profileErrors.ts |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Backend messages start with the API field name ("Bio", "Company", "Job title"), which differs from the UI labels (About, Current role): use an explicit prefix table, "prefix + space", longest first ("Expected graduation year" before "Graduation year").
+- `optionalYear` checks the 10-character text limit before the year rules, so a long year says "must be at most 10 characters", not "is not valid": mirror that order.
+- `PUT /api/me` clears every omitted optional field, including `photo_url`: always send the stored value back.
+
+**Where:** `features/me/profileErrors.ts`, `features/me/validation.ts`; `businessLogic/src/validation.ts:31`
+
+**Don't:** match by label text or send a partial body.

@@ -1,0 +1,121 @@
+/* Design: docs/design/screens/app/S5-Desktop-Light and S5-Phone-Light. A
+   680px column (42.5rem, so it scales with zoom), centred; the shell's <main>
+   gives S5's outer padding. Gaps 16px phone (space-4), 24px from 48rem
+   (space-5). The h1 is text-heading-md (20px), the nearest token for S5's
+   22px.
+   Phone (below 48rem): S5's bar is a slim row at the top of the page, under
+   the shell's own header (as on the profile page): a 20px chevron and the
+   "My Profile" title (14px semibold), 10px apart (space-2 + space-1 / 2),
+   both inside the link. The h1 is clipped there, never display:none (G18),
+   so it stays the heading and the focus target. From 48rem the row goes and
+   the h1 shows. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(100%, 42.5rem);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.phoneBar {
+  display: flex;
+  align-items: center;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  padding: var(--space-1);
+  margin: calc(var(--space-1) * -1);
+  color: var(--ink-primary);
+  font-size: var(--text-body-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  line-height: var(--text-body-sm-line);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.backIcon {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.heading {
+  margin: 0;
+  font: var(--text-heading-md);
+}
+
+.heading:focus {
+  outline: none;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.retry {
+  align-self: flex-start;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.skeletonHeading {
+  inline-size: 30%;
+  block-size: var(--text-heading-sm-line);
+}
+
+.skeletonField {
+  block-size: 2.75rem;
+}
+
+@media (width < 48rem) {
+  .heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media (width >= 48rem) {
+  .page {
+    gap: var(--space-5);
+  }
+
+  .phoneBar {
+    display: none;
+  }
+
+  .skeleton {
+    gap: var(--space-5);
+  }
+}

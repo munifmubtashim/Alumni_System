@@ -1,0 +1,69 @@
+/* Same look as Input (components/ui/Input/Input.module.css), duplicated here
+   because CSS Modules cannot compose across components under the token lint.
+   Keep the two in step: border-strong at rest, accent border and raised fill
+   on focus, error border when aria-invalid, ink-secondary helper and
+   placeholder (4.5:1). Differences: body line height (multi-line text reads
+   better on the 26px line), vertical resize only, and no end adornment. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+/* 16px text so iOS does not zoom on focus. */
+.textarea {
+  font: var(--text-body);
+  color: var(--ink-primary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-4);
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+.textarea::placeholder {
+  color: var(--ink-secondary);
+}
+
+/* :where() keeps this at single-class weight, so the focus rule below wins (G04). */
+.textarea:where([aria-invalid='true']) {
+  border-color: var(--error);
+}
+
+/* The accent border is the only focus signal (no ring), as on Input. */
+.textarea:focus,
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.helper {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--ink-secondary);
+}
+
+.error {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--error);
+}
