@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-011 |
 | Tier | 1 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-002 |
 | Blocks | TASK-005 |
@@ -31,14 +31,20 @@ Alumni writes accept and validate the five fields; owner-only holds (AC3, AC4, A
 
 ## Acceptance
 
-- [ ] AC3, AC4, AC5 cases tested incl. NUL, trim, empty→cleared
-- [ ] Student body with junk headline/mentorship/start_year → no 400, keys absent from result (test)
-- [ ] non-owner and admin → 403, query not called (test)
-- [ ] `npm run test:backend` and `typecheck:backend` pass
+- [x] AC3, AC4, AC5 cases tested incl. NUL, trim, empty→cleared
+- [x] Student body with junk headline/mentorship/start_year → no 400, keys absent from result (test)
+- [x] non-owner and admin → 403, query not called (test)
+- [x] `npm run test:backend` and `typecheck:backend` pass
 
 ## Notes
 
 Query classes are TASK-005; use the mocked query in manager tests.
+
+Done 2026-10-07. `validateAlumniFields` now = department + graduation year + `validateSharedDetails` (company, job title, experience, bio, LinkedIn) + headline/location/degree/start_year/mentorship_available; `validateStudentFields` uses only `validateSharedDetails`, so a student body's alumni-only keys (including `graduation_year`) are never validated or returned. Boolean error message: "Mentorship availability must be true or false" (no FIELD_PREFIXES match, so the form shows it at form level; the client always sends a boolean). Order error: "Graduation year can't be before the start year"; same year is allowed.
+
+`AlumniEditableFields.mentorship_available` is a required `boolean` (only the validator builds this type). `MyProfileRow` also gained the five fields (optional) for TASK-005's `MY_PROFILE_SQL`. `createAlumni` builds `Object.assign(new AlumniDTO(userId), { ...validated, years as Number })` so `AlumniQuery.createAlumni(alumni: AlumniDTO)` keeps its signature; TASK-005 only adds the five columns to the INSERT (they are on the DTO now). Registration unchanged: inserts rely on column defaults.
+
+Tests 427/427 (was 369). businessLogic `dist` rebuilt with `tsc`. `typecheck:backend` still fails only on the known TS1261 (G22/G32). Per-package `tsc --noEmit --forceConsistentCasingInFileNames false` on api, businessLogic, dal: 0 errors; scratch tsconfig extending `tsconfig.test.json` (casing check off, `typeRoots` pointed at root `node_modules/@types` because the scratch path is outside the repo): 0 errors, 13 test files included.
 
 ## Related
 

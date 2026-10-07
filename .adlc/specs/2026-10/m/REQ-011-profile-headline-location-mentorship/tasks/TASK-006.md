@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-011 |
 | Tier | 1 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-002, TASK-003 |
 | Blocks | TASK-008, TASK-009 |
@@ -33,14 +33,22 @@ Alumni can see, edit, validate and save the five fields on My Profile (AC8, AC9,
 
 ## Acceptance
 
-- [ ] Fields appear for alumni only; none for student/none
-- [ ] Switch state counts as unsaved, is sent, survives a refetch
-- [ ] Server 400 lands on the right field
-- [ ] lint, typecheck, tests, format pass
+- [x] Fields appear for alumni only; none for student/none
+- [x] Switch state counts as unsaved, is sent, survives a refetch
+- [x] Server 400 lands on the right field
+- [x] lint, typecheck, tests, format pass
 
 ## Notes
 
 Follow S5 desktop and phone for order and grouping; screenshots happen in TASK-009.
+
+**Implementation (2026-10-07):**
+- Types: `ProfileTextValues` (all string fields; `ProfileField`/`MeField` key on it) and `ProfileValues extends` it with `mentorship_available: boolean`, so the binder, errors and checks stay string-only. `hasMentorship(kind)` is alumni only.
+- Layout (S5 desktop): Personal = [Full name, Headline] row, Location, About. Education (alumni) = [University, Degree] row, Department (not in S5, kept full width), [Start year, Graduation year] row. Students keep the old Education layout. Mentorship card sits between Career and Password. `FIELDS.alumni` follows that order so "first invalid field" focus matches the page.
+- Start year sits in a `.wideOnly` wrapper (`display: none` only inside `@media (width < 48rem)`, so no `display` is set otherwise, G18). ProfileForm checks `getComputedStyle` up the ancestors; a hidden field's client or server error becomes the form alert `"<message>. Open My Profile on a wider screen to change it."`, focused.
+- Order rule: `YEAR_ORDER_MESSAGE` = the backend's text, on graduation_year, only when both years pass their own checks. Leaving Start year shows it; editing Start year clears it.
+- Deviations: no `MentorshipSection.module.css` (the shared `Section.module.css` card and the Switch's own CSS were enough). Help text differs from S5 ("...and a Mentor tag on your directory card" instead of "appear in mentor search", which does not exist). Location/Headline use `autoComplete="off"` (free text).
+- Tests: frontend `npm test` 1287 passed (87 files), typecheck, lint (ESLint + Stylelint), format:check all clean.
 
 ## Related
 

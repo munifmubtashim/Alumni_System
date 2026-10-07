@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-011 |
 | Tier | 0 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | — |
 | Blocks | TASK-005 |
@@ -28,12 +28,14 @@
 
 ## Acceptance
 
-- [ ] File exists, idempotent statements only
-- [ ] Header names the prerequisite (003 applied)
+- [x] File exists, idempotent statements only
+- [x] Header names the prerequisite (003 applied)
 
 ## Notes
 
 Applying it is TASK-005's job (throwaway DB), never the dev database without asking: schema changes are on the confirm-out-of-scope list.
+
+Implemented 2026-10-07: one `ALTER TABLE alumni` with five `ADD COLUMN IF NOT EXISTS` clauses inside BEGIN/COMMIT, same header layout as 002/003 (purpose, idempotent + requires 003, psql usage line), plus the apply-before-API and rollback lines. Not run against any database and no automated test exists for SQL files; first real execution (twice) is TASK-005.
 
 ## Related
 
