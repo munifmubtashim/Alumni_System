@@ -111,7 +111,7 @@ function Page({ profile }: { profile: MyProfile }) {
   return (
     <>
       <h1 ref={headingRef} tabIndex={-1}>
-        My Profile
+        Account settings
       </h1>
       <Link to="/elsewhere">Away</Link>
       <ProfileForm profile={profile} headingRef={headingRef} />

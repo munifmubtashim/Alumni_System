@@ -9,7 +9,7 @@ import { useCurrentUser } from '@/features/auth';
 import { ProfileForm } from './ProfileForm';
 import styles from './MePage.module.css';
 
-export const ME_HEADING = 'My Profile';
+export const ME_HEADING = 'Account settings';
 export const LOAD_ERROR_TEXT = "We couldn't load your profile. Try again in a moment.";
 
 type View = 'loading' | 'error' | 'form';
@@ -22,7 +22,7 @@ type View = 'loading' | 'error' | 'form';
  * refetch or the save's own cache write never remounts it (ADV-004).
  *
  * Below 48rem the page starts with S5's phone bar (a back arrow home and the
- * "My Profile" title, both one link named "Back to home"); the h1 is then
+ * "Account settings" title, both one link named "Back to home"); the h1 is then
  * visually hidden but still the page's heading. From 48rem the bar goes and
  * the h1 shows. Focus moves to the h1 when the view changes only if focus was
  * lost (LESSON-REQ-008-2).

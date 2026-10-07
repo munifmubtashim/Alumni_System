@@ -81,7 +81,7 @@ export const ME_ROUTE: RouteObject = {
 
 /**
  * Pages inside AppShell (header). Home is the first signed-in page; the
- * directory, the profile, the feed and My Profile are lazy. Any unknown path
+ * directory, the profile, the feed and Account settings (/me) are lazy. Any unknown path
  * shows the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [

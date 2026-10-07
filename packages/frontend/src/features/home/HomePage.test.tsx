@@ -56,7 +56,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Welcome back' })).toBeInTheDocument();
   });
 
-  it('shows only the cards for pages that exist: the directory, the feed and My Profile', () => {
+  it('shows only the cards for pages that exist: the directory, the feed and Account settings', () => {
     renderWith(profile('Amina', 'alumni'));
 
     const links = screen.getAllByRole('link');
@@ -68,7 +68,7 @@ describe('HomePage', () => {
     expect(links[1]).toHaveTextContent('Catch up on the feed');
     expect(links[1]).toHaveTextContent('See what alumni and students are sharing');
     expect(links[2]).toHaveAttribute('href', '/me');
-    expect(links[2]).toHaveTextContent('My Profile');
+    expect(links[2]).toHaveTextContent('Account settings');
     expect(links[2]).toHaveTextContent('Keep your details current so classmates can find you');
     expect(screen.queryByText('Update your profile')).not.toBeInTheDocument();
   });

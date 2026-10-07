@@ -5,7 +5,7 @@
    22px.
    Phone (below 48rem): S5's bar is a slim row at the top of the page, under
    the shell's own header (as on the profile page): a 20px chevron and the
-   "My Profile" title (14px semibold), 10px apart (space-2 + space-1 / 2),
+   "Account settings" title (14px semibold), 10px apart (space-2 + space-1 / 2),
    both inside the link. The h1 is clipped there, never display:none (G18),
    so it stays the heading and the focus target. From 48rem the row goes and
    the h1 shows. */
