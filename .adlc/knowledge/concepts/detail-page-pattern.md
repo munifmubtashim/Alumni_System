@@ -6,7 +6,7 @@
 | Introduced in | [[REQ-008]] |
 | Code | `packages/frontend/src/features/profile/` |
 
-A page for one record, opened from a list. `features/profile` is the first; the feed's post page can follow it.
+A page for one record, opened from a list. `features/profile` is the first. The feed (REQ-009) is a list, not a detail page; a single-post page, if one is added, can follow this pattern.
 
 - **Route.** Lazy (`PROFILE_ROUTE`, ADR-08) under `RequireAuth` in the app shell, with the router's own error layers. No `index.ts`; nothing outside the folder imports it.
 - **Data.** One query keyed by the route id (`['alumni','profile',id]`), no `placeholderData`. A second, dependent query (the posts) uses `skipToken` until the first has the `user_id`; it fails and retries on its own without hiding the page ([[knowledge/lessons/LESSON-REQ-008-1-detail-page-query-and-error-state|L-REQ-008-1]]).

@@ -168,3 +168,47 @@
 **Claim:** Enlarge inline text-button hit areas with min-block-size plus a negative margin no bigger than the gap to the nearest link, or the button covers that link.
 **Saw it in:** `packages/frontend/src/features/feed/CommentThread.module.css` (`.action`)
 **Context:** A full -8px margin on Reply/Edit/Delete would overlap the author name link 4px above.
+
+
+## Candidate verdicts
+
+Candidate numbers repeat across sources (CAND-022 to 025 were used by several reviewers); the source label is in brackets.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g33 |
+| CAND-002 | discard | trivial: one-off way to move a file |
+| CAND-003 | demote-to-gotcha | ^g32 |
+| CAND-004 | demote-to-gotcha | ^g32 |
+| CAND-005 | demote-to-gotcha | ^g31 |
+| CAND-006 | demote-to-gotcha | ^g34 |
+| CAND-007 | promote | LESSON-REQ-009-3 |
+| CAND-008 | promote | LESSON-REQ-009-2 (merged) |
+| CAND-009 | demote-to-gotcha | ^g34 |
+| CAND-010 | promote | LESSON-REQ-009-2 (merged) |
+| CAND-011 | promote | LESSON-REQ-009-1 |
+| CAND-012 | demote-to-gotcha | ^g31 |
+| CAND-013 | demote-to-gotcha | ^g32 |
+| CAND-014 | demote-to-gotcha | ^g35 |
+| CAND-015 | demote-to-gotcha | ^g35 |
+| CAND-016 | demote-to-gotcha | ^g34 |
+| CAND-017 | demote-to-gotcha | ^g34 |
+| CAND-018 | demote-to-gotcha | ^g33 |
+| CAND-019 | promote | LESSON-REQ-009-4 (merged) |
+| CAND-020 | promote | LESSON-REQ-009-4 (merged) |
+| CAND-021 | discard | trivial: one task file named test files that do not exist |
+| CAND-022 [review-qual] | discard | duplicate of LESSON-REQ-008-6; recurrence noted as a follow-up in the PR |
+| CAND-023 [review-qual] | discard | duplicate of LESSON-REQ-008-6 / G26; follow-up in the PR |
+| CAND-024 [review-qual] | discard | generic test advice; Byline/EditBox tests listed as a follow-up |
+| CAND-022 [review-arch] | discard | duplicate of LESSON-REQ-008-6 |
+| CAND-023 [review-arch] | discard | one SQL helper is a follow-up (finding m8), not a rule yet |
+| CAND-022 [review-reflect] | promote | LESSON-REQ-009-4 (merged) |
+| CAND-023 [review-reflect] | promote | concept page `optimistic-cache-edits` |
+| CAND-024 [review-reflect] | promote | LESSON-REQ-009-3 (merged) |
+| CAND-025 [review-corr] | promote | LESSON-REQ-009-2 (merged) |
+| CAND-026 [review-corr] | promote | LESSON-REQ-009-2 (merged) |
+| CAND-025 [ui-review] | demote-to-gotcha | ^g35 |
+| CAND-027 | demote-to-gotcha | ^g34 |
+| CAND-028 | demote-to-gotcha | ^g35 |
+
+Dedup basis: `ls knowledge/lessons/` on this branch and `origin/redesign` (36 lessons, as of 9 hours ago): no REQ-009 lessons there, no matching claims.

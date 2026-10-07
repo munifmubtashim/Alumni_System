@@ -7,6 +7,11 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] ship-gate-cleared | REQ-009-post-feed-page | 6 stale vault pages updated (REFL-002)
+## [2026-10-07] req-ready-to-merge | REQ-009-post-feed-page | feed page /feed, comment edit endpoint, author_alumni_id, ADR-09
+## [2026-10-07] lesson | L-REQ-009-1..4 — alumni id for profile links, optimistic rollback and settle, offset paging, six lists for a lazy feature
+## [2026-10-07] gotcha | G31–G35 — dal SQL, backend typecheck, contrast pairs, feed test traps, menu focus and tap targets
+## [2026-10-07] concept | optimistic-cache-edits — first captured
 ## [2026-10-07] verify-gate-cleared | REQ-009-post-feed-page | findings: C0/M1/m8 open (fix round: m1,m2,m3,m11 fixed)
 ## [2026-10-07] implement-gate-cleared | REQ-009-post-feed-page | 9 tasks; frontend 1047 + backend 369 tests pass
 ## [2026-10-07] adr-accepted | ADR-09 optimistic updates by editing the TanStack Query cache

@@ -33,3 +33,4 @@ Express 4 + Postgres API in three npm workspaces that form one pipeline: routes 
 
 - [[REQ-003]] — auth on every non-public route, post ownership, partial post update, shared sendError, first backend test suite (ADR-05)
 - [[REQ-005]] — search, filters and paging for `GET /api/alumni`; NUL check in `optionalText`; `graduation_year` typed as a number on list types
+- [[REQ-009]] — `PUT /api/comments/:id` (owner or admin, content only, one CTE), `author_alumni_id` on posts and comments (scalar subquery), `GET /api/posts` ordered by `created_at DESC, id DESC`

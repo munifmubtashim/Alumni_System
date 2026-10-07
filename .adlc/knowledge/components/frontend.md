@@ -41,3 +41,4 @@ React 19 + Vite 8 + TypeScript 6 SPA, rebuilt from scratch in [[REQ-001]]. Since
 - [[REQ-006]] — alumni directory page (`/directory`), lazy route, `MainNav`, Avatar/Chip/Skeleton/SearchField/Popover/VisuallyHidden, `alumniApi`
 - [[REQ-007]] — S1 shell: `BottomTabs`, `navItems` (`NAV_ITEMS`), avatar menu in the header, compact ThemeToggle in the header, Menu `label` / `MenuSeparator`, Avatar `xs`, Home quick-link cards
 - [[REQ-008]] — alumni profile page (`/alumni/:id`), second lazy route, `features/profile`, `config/directoryReturn`, `httpErrors`, Avatar `lg`, per-feature lazy bans
+- [[REQ-009]] — post feed page (`/feed`), third lazy route, `features/feed` (composer, posts, comment threads, owner-or-admin edit and delete), `services/postsApi`, `config/relativeTime` + `feedPath`, Menu `tone="danger"`, Feed in nav, tab bar and Home; optimistic writes ([[architecture/adr-09-optimistic-updates-by-cache-edit|ADR-09]])
