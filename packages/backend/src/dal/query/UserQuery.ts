@@ -103,6 +103,8 @@ export class UserQuery {
     private static readonly PUBLIC_USER_COLUMNS = 'id, name, email, role, photo_url, university, created_at';
 
     // users row + their first alumni row and their students row (if any). Never selects the password.
+    // headline, location, degree and start_year are alumni-only (null for students); mentorship_available
+    // is COALESCEd so it is false, never null, for an account without an alumni row.
     private static readonly MY_PROFILE_SQL = `
         SELECT u.id AS user_id, u.name, u.email, u.photo_url, u.role, u.university,
                u.created_at, u.login_at,
@@ -115,6 +117,8 @@ export class UserQuery {
                COALESCE(a.experience, s.experience) AS experience,
                COALESCE(a.bio, s.bio) AS bio,
                COALESCE(a.linkedin_url, s.linkedin_url) AS linkedin_url,
+               a.headline, a.location, a.degree, a.start_year,
+               COALESCE(a.mentorship_available, false) AS mentorship_available,
                GREATEST(u.updated_at, a.updated_at, s.updated_at) AS updated_at
         FROM users u
         LEFT JOIN alumni a ON a.id = (SELECT id FROM alumni WHERE user_id = u.id ORDER BY id LIMIT 1)
@@ -165,8 +169,9 @@ export class UserQuery {
             if (alumni) {
                 await client.query(
                     `UPDATE alumni SET department=$1, graduation_year=$2, current_company=$3, job_title=$4,
-                        experience=$5, bio=$6, linkedin_url=$7, updated_at=NOW()
-                     WHERE id = (SELECT id FROM alumni WHERE user_id = $8 ORDER BY id LIMIT 1)`,
+                        experience=$5, bio=$6, linkedin_url=$7, headline=$8, location=$9, degree=$10,
+                        start_year=$11, mentorship_available=$12, updated_at=NOW()
+                     WHERE id = (SELECT id FROM alumni WHERE user_id = $13 ORDER BY id LIMIT 1)`,
                     [
                         alumni.department ?? null,
                         alumni.graduation_year ?? null,
@@ -175,6 +180,11 @@ export class UserQuery {
                         alumni.experience ?? null,
                         alumni.bio ?? null,
                         alumni.linkedin_url ?? null,
+                        alumni.headline ?? null,
+                        alumni.location ?? null,
+                        alumni.degree ?? null,
+                        alumni.start_year ?? null,
+                        alumni.mentorship_available,
                         userId
                     ]
                 );

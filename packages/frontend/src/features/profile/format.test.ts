@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   commentCountText,
+  degreeLine,
   educationLine,
   employmentTitle,
   headline,
@@ -47,7 +48,65 @@ describe('headline', () => {
   });
 });
 
+describe("headline with the alumnus's own text", () => {
+  it('uses the headline instead of job title and company', () => {
+    expect(
+      headline({
+        headline: '  Senior Product Manager at Meridian Health ',
+        job_title: 'Design Lead',
+        current_company: 'Terra Climate',
+        graduation_year: 2017,
+      }),
+    ).toBe('Senior Product Manager at Meridian Health · Class of 2017');
+    expect(headline({ headline: 'Climate designer' })).toBe('Climate designer');
+  });
+
+  it.each([null, '', '   ', undefined])('falls back to job and company for headline %j', (h) => {
+    expect(
+      headline({ headline: h, job_title: 'Design Lead', current_company: 'Terra Climate' }),
+    ).toBe('Design Lead at Terra Climate');
+  });
+});
+
+describe('degreeLine', () => {
+  it('joins the degree and the year range', () => {
+    expect(degreeLine('B.Sc. Product Design', 2013, 2017)).toBe('B.Sc. Product Design · 2013–2017');
+  });
+
+  it('shows one year alone when the other is missing or the same', () => {
+    expect(degreeLine('B.Sc.', 2013, null)).toBe('B.Sc. · 2013');
+    expect(degreeLine('B.Sc.', undefined, 2017)).toBe('B.Sc. · 2017');
+    expect(degreeLine('B.Sc.', 2017, 2017)).toBe('B.Sc. · 2017');
+  });
+
+  it('shows the degree alone, or the years alone', () => {
+    expect(degreeLine(' B.Sc. ', null, null)).toBe('B.Sc.');
+    expect(degreeLine('  ', 2013, 2017)).toBe('2013–2017');
+    expect(degreeLine(null, null, 2017)).toBe('2017');
+  });
+
+  it('is undefined when degree and both years are missing', () => {
+    expect(degreeLine(null, null, null)).toBeUndefined();
+    expect(degreeLine(' ', undefined, undefined)).toBeUndefined();
+  });
+});
+
 describe('educationLine', () => {
+  it('uses the degree line when there is a degree or a start year', () => {
+    expect(
+      educationLine({
+        department: 'Design',
+        degree: 'B.Sc. Product Design',
+        start_year: 2013,
+        graduation_year: 2017,
+      }),
+    ).toBe('B.Sc. Product Design · 2013–2017');
+    expect(educationLine({ department: 'Design', start_year: 2013, graduation_year: 2017 })).toBe(
+      'Design · 2013–2017',
+    );
+    expect(educationLine({ degree: 'MBA', graduation_year: 2017 })).toBe('MBA · 2017');
+  });
+
   it('joins department and class year, dropping missing parts', () => {
     expect(educationLine({ department: 'CSE', graduation_year: 2017 })).toBe('CSE · Class of 2017');
     expect(educationLine({ department: ' CSE ' })).toBe('CSE');

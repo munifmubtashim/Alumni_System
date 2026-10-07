@@ -2,6 +2,7 @@ import type { AlumniListItem } from '@alumni/shared';
 import { Link, useLocation } from 'react-router';
 import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Tag } from '@/components/ui/Tag';
 import { directoryReturnState, profilePath } from '@/config/directoryReturn';
 import styles from './AlumniCard.module.css';
 
@@ -26,8 +27,9 @@ function jobLine(alumnus: Pick<AlumniListItem, 'job_title' | 'current_company'>)
 /**
  * One directory result: the whole card is a single link to the profile.
  * The avatar is aria-hidden, so the link reads as the name, then the details.
- * No Mentor tag (not in this REQ's data). The link carries the current search
- * as router state so the profile's back link can restore it (REQ-008).
+ * A "Mentor" tag closes the card when `mentorship_available` is true (S2;
+ * REQ-011). The link carries the current search as router state so the
+ * profile's back link can restore it (REQ-008).
  */
 export function AlumniCard({ alumnus }: AlumniCardProps) {
   const { search } = useLocation();
@@ -49,6 +51,11 @@ export function AlumniCard({ alumnus }: AlumniCardProps) {
         <div className={styles.details}>
           {department !== undefined && <p className={styles.meta}>{department}</p>}
           {job !== undefined && <p className={styles.job}>{job}</p>}
+        </div>
+      )}
+      {alumnus.mentorship_available === true && (
+        <div className={styles.tags}>
+          <Tag tone="accent">Mentor</Tag>
         </div>
       )}
     </Link>

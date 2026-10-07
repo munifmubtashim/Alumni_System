@@ -20,7 +20,9 @@ export class AlumniQuery {
 
   public async createAlumni(alumni: AlumniDTO): Promise<AlumniDTO> {
     const info = await pool.query(
-      "INSERT INTO alumni (user_id, department, graduation_year, current_company, job_title, experience, bio, linkedin_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+      `INSERT INTO alumni (user_id, department, graduation_year, current_company, job_title, experience, bio, linkedin_url,
+         headline, location, degree, start_year, mentorship_available)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
       [
         alumni.user_id,
         alumni.department,
@@ -30,6 +32,12 @@ export class AlumniQuery {
         alumni.experience,
         alumni.bio,
         alumni.linkedin_url,
+        alumni.headline ?? null,
+        alumni.location ?? null,
+        alumni.degree ?? null,
+        alumni.start_year ?? null,
+        // The column is NOT NULL: a DTO without the flag stores false, never null.
+        alumni.mentorship_available ?? false,
       ],
     );
     return info.rows[0];
@@ -53,7 +61,9 @@ export class AlumniQuery {
     alumni: AlumniEditableFields,
   ): Promise<AlumniDTO> {
     const info = await pool.query(
-      `UPDATE alumni SET department=$1 ,graduation_year=$2 ,  current_company=$3 ,job_title=$4 ,experience=$5 ,bio=$6 ,linkedin_url=$7 , updated_at=NOW() WHERE id=$8 RETURNING *`,
+      `UPDATE alumni SET department=$1, graduation_year=$2, current_company=$3, job_title=$4, experience=$5, bio=$6,
+         linkedin_url=$7, headline=$8, location=$9, degree=$10, start_year=$11, mentorship_available=$12,
+         updated_at=NOW() WHERE id=$13 RETURNING *`,
       [
         alumni.department,
         alumni.graduation_year,
@@ -62,6 +72,11 @@ export class AlumniQuery {
         alumni.experience,
         alumni.bio,
         alumni.linkedin_url,
+        alumni.headline ?? null,
+        alumni.location ?? null,
+        alumni.degree ?? null,
+        alumni.start_year ?? null,
+        alumni.mentorship_available,
         id
       ],
     );

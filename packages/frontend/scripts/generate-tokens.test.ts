@@ -32,7 +32,7 @@ describe('tokens.css', () => {
   });
 
   it('defines every color token in both themes, light being the default', () => {
-    expect(tokens.color.tokens).toHaveLength(15);
+    expect(tokens.color.tokens).toHaveLength(17);
     expect(rendered).toContain(":root,\n:root[data-theme='light'] {");
 
     for (const theme of ['light', 'dark']) {

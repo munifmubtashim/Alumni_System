@@ -67,6 +67,8 @@
   --accent-ink: #fdf8f3;
   --accent-soft: #f3e4d9;
   --success: #5f7a56;
+  --success-soft: #e9efe5;
+  --success-strong: #4f6947;
   --warning: #a9813f;
   --error: #a3503f;
 }
@@ -86,6 +88,8 @@
   --accent-ink: #1d1a17;
   --accent-soft: #3a2c23;
   --success: #93b188;
+  --success-soft: #2a3326;
+  --success-strong: #93b188;
   --warning: #d7ac6e;
   --error: #d1796a;
 }

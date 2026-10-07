@@ -4,19 +4,19 @@ Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a she
 
 ## Stack
 
-| Concern       | Choice                                                                    | Why / note                                                                   |
-| ------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| UI runtime    | React 19.3, React DOM 19.3                                                | React Router 8 needs ≥ 19.2.7                                                |
-| Build         | Vite 8, `@vitejs/plugin-react` 6                                          | Dev server proxies `/api` to the API                                         |
-| Types         | TypeScript **6.0** (not 7)                                                | `typescript-eslint` 8.71 supports TS < 6.1; TS 7 would break type-aware lint |
-| Routing       | React Router 8 (`react-router`, data router)                              |                                                                              |
-| State         | Jotai 3 (client-only state), TanStack Query 5 (server state)              | ADR-02                                                                       |
-| HTTP          | axios, one instance (`src/services/httpClient.ts`)                        | Attaches the auth header in one interceptor                                  |
-| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu`, `SegmentedControl` (so `ThemeToggle`) and `Popover`  |
-| Styling       | CSS Modules + design tokens (CSS custom properties)                       | No component library; no raw colors or shadows                               |
-| Font          | Inter, self-hosted via `@fontsource-variable/inter`                       | No third-party font request                                                  |
-| Lint / format | ESLint **9** (not 10), Stylelint 17, Prettier 3                           | `eslint-plugin-jsx-a11y` only supports ESLint ≤ 9                            |
-| Tests         | Vitest 5, React Testing Library 16, user-event 14, jest-dom, **jsdom 29** | jsdom 30 needs Node ≥ 24.15; jsdom is pinned to 29 so Node 24.14 works       |
+| Concern       | Choice                                                                    | Why / note                                                                            |
+| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| UI runtime    | React 19.3, React DOM 19.3                                                | React Router 8 needs ≥ 19.2.7                                                         |
+| Build         | Vite 8, `@vitejs/plugin-react` 6                                          | Dev server proxies `/api` to the API                                                  |
+| Types         | TypeScript **6.0** (not 7)                                                | `typescript-eslint` 8.71 supports TS < 6.1; TS 7 would break type-aware lint          |
+| Routing       | React Router 8 (`react-router`, data router)                              |                                                                                       |
+| State         | Jotai 3 (client-only state), TanStack Query 5 (server state)              | ADR-02                                                                                |
+| HTTP          | axios, one instance (`src/services/httpClient.ts`)                        | Attaches the auth header in one interceptor                                           |
+| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu`, `SegmentedControl` (so `ThemeToggle`), `Popover` and `Switch` |
+| Styling       | CSS Modules + design tokens (CSS custom properties)                       | No component library; no raw colors or shadows                                        |
+| Font          | Inter, self-hosted via `@fontsource-variable/inter`                       | No third-party font request                                                           |
+| Lint / format | ESLint **9** (not 10), Stylelint 17, Prettier 3                           | `eslint-plugin-jsx-a11y` only supports ESLint ≤ 9                                     |
+| Tests         | Vitest 5, React Testing Library 16, user-event 14, jest-dom, **jsdom 29** | jsdom 30 needs Node ≥ 24.15; jsdom is pinned to 29 so Node 24.14 works                |
 
 The package is ESM (`"type": "module"` in `package.json`) so the `.js` lint configs load as modules. It needs Node 24 or later (`engines.node`): `npm run tokens` runs a `.ts` file directly with Node's built-in type stripping (no `tsx`/`ts-node`).
 
@@ -64,8 +64,8 @@ packages/frontend/
                       directory/, profile/, feed/ and me/ (lazy-loaded directory, alumni profile,
                       post feed and My Profile pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
-                      Textarea, Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle, Avatar,
-                      Chip, Skeleton, SearchField, Popover, Toast
+                      Textarea, Card, Tag, Alert, Menu, SegmentedControl, Switch, ThemeToggle,
+                      Avatar, Chip, Skeleton, SearchField, Popover, Toast
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
     services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi,
                       postsApi, httpErrors
@@ -117,14 +117,15 @@ REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists a
 - **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) and My Profile at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
-- **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
+- **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1.
+- **Mentor tag:** a card closes with a "Mentor" tag when the alumnus has `mentorship_available` on (REQ-011). The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
 - **Header:** after S1. `MainNav` (desktop) shows the Directory, Feed and My Profile links (`NAV_ITEMS`) to signed-in users only, each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, My Profile, Log out) sit on the right.
 
 ## Profile page
 
 REQ-008. `/alumni/:id` (signed in; every directory card links to it) shows one alumnus from `GET /api/alumni/:id` and their newest 5 posts from `GET /api/posts/user/:userId` (the profile's `user_id`), after the S3 designs.
 
-- **Sections:** header (avatar, name, "job title at company · Class of YYYY", LinkedIn link when it is an http(s) address), About, Education (university, department, class year), Employment (job title and company, then the free-text experience), Recent posts. A section with no data is not rendered. Location, the mentorship badge, degree, year ranges and job history are not shown: nothing stores them.
+- **Sections:** header (avatar, name, the "Available for mentorship" badge when `mentorship_available` is true, the alumnus's headline or else "job title at company", then " · Class of YYYY", location, LinkedIn link when it is an http(s) address), About, Education (university, then "Degree · 2013–2017" when a degree is set, else department and class year), Employment (job title and company, then the free-text experience), Recent posts. A section or header part with no data is not rendered. Job history is not shown: nothing stores it.
 - **States:** loading skeletons, "Profile not found" (unknown or malformed id: the API answers 404), error with Retry; posts have their own loading, error and empty states and never hide the profile. A failed background refetch keeps what is already shown.
 - **Back link:** "Back to directory" restores the search, filters and page the user left (the card passes `location.search` in router state; `config/directoryReturn.ts` owns the contract). A direct visit goes to plain `/directory`. On phones it shows as an arrow and "Profile" under the shell's top bar.
 - **Accessibility:** every state has an `h1` and a tab title; focus moves to the heading only when focus was on the page body or on something that disappeared.
@@ -144,7 +145,7 @@ REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on p
 REQ-010. `/me` (signed in; the header's "My Profile" link, the My Profile tab on phones and the avatar menu) lets the signed-in user edit their own details and change their password, after the S5 designs.
 
 - **Saving:** one Save sends `PUT /api/me` when a profile field changed, then `PUT /api/me/password` when a password was typed. A save bar shows while there are unsaved changes, a prompt asks before leaving with them, and a toast confirms a save. Not optimistic.
-- **Sections:** which ones show depends on the account (alumni, student, or no profile row). Email is never shown or sent; headline, location, degree, start year, mentorship and photo upload are not built (no API for them).
+- **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (hidden below 48rem, value kept) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).
 - More: `src/features/me/README.md`.
 
 ## Forms
@@ -156,7 +157,7 @@ ADR-04: no form library for now.
 - On submit with errors: show them per field (`Input error`) and focus the first invalid field. Otherwise call the `useMutation`. The submit button gets `loading` (disabled, `aria-busy`), so it can't be pressed twice.
 - Server errors go through a pure mapper (`features/auth/authErrors.ts`): login 401 → form Alert "Email or password is incorrect"; sign-up 409 → email field error with a "Log in instead" link; 400 → its message; network or 5xx → "Couldn't reach the server, try again".
 - Fields hidden by the role switch keep their values but are not validated or sent (`toRegisterInput`).
-- **Revisit** when a form needs dynamic field arrays, or when the field rules move into `@alumni/shared`. My Profile (up to 12 fields, REQ-010) reached the old 8-field mark and stayed with controlled state (ADR-04).
+- **Revisit** when a form needs dynamic field arrays, or when the field rules move into `@alumni/shared`. My Profile (up to 12 fields, REQ-010; 17 controls since REQ-011) reached the old 8-field mark and stayed with controlled state (ADR-04).
 
 ## Primitives added in REQ-002
 

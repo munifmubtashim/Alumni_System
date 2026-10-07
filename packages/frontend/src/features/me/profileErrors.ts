@@ -19,6 +19,8 @@ export interface ProfileFormError {
 // UserManager.updateMe / changeMyPassword) to form fields. An explicit table,
 // because the UI labels differ (Bio is "About", Job title is "Current role").
 // Longer prefixes first, so "Expected graduation year" never matches a shorter one.
+// The year order rule's message starts with "Graduation year", so it lands on
+// that field (visible at every width), never on the phone-hidden Start year.
 const FIELD_PREFIXES: readonly (readonly [string, MeField])[] = [
   ['Expected graduation year', 'expected_graduation_year'],
   ['Graduation year', 'graduation_year'],
@@ -28,8 +30,12 @@ const FIELD_PREFIXES: readonly (readonly [string, MeField])[] = [
   ['University', 'university'],
   ['Department', 'department'],
   ['Experience', 'experience'],
+  ['Start year', 'start_year'],
   ['Job title', 'job_title'],
+  ['Headline', 'headline'],
+  ['Location', 'location'],
   ['Company', 'current_company'],
+  ['Degree', 'degree'],
   ['Name', 'name'],
   ['Bio', 'bio'],
 ];

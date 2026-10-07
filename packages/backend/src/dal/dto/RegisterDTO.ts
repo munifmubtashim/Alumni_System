@@ -54,6 +54,12 @@ export interface MyProfileRow {
   experience?: string;
   bio?: string;
   linkedin_url?: string;
+  // Alumni-only (null for students and accounts without an alumni row); mentorship_available is never null.
+  headline?: string;
+  location?: string;
+  degree?: string;
+  start_year?: string;
+  mentorship_available?: boolean;
   created_at?: Date;
   login_at?: Date;
   updated_at?: Date; // latest change to the users or alumni row
@@ -76,6 +82,12 @@ export interface AlumniEditableFields {
   experience?: string;
   bio?: string;
   linkedin_url?: string;
+  headline?: string;
+  location?: string;
+  degree?: string;
+  start_year?: string; // text like graduation_year; INTEGER column
+  // Always set by the validator: a full-replace save that omits it means false.
+  mentorship_available: boolean;
 }
 
 // students fields an owner may change (the alumni-style details plus the student ones).

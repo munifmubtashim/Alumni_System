@@ -67,6 +67,12 @@ const PAIRS: Pair[] = [
     use: 'accent Tag text, Avatar initials, Chip text',
   },
   { fg: 'accent', bg: 'accent-soft', min: NON_TEXT, use: 'focus outline on a Chip button' },
+  {
+    fg: 'success-strong',
+    bg: 'success-soft',
+    min: TEXT,
+    use: 'profile "Available for mentorship" pill text and dot',
+  },
   { fg: 'error', bg: 'surface-page', min: TEXT, use: 'Input error text on the page' },
   { fg: 'error', bg: 'surface-raised', min: TEXT, use: 'Input error text in a Card' },
   { fg: 'error', bg: 'surface-sunken', min: TEXT, use: 'Input error text on a sunken panel' },
@@ -76,6 +82,16 @@ const PAIRS: Pair[] = [
   { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Input focus border' },
   { fg: 'accent', bg: 'surface-sunken', min: NON_TEXT, use: 'auth panel check marks, Logo' },
   { fg: 'ink-secondary', bg: 'surface-sunken', min: NON_TEXT, use: 'show/hide password icon' },
+  { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Switch track, on, in a Card' },
+  { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'Switch track, on, on the page' },
+  { fg: 'accent-ink', bg: 'accent', min: NON_TEXT, use: 'Switch thumb, on' },
+  { fg: 'ink-muted', bg: 'surface-raised', min: NON_TEXT, use: 'Switch track, off, in a Card' },
+  { fg: 'ink-muted', bg: 'surface-page', min: NON_TEXT, use: 'Switch track, off, on the page' },
+  { fg: 'surface-raised', bg: 'ink-muted', min: NON_TEXT, use: 'Switch thumb, off' },
+  { fg: 'accent', bg: 'surface-raised', min: NON_TEXT, use: 'Switch focus ring in a Card' },
+  { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'Switch focus ring on the page' },
+  { fg: 'ink-primary', bg: 'surface-raised', min: TEXT, use: 'Switch label in a Card' },
+  { fg: 'ink-secondary', bg: 'surface-raised', min: TEXT, use: 'Switch help text in a Card' },
 ];
 
 // Accepted exceptions: the ratio is the floor recorded in architecture.md;

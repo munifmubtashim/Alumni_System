@@ -14,17 +14,13 @@ export class AlumniManager {
     const existing = await this.alumniQuery.findAlumniByUserId(userId);
     if (existing) throw new AppError(409, "You already have an alumni profile");
     const f = validateAlumniFields(body);
-    const alumni = new AlumniDTO(
-      userId,
-      f.department,
-      // validateAlumniFields returns the year as text; the column is INTEGER, so pass a number.
-      f.graduation_year === undefined ? undefined : Number(f.graduation_year),
-      f.current_company,
-      f.job_title,
-      f.experience,
-      f.bio,
-      f.linkedin_url,
-    );
+    // validateAlumniFields returns years as text; the columns are INTEGER, so pass numbers.
+    const alumni = new AlumniDTO({
+      ...f,
+      user_id: userId,
+      graduation_year: f.graduation_year === undefined ? undefined : Number(f.graduation_year),
+      start_year: f.start_year === undefined ? undefined : Number(f.start_year),
+    });
     try {
       return await this.alumniQuery.createAlumni(alumni);
     } catch (error) {
