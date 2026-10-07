@@ -11,8 +11,10 @@ import { CURRENT_USER_QUERY_KEY } from '@/features/auth';
 import { clearToken, setToken } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
 import { LEAVE_PROMPT_TEXT } from './LeavePrompt';
+import { MENTORSHIP_HELP, MENTORSHIP_LABEL } from './MentorshipSection';
 import {
   ALL_SAVED_TEXT,
+  HIDDEN_FIELD_HINT,
   PASSWORD_SAVED_TEXT,
   PROFILE_SAVED_TEXT,
   ProfileForm,
@@ -20,6 +22,7 @@ import {
   TOAST_MS,
 } from './ProfileForm';
 import { SAVE_BAR_LABEL } from './SaveBar';
+import { YEAR_ORDER_MESSAGE } from './validation';
 
 // ---- a live token (the leave guard and the cache write check for one) ----
 
@@ -83,6 +86,15 @@ const ALUMNI: MyProfile = {
   university: 'University of Toronto',
   graduation_year: '2016',
   job_title: 'Product manager',
+};
+
+const ALUMNI_FULL: MyProfile = {
+  ...ALUMNI,
+  headline: 'PM at Meridian Health',
+  location: 'Toronto, Canada',
+  degree: 'B.A. Economics',
+  start_year: '2012',
+  mentorship_available: true,
 };
 
 const STUDENT: MyProfile = {
@@ -152,12 +164,11 @@ async function typePassword(
 }
 
 describe('ProfileForm sections', () => {
-  it('shows Personal, Education, Career and Password in that order for alumni', () => {
+  it('shows Personal, Education, Career, Mentorship and Password in that order for alumni', () => {
     renderForm(ALUMNI);
-    expect(screen.getAllByRole('region')).toHaveLength(4);
+    expect(screen.getAllByRole('region')).toHaveLength(5);
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
-    expect(headings).toEqual(['Personal', 'Education', 'Career', 'Password']);
-    expect(screen.queryByText(/Mentorship/i)).not.toBeInTheDocument();
+    expect(headings).toEqual(['Personal', 'Education', 'Career', 'Mentorship', 'Password']);
     expect(screen.getByLabelText('Graduation year')).toHaveValue('2016');
     expect(screen.queryByLabelText('Expected graduation year')).not.toBeInTheDocument();
     expect(screen.getByLabelText('About')).toBeInTheDocument();
@@ -168,6 +179,32 @@ describe('ProfileForm sections', () => {
     renderForm(STUDENT);
     expect(screen.getByLabelText('Expected graduation year')).toHaveValue('1999');
     expect(screen.queryByLabelText('Graduation year')).not.toBeInTheDocument();
+  });
+
+  it('shows Headline and Location in Personal, Degree and Start year in Education for alumni', () => {
+    renderForm(ALUMNI_FULL);
+    const personal = screen.getByRole('region', { name: 'Personal' });
+    expect(within(personal).getByLabelText('Headline')).toHaveValue('PM at Meridian Health');
+    expect(within(personal).getByLabelText('Location')).toHaveValue('Toronto, Canada');
+    const education = screen.getByRole('region', { name: 'Education' });
+    expect(within(education).getByLabelText('Degree')).toHaveValue('B.A. Economics');
+    expect(within(education).getByLabelText('Start year')).toHaveValue('2012');
+    const mentorship = screen.getByRole('region', { name: 'Mentorship' });
+    const toggle = within(mentorship).getByRole('switch', { name: MENTORSHIP_LABEL });
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+    expect(toggle).toHaveAccessibleDescription(MENTORSHIP_HELP);
+  });
+
+  it.each([
+    ['student', STUDENT],
+    ['account with no profile', ADMIN],
+  ])('shows none of the alumni-only fields for a %s', (_label, profile) => {
+    renderForm({ ...profile, headline: 'x', mentorship_available: true });
+    for (const label of ['Headline', 'Location', 'Degree', 'Start year']) {
+      expect(screen.queryByLabelText(label)).not.toBeInTheDocument();
+    }
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Mentorship' })).not.toBeInTheDocument();
   });
 
   it('shows only Personal (name and university) and Password for an account with no profile', () => {
@@ -369,6 +406,147 @@ describe('ProfileForm saving', () => {
       answer({ status: 200, data: { ...ALUMNI, current_company: 'Acme' } });
     });
     expect(await screen.findByText(PROFILE_SAVED_TEXT)).toBeInTheDocument();
+  });
+});
+
+describe('ProfileForm alumni fields and Mentorship', () => {
+  const mentorSwitch = () => screen.getByRole('switch', { name: MENTORSHIP_LABEL });
+
+  it('counts the switch as unsaved, by value, and Discard turns it back', async () => {
+    const user = userEvent.setup();
+    renderForm(ALUMNI);
+    expect(mentorSwitch()).toHaveAttribute('aria-checked', 'false');
+    await user.click(mentorSwitch());
+    expect(mentorSwitch()).toHaveAttribute('aria-checked', 'true');
+    expect(saveBar()).toBeInTheDocument();
+    await user.click(mentorSwitch());
+    expect(saveBar()).not.toBeInTheDocument();
+
+    mentorSwitch().focus();
+    await user.keyboard(' ');
+    expect(mentorSwitch()).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
+    expect(mentorSwitch()).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('sends the new fields and the switch, and keeps them through a refetch', async () => {
+    const user = userEvent.setup();
+    const saved: MyProfile = {
+      ...ALUMNI,
+      headline: 'PM',
+      location: 'Toronto',
+      start_year: '2012',
+      mentorship_available: true,
+    };
+    api(() => ({ status: 200, data: saved }));
+    const { client } = renderForm(ALUMNI);
+
+    await user.type(screen.getByLabelText('Headline'), 'PM ');
+    await user.type(screen.getByLabelText('Location'), 'Toronto');
+    await user.type(screen.getByLabelText('Start year'), '2012');
+    await user.click(mentorSwitch());
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText(PROFILE_SAVED_TEXT)).toBeInTheDocument();
+
+    expect(calls[0]?.body).toMatchObject({
+      headline: 'PM',
+      location: 'Toronto',
+      degree: '',
+      start_year: '2012',
+      graduation_year: '2016',
+      mentorship_available: true,
+    });
+    expect(saveBar()).not.toBeInTheDocument();
+
+    // A later refetch of ['me'] never resets the form (ADV-004).
+    act(() => {
+      client.setQueryData(CURRENT_USER_QUERY_KEY, { ...saved, mentorship_available: false });
+    });
+    expect(mentorSwitch()).toHaveAttribute('aria-checked', 'true');
+    expect(saveBar()).not.toBeInTheDocument();
+  });
+
+  it('sends the switch as false when it is off', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 200, data: ALUMNI }));
+    renderForm(ALUMNI_FULL);
+    await user.click(mentorSwitch());
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText(PROFILE_SAVED_TEXT)).toBeInTheDocument();
+    expect(calls[0]?.body).toHaveProperty('mentorship_available', false);
+  });
+
+  it('puts a start year after the graduation year on Graduation year, before sending', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 500 }));
+    renderForm(ALUMNI);
+    const start = screen.getByLabelText('Start year');
+    await user.type(start, '2017');
+    await user.tab();
+    expect(screen.getByText(YEAR_ORDER_MESSAGE)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(calls).toEqual([]);
+    expect(screen.getByLabelText('Graduation year')).toHaveFocus();
+    expect(screen.getByLabelText('Graduation year')).toHaveAccessibleDescription(
+      YEAR_ORDER_MESSAGE,
+    );
+
+    // Fixing the start year clears the order message.
+    await user.clear(start);
+    expect(screen.queryByText(YEAR_ORDER_MESSAGE)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['Headline must be at most 120 characters', 'Headline'],
+    ['Location contains an invalid character', 'Location'],
+    ['Degree must be at most 100 characters', 'Degree'],
+    ['Start year is not valid', 'Start year'],
+    [YEAR_ORDER_MESSAGE, 'Graduation year'],
+  ])('puts the server message "%s" on %s', async (message, label) => {
+    const user = userEvent.setup();
+    api(() => ({ status: 400, data: { message } }));
+    renderForm(ALUMNI);
+    await user.type(screen.getByLabelText('Headline'), 'PM');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => {
+      expect(screen.getByLabelText(label)).toHaveFocus();
+    });
+    expect(screen.getByLabelText(label)).toHaveAccessibleDescription(message);
+  });
+
+  // Below 48rem CSS hides Start year (jsdom applies no CSS, so the test hides
+  // it by hand): its error goes on the form with a hint, never on a field
+  // that cannot take focus.
+  function hideStartYear() {
+    // Class names are not scoped in tests: this is EducationSection's wrapper.
+    const wrapper = screen.getByLabelText('Start year').closest('.wideOnly');
+    if (!(wrapper instanceof HTMLElement)) throw new Error('no Start year wrapper');
+    wrapper.style.display = 'none';
+  }
+
+  it('shows a hidden Start year check failure on the form, focused', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 500 }));
+    renderForm(ALUMNI);
+    await user.type(screen.getByLabelText('Start year'), '20x7');
+    hideStartYear();
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(calls).toEqual([]);
+    const alert = screen.getByText(`Start year is not valid. ${HIDDEN_FIELD_HINT}`);
+    expect(alert.closest('[tabindex="-1"]')).toHaveFocus();
+  });
+
+  it('shows a server Start year error on the form when the field is hidden', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 400, data: { message: 'Start year is not valid' } }));
+    renderForm(ALUMNI);
+    hideStartYear();
+    await user.type(screen.getByLabelText('Headline'), 'PM');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    const alert = await screen.findByText(`Start year is not valid. ${HIDDEN_FIELD_HINT}`);
+    await waitFor(() => {
+      expect(alert.closest('[tabindex="-1"]')).toHaveFocus();
+    });
   });
 });
 

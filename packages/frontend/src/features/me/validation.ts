@@ -3,7 +3,8 @@ import type { ChangePasswordInput, MyProfile, UpdateMyProfileInput } from '@alum
 // Rules and messages mirror the backend, so the client and the server agree:
 // businessLogic/src/validation.ts (optionalText, requiredText, optionalYear,
 // requiredExpectedYear, optionalWebUrl, validateNewPassword, validateAlumniFields,
-// validateStudentFields, NAME_MAX, UNIVERSITY_MAX, DEPARTMENT_MAX) and
+// validateStudentFields, NAME_MAX, UNIVERSITY_MAX, DEPARTMENT_MAX, HEADLINE_MAX,
+// LOCATION_MAX, DEGREE_MAX and the start/graduation year order rule) and
 // UserManager.updateMe / changeMyPassword. These numbers are hand copies
 // (@alumni/shared has no runtime code); the server's own 400 message is still
 // shown if they ever drift (ADR-04).
@@ -16,6 +17,9 @@ export const JOB_TITLE_MAX = 100;
 export const BIO_MAX = 2000;
 export const EXPERIENCE_MAX = 5000;
 export const LINKEDIN_URL_MAX = 255;
+export const HEADLINE_MAX = 120;
+export const LOCATION_MAX = 100;
+export const DEGREE_MAX = 100;
 /** optionalYear() first runs the text check with a 10-character limit. */
 export const YEAR_TEXT_MAX = 10;
 export const YEAR_MIN = 1900;
@@ -27,6 +31,13 @@ export const PASSWORD_MIN_CHARS = 8;
 /** bcrypt only uses the first 72 bytes, so the backend caps the UTF-8 length. */
 export const PASSWORD_MAX_BYTES = 72;
 
+/**
+ * The year order rule (alumni): start year after graduation year. The server's
+ * message is the same and starts with "Graduation year", so it lands on that
+ * field, which shows at every width (Start year is hidden on phones).
+ */
+export const YEAR_ORDER_MESSAGE = "Graduation year can't be before the start year";
+
 /** Client-only: the API has no confirmation field. */
 export const PASSWORD_MISMATCH_MESSAGE = "Passwords don't match";
 
@@ -36,12 +47,16 @@ export const PASSWORD_MISMATCH_MESSAGE = "Passwords don't match";
  */
 export type ProfileKind = 'alumni' | 'student' | 'none';
 
-/** The profile fields as typed (strings). */
-export interface ProfileValues {
+/** The profile's text fields as typed (strings); each has an input. */
+export interface ProfileTextValues {
   name: string;
+  headline: string;
+  location: string;
   bio: string;
   university: string;
+  degree: string;
   department: string;
+  start_year: string;
   graduation_year: string;
   expected_graduation_year: string;
   job_title: string;
@@ -50,13 +65,21 @@ export interface ProfileValues {
   experience: string;
 }
 
+/**
+ * The whole form state: the text fields plus the Mentorship switch (alumni
+ * only), which is a boolean and so stays out of the text binder and the checks.
+ */
+export interface ProfileValues extends ProfileTextValues {
+  mentorship_available: boolean;
+}
+
 export interface PasswordValues {
   current_password: string;
   new_password: string;
   confirm_password: string;
 }
 
-export type ProfileField = keyof ProfileValues;
+export type ProfileField = keyof ProfileTextValues;
 export type PasswordField = keyof PasswordValues;
 export type MeField = ProfileField | PasswordField;
 
@@ -76,13 +99,18 @@ export const PASSWORD_FIELDS: readonly PasswordField[] = [
   'confirm_password',
 ];
 
-// Shown fields per kind, in form order: Personal, Education, Career.
+// Shown text fields per kind, in form order: Personal, Education, Career.
+// Headline, location, degree and start year are alumni only (REQ-011).
 const FIELDS: Record<ProfileKind, readonly ProfileField[]> = {
   alumni: [
     'name',
+    'headline',
+    'location',
     'bio',
     'university',
+    'degree',
     'department',
+    'start_year',
     'graduation_year',
     'job_title',
     'current_company',
@@ -109,7 +137,12 @@ export function profileKind(profile: MyProfile): ProfileKind {
   return 'none';
 }
 
-/** The profile fields this kind of account sees and sends, in form order. */
+/** True when this kind of account sees and sends the Mentorship switch. */
+export function hasMentorship(kind: ProfileKind): boolean {
+  return kind === 'alumni';
+}
+
+/** The text fields this kind of account sees and sends, in form order. */
 export function profileFields(kind: ProfileKind): readonly ProfileField[] {
   return FIELDS[kind];
 }
@@ -125,15 +158,21 @@ function text(value: unknown): string {
 export function toValues(profile: MyProfile): ProfileValues {
   return {
     name: text(profile.name),
+    headline: text(profile.headline),
+    location: text(profile.location),
     bio: text(profile.bio),
     university: text(profile.university),
+    degree: text(profile.degree),
     department: text(profile.department),
+    start_year: text(profile.start_year),
     graduation_year: text(profile.graduation_year),
     expected_graduation_year: text(profile.expected_graduation_year),
     job_title: text(profile.job_title),
     current_company: text(profile.current_company),
     linkedin_url: text(profile.linkedin_url),
     experience: text(profile.experience),
+    // Always a boolean from the API; anything else (a missing field) reads as off.
+    mentorship_available: profile.mentorship_available === true,
   };
 }
 
@@ -163,6 +202,17 @@ function optionalYearError(value: string, field: string, now: Date): string | un
     return `${field} is not valid`;
   }
   return undefined;
+}
+
+// Mirrors validateAlumniFields' order rule: checked only when both years pass
+// their own checks, and reported on the graduation year.
+function yearOrderError(values: ProfileValues, now: Date): string | undefined {
+  const start = values.start_year.trim();
+  const graduation = values.graduation_year.trim();
+  if (!start || !graduation) return undefined;
+  if (optionalYearError(start, 'Start year', now) !== undefined) return undefined;
+  if (optionalYearError(graduation, 'Graduation year', now) !== undefined) return undefined;
+  return Number(start) > Number(graduation) ? YEAR_ORDER_MESSAGE : undefined;
 }
 
 // Mirrors requiredExpectedYear(): this year to this year + 8.
@@ -212,6 +262,14 @@ function fieldError(
   switch (field) {
     case 'name':
       return requiredTextError(value, 'Name', NAME_MAX);
+    case 'headline':
+      return optionalTextError(value, 'Headline', HEADLINE_MAX);
+    case 'location':
+      return optionalTextError(value, 'Location', LOCATION_MAX);
+    case 'degree':
+      return optionalTextError(value, 'Degree', DEGREE_MAX);
+    case 'start_year':
+      return optionalYearError(value, 'Start year', now);
     case 'bio':
       return optionalTextError(value, 'Bio', BIO_MAX);
     case 'university':
@@ -221,7 +279,7 @@ function fieldError(
         ? requiredTextError(value, 'Department', DEPARTMENT_MAX)
         : optionalTextError(value, 'Department', DEPARTMENT_MAX);
     case 'graduation_year':
-      return optionalYearError(value, 'Graduation year', now);
+      return optionalYearError(value, 'Graduation year', now) ?? yearOrderError(values, now);
     case 'expected_graduation_year':
       return expectedYearError(value, now);
     case 'job_title':
@@ -276,12 +334,18 @@ export function validatePasswordChange(password: PasswordValues): PasswordErrors
   return errors;
 }
 
-/** True when any field this kind shows differs from the baseline (trimmed). */
+/**
+ * True when any field this kind shows differs from the baseline: text trimmed,
+ * the Mentorship switch by value (alumni only).
+ */
 export function isProfileChanged(
   values: ProfileValues,
   baseline: ProfileValues,
   kind: ProfileKind,
 ): boolean {
+  if (hasMentorship(kind) && values.mentorship_available !== baseline.mentorship_available) {
+    return true;
+  }
   return FIELDS[kind].some((field) => values[field].trim() !== baseline[field].trim());
 }
 
@@ -328,7 +392,9 @@ export function planSave(
 /**
  * The PUT /api/me body: every field this kind shows, trimmed (an empty one is
  * sent as '' and cleared, since the endpoint is a full replace), plus the stored
- * photo_url so Save never erases it. Never email, never a hidden field.
+ * photo_url so Save never erases it, and for alumni the Mentorship switch
+ * (always sent, since an omitted one is saved as off). Never email, never a
+ * field the kind does not show.
  */
 export function toUpdateInput(
   values: ProfileValues,
@@ -337,6 +403,7 @@ export function toUpdateInput(
 ): UpdateMyProfileInput {
   const input: UpdateMyProfileInput = { name: values.name.trim() };
   for (const field of FIELDS[kind]) input[field] = values[field].trim();
+  if (hasMentorship(kind)) input.mentorship_available = values.mentorship_available;
   if (typeof photoUrl === 'string') input.photo_url = photoUrl;
   return input;
 }

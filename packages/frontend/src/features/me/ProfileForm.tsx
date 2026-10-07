@@ -8,6 +8,7 @@ import { CareerSection } from './CareerSection';
 import { EducationSection } from './EducationSection';
 import type { BindField } from './fields';
 import type { LeavePromptProps } from './LeavePrompt';
+import { MentorshipSection } from './MentorshipSection';
 import { PasswordSection } from './PasswordSection';
 import { PersonalSection } from './PersonalSection';
 import { mapProfileError } from './profileErrors';
@@ -17,6 +18,8 @@ import { useUpdateProfile, type SaveResult } from './useUpdateProfile';
 import {
   EMPTY_PASSWORD_VALUES,
   PASSWORD_FIELDS,
+  YEAR_ORDER_MESSAGE,
+  hasMentorship,
   isDirty,
   planSave,
   profileFields,
@@ -39,9 +42,20 @@ export const PASSWORD_SAVED_TEXT = 'Password changed successfully';
 export const TOAST_DISMISS_LABEL = 'Dismiss';
 /** S5-UnsavedToast's caption under the cards, after a save, while nothing is unsaved. */
 export const ALL_SAVED_TEXT = 'All sections saved — no unsaved changes.';
+/** Added to the form-level message when the field in error is hidden at this width. */
+export const HIDDEN_FIELD_HINT = 'Open My Profile on a wider screen to change it.';
 
 function isPasswordField(field: MeField): field is PasswordField {
   return field === 'current_password' || field === 'new_password' || field === 'confirm_password';
+}
+
+// A field CSS hides at this width (Start year below 48rem) cannot take focus,
+// so its error must not be left on it unseen.
+function isHidden(element: Element): boolean {
+  for (let node: Element | null = element; node !== null; node = node.parentElement) {
+    if (getComputedStyle(node).display === 'none') return true;
+  }
+  return false;
 }
 
 function focusIsLost(): boolean {
@@ -64,10 +78,12 @@ export interface ProfileFormProps {
  * the toast and the password error live here too, so a refetch of ['me'] after
  * a save never remounts the form and loses them.
  *
- * Sections follow S5's order: Personal, Education, Career, Password; the
- * account's kind decides which render (Mentorship is left out by decision).
+ * Sections follow S5's order: Personal, Education, Career, Mentorship,
+ * Password; the account's kind decides which render (Mentorship: alumni only).
  * Errors show after a field is left or Save is tried; a failed Save focuses
- * the first invalid field after flushSync, so it is read with its message.
+ * the first invalid field after flushSync, so it is read with its message. A
+ * field hidden at this width (Start year on phones) gets its message on the
+ * form instead, with a hint, since it cannot be focused or fixed there.
  */
 export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
   const [saved, setSaved] = useState(profile);
@@ -122,9 +138,34 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
     };
   }, [toast, toastPaused, headingRef]);
 
-  function focusField(field: MeField) {
+  function fieldElement(field: MeField): HTMLElement | null {
     const element = formRef.current?.elements.namedItem(field);
-    if (element instanceof HTMLElement) element.focus();
+    return element instanceof HTMLElement ? element : null;
+  }
+
+  function focusField(field: MeField) {
+    fieldElement(field)?.focus();
+  }
+
+  function isFieldHidden(field: MeField): boolean {
+    const element = fieldElement(field);
+    return element !== null && isHidden(element);
+  }
+
+  function showFormError(message: string) {
+    flushSync(() => {
+      setFormError(message);
+    });
+    formErrorRef.current?.focus();
+  }
+
+  /** Puts `message` on `field`, or on the form when the field is hidden here. */
+  function showFieldError(field: MeField, message: string) {
+    if (isFieldHidden(field)) {
+      showFormError(`${message}. ${HIDDEN_FIELD_HINT}`);
+      return;
+    }
+    focusField(field);
   }
 
   function focusHeadingIfLost() {
@@ -157,13 +198,25 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
       } else {
         setValues((prev) => ({ ...prev, [field]: value }));
       }
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => {
+        const next = { ...prev, [field]: undefined };
+        // The order rule's message sits on Graduation year but is about both.
+        if (field === 'start_year' && prev.graduation_year === YEAR_ORDER_MESSAGE) {
+          next.graduation_year = undefined;
+        }
+        return next;
+      });
     },
     onBlur: () => {
       // Same rules as Save. Only adds a message: leaving a field must not wipe
       // a server error (e.g. "Current password is incorrect") shown on it.
-      const message = planSave(values, baseline, kind, password).errors[field];
+      const planned = planSave(values, baseline, kind, password).errors;
+      const message = planned[field];
       if (message !== undefined) setErrors((prev) => ({ ...prev, [field]: message }));
+      // Leaving Start year after Graduation year shows the order rule there.
+      if (field === 'start_year' && planned.graduation_year === YEAR_ORDER_MESSAGE) {
+        setErrors((prev) => ({ ...prev, graduation_year: YEAR_ORDER_MESSAGE }));
+      }
     },
   });
 
@@ -235,7 +288,8 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
       setPasswordFormError(null);
     });
     if (firstInvalid !== undefined) {
-      focusField(firstInvalid);
+      const message = plan.errors[firstInvalid];
+      if (message !== undefined) showFieldError(firstInvalid, message);
       return;
     }
 
@@ -256,19 +310,16 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
           const mapped = mapProfileError(error, visibleFields);
           const fieldErrors = mapped.fields;
           const field = visibleFields.find((f) => fieldErrors?.[f] !== undefined);
-          if (fieldErrors !== undefined && field !== undefined) {
+          const fieldMessage = field === undefined ? undefined : fieldErrors?.[field];
+          if (field !== undefined && fieldMessage !== undefined) {
             flushSync(() => {
               setErrors((prev) => ({ ...prev, ...fieldErrors }));
             });
-            focusField(field);
+            showFieldError(field, fieldMessage);
             return;
           }
           if (mapped.form === undefined) return;
-          const message = mapped.form;
-          flushSync(() => {
-            setFormError(message);
-          });
-          formErrorRef.current?.focus();
+          showFormError(mapped.form);
         },
       },
     );
@@ -311,6 +362,14 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
         />
         <EducationSection bind={bind} kind={kind} />
         <CareerSection bind={bind} kind={kind} />
+        {hasMentorship(kind) && (
+          <MentorshipSection
+            checked={values.mentorship_available}
+            onCheckedChange={(checked) => {
+              setValues((prev) => ({ ...prev, mentorship_available: checked }));
+            }}
+          />
+        )}
         <PasswordSection
           bind={bind}
           formError={passwordFormError}

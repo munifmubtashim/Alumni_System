@@ -15,7 +15,8 @@ export interface PersonalSectionProps {
 }
 
 /**
- * Name and About for alumni and students. An account with no profile row
+ * Name and About for alumni and students; alumni also get Headline (beside the
+ * name) and Location, as in S5 (REQ-011). An account with no profile row
  * (kind 'none', e.g. an admin) has no Education section, so its University
  * field sits here, beside the name (architecture: Role kind). There is no
  * photo upload in the API, so S5's "Change photo" is left out.
@@ -23,6 +24,13 @@ export interface PersonalSectionProps {
 export function PersonalSection({ bind, kind, savedName, photoUrl }: PersonalSectionProps) {
   const headingId = useId();
   const name = <Input label="Full name" autoComplete="name" {...bind('name')} />;
+  const about = (
+    <Textarea
+      label="About"
+      helperText="A few lines about you, shown on your public profile."
+      {...bind('bio')}
+    />
+  );
 
   return (
     <section aria-labelledby={headingId} className={styles.card}>
@@ -35,14 +43,19 @@ export function PersonalSection({ bind, kind, savedName, photoUrl }: PersonalSec
           {name}
           <Input label="University" autoComplete="organization" {...bind('university')} />
         </div>
+      ) : kind === 'alumni' ? (
+        <>
+          <div className={styles.row}>
+            {name}
+            <Input label="Headline" autoComplete="off" {...bind('headline')} />
+          </div>
+          <Input label="Location" autoComplete="off" {...bind('location')} />
+          {about}
+        </>
       ) : (
         <>
           {name}
-          <Textarea
-            label="About"
-            helperText="A few lines about you, shown on your public profile."
-            {...bind('bio')}
-          />
+          {about}
         </>
       )}
     </section>
