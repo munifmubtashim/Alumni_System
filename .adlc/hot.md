@@ -2,6 +2,11 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] ship-gate-cleared | REQ-012-account-settings-nav-labels
+## [2026-10-07] lesson | L-REQ-012-1..2 — sibling-branch constants, record design deviations
+## [2026-10-07] req-ready-to-merge | REQ-012-account-settings-nav-labels | My Profile → Account settings; /me out of header nav; tab "Account"
+## [2026-10-07] task-plan-cleared | REQ-012-account-settings-nav-labels
+## [2026-10-07] work-path-set | REQ-012-account-settings-nav-labels | branch (cut from redesign) at /Users/munifmubtashim/Alumni_System
 **Committed and shared.** Only ever add entries — never rewrite or reorder old ones. Git is configured (`merge=union` via `.adlc/.gitattributes`) so that when two branches both add entries, it keeps both instead of raising a conflict — the team keeps one shared history with no merge pain. Only ever *append*; never rewrite or reorder existing lines (that defeats the union merge).
 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
