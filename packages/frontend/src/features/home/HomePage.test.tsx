@@ -56,15 +56,17 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Welcome back' })).toBeInTheDocument();
   });
 
-  it('shows only the cards for pages that exist: the directory', () => {
+  it('shows only the cards for pages that exist: the directory and the feed', () => {
     renderWith(profile('Amina', 'alumni'));
 
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(1);
+    expect(links).toHaveLength(2);
     expect(links[0]).toHaveAttribute('href', '/directory');
     expect(links[0]).toHaveTextContent('Browse the directory');
     expect(links[0]).toHaveTextContent('Find classmates by year, department or field');
-    expect(screen.queryByText('Catch up on the feed')).not.toBeInTheDocument();
+    expect(links[1]).toHaveAttribute('href', '/feed');
+    expect(links[1]).toHaveTextContent('Catch up on the feed');
+    expect(links[1]).toHaveTextContent('See what alumni and students are sharing');
     expect(screen.queryByText('Update your profile')).not.toBeInTheDocument();
   });
 

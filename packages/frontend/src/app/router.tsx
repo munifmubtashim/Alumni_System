@@ -52,13 +52,27 @@ export const PROFILE_ROUTE: RouteObject = {
 };
 
 /**
+ * The post feed, the third lazy page (ADR-08), built the same way as
+ * `DIRECTORY_ROUTE`: only this dynamic import may reference `features/feed`,
+ * and `HydrateFallback` sits on this route object.
+ */
+export const FEED_ROUTE: RouteObject = {
+  path: 'feed',
+  HydrateFallback,
+  lazy: async () => {
+    const { FeedPage } = await import('@/features/feed/FeedPage');
+    return { Component: FeedPage };
+  },
+};
+
+/**
  * Pages inside AppShell (header). Home is the first signed-in page; the
- * directory and the profile are lazy. Any unknown path shows the empty shell.
+ * directory, the profile and the feed are lazy. Any unknown path shows the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
   {
     element: <RequireAuth />,
-    children: [{ index: true, element: <HomePage /> }, DIRECTORY_ROUTE, PROFILE_ROUTE],
+    children: [{ index: true, element: <HomePage /> }, DIRECTORY_ROUTE, PROFILE_ROUTE, FEED_ROUTE],
   },
   { path: '*', element: null },
 ];

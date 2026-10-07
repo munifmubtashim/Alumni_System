@@ -4,7 +4,7 @@
 // still succeeds.
 import type { RouteObject } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { DIRECTORY_ROUTE, PROFILE_ROUTE, routes } from './router';
+import { DIRECTORY_ROUTE, FEED_ROUTE, PROFILE_ROUTE, routes } from './router';
 
 // Vite reads every source file as text at test time (src/ tests have no Node
 // types, so no `fs`). Test files are left out; the lazy features themselves are
@@ -28,6 +28,12 @@ const LAZY_FEATURES = [
     route: PROFILE_ROUTE,
     path: 'alumni/:id',
     dynamicImport: "import('@/features/profile/ProfilePage')",
+  },
+  {
+    name: 'feed',
+    route: FEED_ROUTE,
+    path: 'feed',
+    dynamicImport: "import('@/features/feed/FeedPage')",
   },
 ] as const;
 
@@ -159,6 +165,11 @@ describe('the static-import check', () => {
     ],
     ['profile', "import { BackLink } from '../profile/BackLink';", '/src/features/directory/x.tsx'],
     ['profile', "import { x } from '@/features/profile/format';", '/src/features/directory/x.tsx'],
+    ['feed', "import { FeedPage } from '@/features/feed/FeedPage';", '/src/app/x.tsx'],
+    ['feed', "import { x } from '../feed/feedFormat';", '/src/features/home/x.tsx'],
+    ['feed', "import { PostCard } from '../feed/PostCard';", '/src/features/profile/x.tsx'],
+    ['profile', "import { x } from '@/features/profile/format';", '/src/features/feed/x.tsx'],
+    ['directory', "import { x } from '../directory/params';", '/src/features/feed/x.tsx'],
   ])('flags, for features/%s, the static import in %j', (feature, source, file) => {
     expect(staticImportsOf(feature, source, file)).toHaveLength(1);
   });
@@ -174,6 +185,9 @@ describe('the static-import check', () => {
     ['profile', "import { x } from '@/features/profileHelpers';", '/src/app/x.tsx'],
     ['profile', "import { format } from './format';", '/src/features/profile/x.tsx'],
     ['profile', "import { x } from '@/features/profile/format';", '/src/features/profile/x.tsx'],
+    ['feed', "const page = import('@/features/feed/FeedPage');", '/src/app/x.tsx'],
+    ['feed', "import { x } from '@/features/feedHelpers';", '/src/app/x.tsx'],
+    ['feed', "import { PostCard } from './PostCard';", '/src/features/feed/x.tsx'],
   ])('lets, for features/%s, %j through', (feature, source, file) => {
     expect(staticImportsOf(feature, source, file)).toEqual([]);
   });
