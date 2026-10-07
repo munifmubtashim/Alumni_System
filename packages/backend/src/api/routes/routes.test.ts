@@ -513,3 +513,170 @@ describe('error bodies use { message } and never leak raw error text', () => {
     expect(res.body).toEqual({ message: 'Something went wrong' });
   });
 });
+
+// REQ-011: the real managers (validation, owner check) run behind the routes; only their query
+// objects are stubbed, so these tests show what reaches the DAL and what comes back to the client.
+describe('REQ-011: headline, location, degree, start year and mentorship through the routes', () => {
+  const FIELDS = {
+    headline: 'Product designer',
+    location: 'Oslo, Norway',
+    degree: 'B.Sc. Product Design',
+    start_year: 2013,
+    mentorship_available: true,
+  };
+  const ALUMNI_ROW = { id: 5, user_id: ALUMNI.sub, name: 'Ana', department: 'CSE', graduation_year: 2017, ...FIELDS };
+  const MY_ROW = {
+    user_id: ALUMNI.sub, name: 'Ana', email: 'ana@example.com', role: 'alumni',
+    alumni_id: 5, has_alumni_profile: true, student_id: null, has_student_profile: false,
+    department: 'CSE', graduation_year: 2017, ...FIELDS,
+  };
+  const BODY = {
+    name: 'Ana', department: 'CSE', graduation_year: '2017',
+    headline: '  Product designer  ', location: 'Oslo, Norway', degree: 'B.Sc. Product Design',
+    start_year: '2013', mentorship_available: true,
+  };
+  // What validateAlumniFields hands the query for BODY (trimmed text; years stay text).
+  const STORED = {
+    department: 'CSE', graduation_year: '2017', headline: 'Product designer', location: 'Oslo, Norway',
+    degree: 'B.Sc. Product Design', start_year: '2013', mentorship_available: true,
+  };
+
+  let alumniQuery: InstanceType<typeof AlumniManager>['alumniQuery'];
+  let userQuery: InstanceType<typeof UserManager>['userQuery'];
+
+  beforeEach(async () => {
+    const actual = await vi.importActual<typeof import('@alumni/businesslogic')>('@alumni/businesslogic');
+    const alumni = new actual.AlumniManager();
+    const users = new actual.UserManager();
+    alumniQuery = alumni.alumniQuery;
+    userQuery = users.userQuery;
+    vi.spyOn(alumniQuery, 'findAlumniById').mockResolvedValue(ALUMNI_ROW as never);
+    vi.spyOn(alumniQuery, 'findAlumniByUserId').mockResolvedValue(undefined);
+    vi.spyOn(alumniQuery, 'createAlumni').mockResolvedValue(ALUMNI_ROW as never);
+    vi.spyOn(alumniQuery, 'updateAlumni').mockResolvedValue(ALUMNI_ROW as never);
+    vi.spyOn(alumniQuery, 'searchAlumni').mockResolvedValue({ items: [ALUMNI_ROW], total: 1 } as never);
+    vi.spyOn(userQuery, 'findMyProfile').mockResolvedValue(MY_ROW as never);
+    vi.spyOn(userQuery, 'updateMyProfile').mockResolvedValue(MY_ROW as never);
+    // The controllers hold the fake managers; send each call on to the real one.
+    for (const name of ['findAlumniById', 'searchAlumni', 'createAlumni', 'updateOwnAlumni'] as const) {
+      vi.mocked(AlumniManager.prototype[name]).mockImplementation(
+        ((...args: never[]) => (alumni[name] as (...a: never[]) => unknown)(...args)) as never,
+      );
+    }
+    for (const name of ['getMe', 'updateMe'] as const) {
+      vi.mocked(UserManager.prototype[name]).mockImplementation(
+        ((...args: never[]) => (users[name] as (...a: never[]) => unknown)(...args)) as never,
+      );
+    }
+  });
+
+  describe('AC2: responses carry the five fields, mentorship as a boolean', () => {
+    it.each([
+      ['GET /api/alumni/5', '/api/alumni/5', (b: Record<string, unknown>) => b],
+      ['GET /api/alumni items', '/api/alumni', (b: { items: Record<string, unknown>[] }) => b.items[0]],
+      ['GET /api/me', '/api/me', (b: Record<string, unknown>) => b],
+    ] as const)('%s', async (_n, path, pick) => {
+      const res = await call({ method: 'get', path }, tokenFor(ALUMNI));
+      expect(res.status).toBe(200);
+      const body = (pick as (b: never) => Record<string, unknown>)(res.body as never);
+      expect(body).toMatchObject(FIELDS);
+      expect(typeof body.mentorship_available).toBe('boolean');
+    });
+  });
+
+  describe('AC3: writes pass the validated fields to the query', () => {
+    it('PUT /api/me (alumni) → 200 and the alumni update gets the five fields', async () => {
+      const res = await call({ method: 'put', path: '/api/me' }, tokenFor(ALUMNI), BODY);
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject(FIELDS);
+      const [userId, , alumniFields, , student] = vi.mocked(userQuery.updateMyProfile).mock.calls[0];
+      expect(userId).toBe(ALUMNI.sub);
+      expect(alumniFields).toMatchObject(STORED);
+      expect(student).toBeUndefined();
+    });
+
+    it('PUT /api/me omitting mentorship_available stores false (full replace)', async () => {
+      const { mentorship_available: _m, ...rest } = BODY;
+      expect((await call({ method: 'put', path: '/api/me' }, tokenFor(ALUMNI), rest)).status).toBe(200);
+      expect(vi.mocked(userQuery.updateMyProfile).mock.calls[0][2]?.mentorship_available).toBe(false);
+    });
+
+    it('PUT /api/alumni/5 by the owner → 200 with the five fields stored', async () => {
+      const res = await call({ method: 'put', path: '/api/alumni/5' }, tokenFor(ALUMNI), BODY);
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject(FIELDS);
+      expect(alumniQuery.updateAlumni).toHaveBeenCalledWith(5, expect.objectContaining(STORED));
+    });
+
+    it('POST /api/alumni → 201, with the years as numbers on the DTO', async () => {
+      const res = await call({ method: 'post', path: '/api/alumni' }, tokenFor(ALUMNI), { ...BODY, user_id: 999 });
+      expect(res.status).toBe(201);
+      expect(alumniQuery.createAlumni).toHaveBeenCalledWith(
+        expect.objectContaining({ ...STORED, user_id: ALUMNI.sub, graduation_year: 2017, start_year: 2013 }),
+      );
+    });
+  });
+
+  describe('AC3–AC5: bad values → 400 { message } and nothing is written', () => {
+    const BAD: Array<[string, Record<string, unknown>, RegExp]> = [
+      ['headline over 120', { headline: 'x'.repeat(121) }, /^Headline/],
+      ['location over 100', { location: 'x'.repeat(101) }, /^Location/],
+      ['degree over 100', { degree: 'x'.repeat(101) }, /^Degree/],
+      ['headline not text', { headline: 42 }, /^Headline/],
+      ['start year not 4 digits', { start_year: '13' }, /^Start year/],
+      ['start after graduation', { start_year: '2018' }, /^Graduation year/],
+      ['mentorship as a string', { mentorship_available: 'true' }, /^Mentorship/],
+      ['mentorship as a number', { mentorship_available: 1 }, /^Mentorship/],
+      ['mentorship null', { mentorship_available: null }, /^Mentorship/],
+    ];
+    const WRITES: Array<[string, Route, () => unknown]> = [
+      ['PUT /api/me', { method: 'put', path: '/api/me' }, () => userQuery.updateMyProfile],
+      ['PUT /api/alumni/5', { method: 'put', path: '/api/alumni/5' }, () => alumniQuery.updateAlumni],
+      ['POST /api/alumni', { method: 'post', path: '/api/alumni' }, () => alumniQuery.createAlumni],
+    ];
+
+    describe.each(WRITES)('%s', (_w, route, write) => {
+      it.each(BAD)('%s', async (_b, patch, message) => {
+        const res = await call(route, tokenFor(ALUMNI), { ...BODY, ...patch });
+        expect(res.status).toBe(400);
+        expect(res.body.message).toMatch(message);
+        expect(write()).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('AC6: only the owner may change the fields on PUT /api/alumni/:id', () => {
+    const route: Route = { method: 'put', path: '/api/alumni/5' };
+
+    it.each([
+      ['another alumni', { sub: 99, role: 'alumni' }],
+      ['a student', STUDENT],
+      ['an admin', ADMIN],
+    ])('%s → 403, row unchanged', async (_n, user) => {
+      const res = await call(route, tokenFor(user), BODY);
+      expect(res.status).toBe(403);
+      expect(alumniQuery.updateAlumni).not.toHaveBeenCalled();
+    });
+
+    it('a guest → 401, row unchanged', async () => {
+      expect((await call(route, undefined, BODY)).status).toBe(401);
+      expect(alumniQuery.findAlumniById).not.toHaveBeenCalled();
+      expect(alumniQuery.updateAlumni).not.toHaveBeenCalled();
+    });
+  });
+
+  it('PUT /api/me for a student ignores the alumni-only fields, even invalid ones', async () => {
+    vi.mocked(userQuery.findMyProfile).mockResolvedValue({
+      ...MY_ROW, user_id: STUDENT.sub, role: 'student', alumni_id: null, has_alumni_profile: false,
+      student_id: 3, has_student_profile: true,
+    } as never);
+    const res = await call({ method: 'put', path: '/api/me' }, tokenFor(STUDENT), {
+      name: 'Sam', department: 'CSE', expected_graduation_year: '2028',
+      headline: 'x'.repeat(500), start_year: 'soon', mentorship_available: 'yes',
+    });
+    expect(res.status).toBe(200);
+    const [, , alumniFields, , student] = vi.mocked(userQuery.updateMyProfile).mock.calls[0];
+    expect(alumniFields).toBeUndefined();
+    for (const key of Object.keys(FIELDS)) expect(student).not.toHaveProperty(key);
+  });
+});

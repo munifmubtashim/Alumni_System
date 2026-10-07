@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import pool from '../config/db.js';
+import { AlumniDTO } from '../dto/AlumniDTO.js';
 import { AlumniQuery, escapeLike } from './AlumniQuery';
 
 // The pool is replaced by src/test/setup.ts; we only record the SQL each method sends.
 const query = vi.mocked(pool.query);
 const sqlOfLastCall = () => String(query.mock.calls.at(-1)?.[0]);
+const paramsOfLastCall = () => (query.mock.calls.at(-1)?.[1] ?? []) as unknown[];
 
 describe('AlumniQuery.findAlumniByUserId (the 409 check on POST /api/alumni)', () => {
   const alumniQuery = new AlumniQuery();
@@ -183,5 +185,106 @@ describe('AlumniQuery.searchAlumni (GET /api/alumni)', () => {
     await expect(
       alumniQuery.searchAlumni({}, { limit: 20, offset: 200 }),
     ).resolves.toEqual({ items: [], total: 3 });
+  });
+});
+
+// Pairs each column in the SQL with the parameter bound to it, so a column/parameter slip fails.
+const columnsOf = (sql: string, re: RegExp) =>
+  (re.exec(sql)?.[1] ?? '').split(',').map((c) => c.trim()).filter(Boolean);
+
+describe('AlumniQuery.createAlumni (POST /api/alumni)', () => {
+  const alumniQuery = new AlumniQuery();
+
+  beforeEach(() => {
+    query.mockResolvedValue({ rows: [{ id: 3 }] } as never);
+  });
+
+  it('inserts the five profile fields (REQ-011) with each column bound to its own value', async () => {
+    const dto = Object.assign(new AlumniDTO(42, 'CSE', 2017), {
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: 2013,
+      mentorship_available: true,
+    });
+
+    await expect(alumniQuery.createAlumni(dto)).resolves.toEqual({ id: 3 });
+
+    const sql = sqlOfLastCall();
+    const columns = columnsOf(sql, /INSERT INTO alumni\s*\(([^)]*)\)/i);
+    const params = paramsOfLastCall();
+    expect(columnsOf(sql, /VALUES\s*\(([^)]*)\)/i)).toEqual(columns.map((_c, i) => `$${i + 1}`));
+    expect(Object.fromEntries(columns.map((c, i) => [c, params[i]]))).toEqual({
+      user_id: 42,
+      department: 'CSE',
+      graduation_year: 2017,
+      current_company: undefined,
+      job_title: undefined,
+      experience: undefined,
+      bio: undefined,
+      linkedin_url: undefined,
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: 2013,
+      mentorship_available: true,
+    });
+    expect(sql).toMatch(/RETURNING \*$/);
+  });
+
+  it('binds null for missing text fields and false (never null) for a missing mentorship flag', async () => {
+    await alumniQuery.createAlumni(new AlumniDTO(42));
+
+    const params = paramsOfLastCall();
+    expect(params.slice(8)).toEqual([null, null, null, null, false]);
+  });
+});
+
+describe('AlumniQuery.updateAlumni (PUT /api/alumni/:id)', () => {
+  const alumniQuery = new AlumniQuery();
+
+  beforeEach(() => {
+    query.mockResolvedValue({ rows: [{ id: 5 }] } as never);
+  });
+
+  it('sets the five profile fields (REQ-011), each column bound to its own value, id last', async () => {
+    await alumniQuery.updateAlumni(5, {
+      department: 'CSE',
+      graduation_year: '2017',
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: '2013',
+      mentorship_available: true,
+    });
+
+    const sql = sqlOfLastCall();
+    const params = paramsOfLastCall();
+    const set = Object.fromEntries(
+      [...sql.matchAll(/(\w+)=\$(\d+)/g)].map(([, column, n]) => [column, params[Number(n) - 1]]),
+    );
+    expect(set).toEqual({
+      department: 'CSE',
+      graduation_year: '2017',
+      current_company: undefined,
+      job_title: undefined,
+      experience: undefined,
+      bio: undefined,
+      linkedin_url: undefined,
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: '2013',
+      mentorship_available: true,
+      id: 5,
+    });
+    expect(sql).toMatch(/updated_at=NOW\(\) WHERE id=\$13 RETURNING \*$/);
+  });
+
+  it('clears omitted text fields to null and stores false when the flag is false', async () => {
+    await alumniQuery.updateAlumni(5, { mentorship_available: false });
+
+    const params = paramsOfLastCall();
+    expect(params.slice(7)).toEqual([null, null, null, null, false, 5]);
   });
 });
