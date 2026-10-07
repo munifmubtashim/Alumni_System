@@ -209,3 +209,55 @@ describe('UserManager.verifyLogin (POST /api/auth/login)', () => {
     await expect(manager.verifyLogin('nobody@example.com', 'correct horse')).resolves.toBeNull();
   });
 });
+
+describe('UserManager.updateMe (PUT /api/me): REQ-011 alumni fields', () => {
+  const findMyProfile = vi.mocked(UserQuery.prototype.findMyProfile);
+  const updateMyProfile = vi.mocked(UserQuery.prototype.updateMyProfile);
+  const extra = {
+    headline: ' Designer ',
+    location: 'Oslo',
+    degree: 'B.Sc.',
+    start_year: '2013',
+    graduation_year: '2017',
+    mentorship_available: true,
+  };
+
+  beforeEach(() => {
+    updateMyProfile.mockResolvedValue({ user_id: 7 } as never);
+  });
+
+  it('alumni user → the five fields reach the query, trimmed', async () => {
+    findMyProfile.mockResolvedValue({ user_id: 7, email: 'a@x.io', has_alumni_profile: true, has_student_profile: false } as never);
+
+    await new UserManager().updateMe(7, { name: 'Al', ...extra });
+
+    const alumni = updateMyProfile.mock.calls[0][2];
+    expect(alumni).toMatchObject({ ...extra, headline: 'Designer' });
+  });
+
+  it('alumni user with start year after graduation → 400, query not called', async () => {
+    findMyProfile.mockResolvedValue({ user_id: 7, email: 'a@x.io', has_alumni_profile: true, has_student_profile: false } as never);
+
+    await expectAppError(new UserManager().updateMe(7, { name: 'Al', start_year: '2018', graduation_year: '2017' }), 400);
+    expect(updateMyProfile).not.toHaveBeenCalled();
+  });
+
+  it('student → junk alumni-only fields are ignored, not validated or passed on', async () => {
+    findMyProfile.mockResolvedValue({ user_id: 7, email: 's@x.io', has_alumni_profile: false, has_student_profile: true } as never);
+    const year = String(new Date().getFullYear() + 1);
+
+    await new UserManager().updateMe(7, {
+      name: 'Sam',
+      department: 'CSE',
+      expected_graduation_year: year,
+      headline: 'x'.repeat(500),
+      start_year: 'soon',
+      mentorship_available: 'yes',
+    });
+
+    const [, , alumni, , student] = updateMyProfile.mock.calls[0];
+    expect(alumni).toBeUndefined();
+    expect(student).toMatchObject({ department: 'CSE', expected_graduation_year: year });
+    for (const key of ['headline', 'start_year', 'mentorship_available']) expect(student).not.toHaveProperty(key);
+  });
+});

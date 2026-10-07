@@ -9,6 +9,11 @@ export class AlumniDTO implements BaseDTO {
   experience?: string;
   bio?: string;
   linkedin_url?: string;
+  headline?: string;
+  location?: string;
+  degree?: string;
+  start_year?: number | null; // INTEGER column, nullable
+  mentorship_available?: boolean; // NOT NULL DEFAULT false in the table
   created_at: Date;
   updated_at: Date;
   // Joined from users on reads; never includes the password.

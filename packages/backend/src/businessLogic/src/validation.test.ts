@@ -3,9 +3,11 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE,
   MAX_PAGE_SIZE,
+  optionalBoolean,
   optionalText,
   parseAlumniSearch,
   validateAlumniFields,
+  validateStudentFields,
   validateUserBasics,
 } from './validation.js';
 import { expectAppError } from '../../test/expectAppError';
@@ -149,5 +151,156 @@ describe('optionalText', () => {
   it('protects the profile validators too', async () => {
     await expectAppError(() => validateAlumniFields({ bio: 'x\u0000' }), 400);
     await expectAppError(() => validateUserBasics({ name: 'Ada\u0000' }), 400);
+  });
+});
+
+describe('optionalBoolean', () => {
+  it('returns true and false as they are, and false when omitted', () => {
+    expect(optionalBoolean(true, 'X')).toBe(true);
+    expect(optionalBoolean(false, 'X')).toBe(false);
+    expect(optionalBoolean(undefined, 'X')).toBe(false);
+  });
+
+  it.each([null, 'true', 'false', 1, 0, '', {}, []])('rejects %j with a message naming the field', async (value) => {
+    const error = await expectAppError(() => optionalBoolean(value, 'Mentorship availability'), 400);
+    expect(error.message).toBe('Mentorship availability must be true or false');
+  });
+});
+
+describe('validateAlumniFields: headline, location, degree, start year, mentorship (REQ-011)', () => {
+  const thisYear = new Date().getFullYear();
+
+  it('returns the five fields, text trimmed', () => {
+    expect(
+      validateAlumniFields({
+        headline: '  Product designer  ',
+        location: ' Oslo ',
+        degree: ' B.Sc. Product Design ',
+        start_year: '2013',
+        graduation_year: '2017',
+        mentorship_available: true,
+      }),
+    ).toMatchObject({
+      headline: 'Product designer',
+      location: 'Oslo',
+      degree: 'B.Sc. Product Design',
+      start_year: '2013',
+      graduation_year: '2017',
+      mentorship_available: true,
+    });
+  });
+
+  it('omitted fields are cleared and mentorship_available becomes false', () => {
+    const fields = validateAlumniFields({});
+    expect(fields).toMatchObject({ headline: undefined, location: undefined, degree: undefined, start_year: undefined });
+    expect(fields.mentorship_available).toBe(false);
+  });
+
+  it.each(['', '   ', null])('empty or null text (%j) clears the field', (blank) => {
+    expect(validateAlumniFields({ headline: blank, location: blank, degree: blank, start_year: blank })).toMatchObject({
+      headline: undefined,
+      location: undefined,
+      degree: undefined,
+      start_year: undefined,
+    });
+  });
+
+  it.each([
+    ['headline', 'Headline', 120],
+    ['location', 'Location', 100],
+    ['degree', 'Degree', 100],
+  ])('%s: accepts %i characters, rejects one more, measured after trimming', async (key, label, max) => {
+    expect(validateAlumniFields({ [key]: ` ${'a'.repeat(max)} ` })[key as 'headline']).toHaveLength(max);
+    const error = await expectAppError(() => validateAlumniFields({ [key]: 'a'.repeat(max + 1) }), 400);
+    expect(error.message).toBe(`${label} must be at most ${max} characters`);
+  });
+
+  it.each([
+    ['headline', 'Headline'],
+    ['location', 'Location'],
+    ['degree', 'Degree'],
+    ['start_year', 'Start year'],
+  ])('%s: a NUL character is 400 naming the field', async (key, label) => {
+    const error = await expectAppError(() => validateAlumniFields({ [key]: '20\u000013' }), 400);
+    expect(error.message).toBe(`${label} contains an invalid character`);
+  });
+
+  it.each([
+    ['headline', 'Headline'],
+    ['location', 'Location'],
+    ['degree', 'Degree'],
+  ])('%s: non-text is 400 naming the field', async (key, label) => {
+    const error = await expectAppError(() => validateAlumniFields({ [key]: 42 }), 400);
+    expect(error.message).toBe(`${label} must be text`);
+  });
+
+  describe('start_year', () => {
+    it.each(['1900', String(thisYear + 10)])('accepts %s', (year) => {
+      expect(validateAlumniFields({ start_year: year }).start_year).toBe(year);
+    });
+
+    it('accepts a number and returns it as text', () => {
+      expect(validateAlumniFields({ start_year: 2013 }).start_year).toBe('2013');
+    });
+
+    it.each(['1899', String(thisYear + 11), '13', '20130', '2o13', '-2013', '2013.0'])('rejects %j', async (year) => {
+      const error = await expectAppError(() => validateAlumniFields({ start_year: year }), 400);
+      expect(error.message).toBe('Start year is not valid');
+    });
+  });
+
+  describe('start year before graduation year', () => {
+    it('start after graduation → 400 on the Graduation year field', async () => {
+      const error = await expectAppError(
+        () => validateAlumniFields({ start_year: '2018', graduation_year: '2017' }),
+        400,
+      );
+      expect(error.message).toBe("Graduation year can't be before the start year");
+    });
+
+    it.each([
+      ['same year', { start_year: '2017', graduation_year: '2017' }],
+      ['start only', { start_year: '2017' }],
+      ['graduation only', { graduation_year: '2017' }],
+    ])('%s is fine', (_label, body) => {
+      expect(() => validateAlumniFields(body)).not.toThrow();
+    });
+  });
+
+  it.each([null, 'true', 1])('mentorship_available %j → 400', async (value) => {
+    await expectAppError(() => validateAlumniFields({ mentorship_available: value }), 400);
+  });
+});
+
+describe('validateStudentFields ignores the alumni-only fields', () => {
+  const student = { department: 'CSE', expected_graduation_year: String(new Date().getFullYear() + 1) };
+
+  it('junk headline, start year and mentorship do not fail and are not returned', () => {
+    const fields = validateStudentFields({
+      ...student,
+      job_title: 'Intern',
+      headline: 'x'.repeat(500),
+      location: 42,
+      degree: 'a\u0000b',
+      start_year: 'soon',
+      graduation_year: '20x0',
+      mentorship_available: 'yes',
+    });
+    expect(fields).toEqual({
+      department: 'CSE',
+      expected_graduation_year: student.expected_graduation_year,
+      current_company: undefined,
+      job_title: 'Intern',
+      experience: undefined,
+      bio: undefined,
+      linkedin_url: undefined,
+    });
+    for (const key of ['headline', 'location', 'degree', 'start_year', 'graduation_year', 'mentorship_available']) {
+      expect(fields).not.toHaveProperty(key);
+    }
+  });
+
+  it('still validates the shared details', async () => {
+    await expectAppError(() => validateStudentFields({ ...student, bio: 'x'.repeat(2001) }), 400);
   });
 });

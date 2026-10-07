@@ -36,6 +36,35 @@ describe('AlumniManager.createAlumni (POST /api/alumni)', () => {
     expect(row.graduation_year).toBe(2020);
   });
 
+  it('passes the five REQ-011 fields, years as numbers', async () => {
+    await manager.createAlumni(42, {
+      headline: ' Designer ',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: '2013',
+      graduation_year: '2017',
+      mentorship_available: true,
+    });
+
+    expect(query.createAlumni.mock.calls[0][0]).toMatchObject({
+      user_id: 42,
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: 2013,
+      graduation_year: 2017,
+      mentorship_available: true,
+    });
+  });
+
+  it('omitted REQ-011 fields are empty and mentorship_available is false', async () => {
+    await manager.createAlumni(42, {});
+
+    const row = query.createAlumni.mock.calls[0][0];
+    expect(row).toMatchObject({ headline: undefined, location: undefined, degree: undefined, start_year: undefined });
+    expect(row.mentorship_available).toBe(false);
+  });
+
   it('returns 409 when the user already has a profile, without inserting', async () => {
     query.findAlumniByUserId.mockResolvedValue({ id: 3, user_id: 42 });
 
@@ -53,6 +82,9 @@ describe('AlumniManager.createAlumni (POST /api/alumni)', () => {
     ['bad graduation year', { graduation_year: '20x0' }],
     ['non-http LinkedIn URL', { linkedin_url: 'javascript:alert(1)' }],
     ['department too long', { department: 'x'.repeat(101) }],
+    ['headline too long', { headline: 'x'.repeat(121) }],
+    ['start year after graduation', { start_year: '2018', graduation_year: '2017' }],
+    ['mentorship_available as text', { mentorship_available: 'true' }],
   ])('returns 400 on %s, without inserting', async (_label, body) => {
     await expectAppError(manager.createAlumni(42, body), 400);
     expect(query.createAlumni).not.toHaveBeenCalled();
@@ -134,6 +166,44 @@ describe('AlumniManager.updateOwnAlumni (PUT /api/alumni/:id): owner only', () =
   it('malformed id → 404 without touching the DB', async () => {
     await expectAppError(manager.updateOwnAlumni(42, 'abc', body), 404);
     expect(query.findAlumniById).not.toHaveBeenCalled();
+  });
+
+  describe('the REQ-011 fields', () => {
+    const newFields = {
+      headline: 'Designer',
+      location: 'Oslo',
+      degree: 'B.Sc.',
+      start_year: '2013',
+      graduation_year: '2017',
+      mentorship_available: true,
+    };
+
+    it('owner → passes all five to the query', async () => {
+      await manager.updateOwnAlumni(42, '3', newFields);
+      expect(query.updateAlumni).toHaveBeenCalledWith(3, expect.objectContaining(newFields));
+    });
+
+    it('owner omitting mentorship_available → false (full replace)', async () => {
+      await manager.updateOwnAlumni(42, '3', { headline: 'Designer' });
+      expect(query.updateAlumni.mock.calls[0][1].mentorship_available).toBe(false);
+    });
+
+    it.each([
+      ['another user', 8],
+      ['an admin', 1],
+    ])('%s → 403, query not called', async (_label, requesterId) => {
+      await expectAppError(manager.updateOwnAlumni(requesterId, '3', newFields), 403);
+      expect(query.updateAlumni).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['location too long', { location: 'x'.repeat(101) }],
+      ['bad start year', { start_year: '13' }],
+      ['mentorship_available null', { mentorship_available: null }],
+    ])('owner with %s → 400 without updating', async (_label, bad) => {
+      await expectAppError(manager.updateOwnAlumni(42, '3', bad), 400);
+      expect(query.updateAlumni).not.toHaveBeenCalled();
+    });
   });
 
   it('owner with a bad field → 400 without updating', async () => {
