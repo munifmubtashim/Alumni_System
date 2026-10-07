@@ -25,7 +25,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-007 | App shell and Home match S1 (avatar menu, phone tab bar, quick-link cards) | merged 2026-10-06 (PR #20) | specs/_archive/2026-10/m/REQ-007-app-shell-home-s1 |
 | REQ-008 | Alumni profile page at /alumni/:id (lazy route, S3 designs, Back link keeps directory search) | merged 2026-10-06 (PR #21) | specs/_archive/2026-10/m/REQ-008-alumni-profile-page |
 | REQ-009 | Post feed page at /feed (lazy, S4 designs, optimistic posts and comments, comment edit endpoint) | merged 2026-10-07 (PR #23) | specs/_archive/2026-10/m/REQ-009-post-feed-page |
-| REQ-010 | My Profile page at /me (lazy, S5 designs, API-backed fields only, leave guard, toast) | ready to merge 2026-10-07 | specs/2026-10/m/REQ-010-my-profile-page |
+| REQ-010 | My Profile page at /me (lazy, S5 designs, API-backed fields only, leave guard, toast) | merged 2026-10-07 (PR #24) | specs/_archive/2026-10/m/REQ-010-my-profile-page |
 
 ## ADRs
 

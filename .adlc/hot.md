@@ -8,6 +8,8 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ```
 ## [2026-10-07] req-archived | REQ-009-post-feed-page
+## [2026-10-07] req-archived | REQ-010-my-profile-page
+## [2026-10-07] req-merged | REQ-010-my-profile-page | PR #24 into redesign (5a905dcd)
 ## [2026-10-07] ship-gate-cleared | REQ-010-my-profile-page | PR draft and merge checklist ready; user runs push, PR and merge
 ## [2026-10-07] req-ready-to-merge | REQ-010-my-profile-page | My Profile page at /me, 8 tasks, 7 commits, 1217 tests
 ## [2026-10-07] lesson | L-REQ-010-1..5 — feed cache keys, guard-owned query states, leave prompt reason, ADR revisit triggers, nav/menu README lists
