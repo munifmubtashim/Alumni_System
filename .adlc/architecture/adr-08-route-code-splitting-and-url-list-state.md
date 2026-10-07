@@ -47,6 +47,8 @@ The profile page (`/alumni/:id`) was the second lazy page and the feed (`/feed`,
 
 My Profile (`/me`, REQ-010, `ME_ROUTE` in `router.tsx`) is the fourth lazy page, added to `LAZY_FEATURES` like the others. Its path lives in `config/mePath.ts`, because the nav, the avatar menu and Home all link to it.
 
+The About page (`/about`, REQ-014, `ABOUT_ROUTE`) is the fifth lazy page and the first one that is public: it sits in the `AppShell` branch as a sibling of the `RequireAuth` group, not inside it, and makes no API call. Its path lives in `config/aboutPath.ts` (the footer and the auth pages link to it).
+
 ## Open questions
 
 - [ ] Prefetching a chunk on hover/focus of its nav link: not decided here.

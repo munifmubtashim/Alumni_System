@@ -910,3 +910,20 @@ Use both. They serve different purposes.
 
 **Don't:** assert 400/403 in that file with the plain mocks; they would pass without exercising the rule.
 **Related:** [[knowledge/gotchas#^g13|G13]] · [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]]
+
+## G42 — A public page inside AppShell is a sibling of RequireAuth, and must make no API call ^g42
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-014 |
+| Component | frontend router |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `/about` is listed in `DEFAULT_PAGE_ROUTES` next to, not inside, the `RequireAuth` group, so a guest sees it with the Log in / Sign up header. Moving it inside the group would redirect guests to `/login`; adding a `useCurrentUser` call to it would make a guest's visit hit the API.
+
+**Where:** `packages/frontend/src/app/router.tsx` (`ABOUT_ROUTE`), `src/app/aboutRoute.test.tsx`
+
+**Don't:** put a public page under `RequireAuth`, or call `['me']` or any endpoint from it. The route test asserts both (a guest sees the page and the adapter is never called).
+**Related:** [[knowledge/lessons/LESSON-REQ-014-1-derive-lazy-feature-lists-from-one-source|L-REQ-014-1]] · [[knowledge/gotchas#^g19|G19]]

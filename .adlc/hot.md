@@ -2,6 +2,13 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] req-archived | REQ-013-casing-fix-start-year-all-widths
+## [2026-10-07] req-archived | REQ-014-about-page
+## [2026-10-07] ship-gate-cleared | REQ-014-about-page
+## [2026-10-07] req-merged | REQ-014-about-page | PR #30
+## [2026-10-07] req-ready-to-merge | REQ-014-about-page | wrapup done after PR #30 merged
+## [2026-10-07] lesson | L-REQ-014-1 — derive the lazy-feature lists from LAZY_FEATURES
+## [2026-10-07] gotcha | G42 — public page in AppShell is a sibling of RequireAuth
 ## [2026-10-07] ship-gate-cleared | REQ-014-about-page
 ## [2026-10-07] req-ready-to-merge | REQ-014-about-page | public /about, site footer, auth links; 0 critical/major, 6 minor open
 ## [2026-10-07] work-path-set | REQ-014-about-page | branch feat/REQ-014-about-page

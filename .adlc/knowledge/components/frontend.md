@@ -4,7 +4,7 @@
 |---|---|
 | Path | `packages/frontend` |
 | Owner | munifmubtashim |
-| Status | current as of REQ-012 (2026-10-07) |
+| Status | current as of REQ-014 (2026-10-07) |
 
 React 19 + Vite 8 + TypeScript 6 SPA, rebuilt from scratch in [[REQ-001]]. Since [[REQ-002]] it has log in (`/login`), sign up (`/register`) and a signed-in home (`/`), behind route guards. Since [[REQ-004]] it is branded **Alma**: login and sign-up are full-page split layouts without the app header (compact icon theme toggle top-right, pinned brand panel, borderless 380px form); signed-in pages keep the S1 header (logo, `MainNav` with "Directory" and "Feed" links, a user menu with name and email, View profile (alumni only), Account settings and Log out, compact theme toggle). Since [[REQ-006]] there is an alumni directory at `/directory` (lazy-loaded, search and filters in the URL, built on the REQ-005 API). Since [[REQ-008]] there is an alumni profile at `/alumni/:id` (the second lazy page; header, About, Education, Employment, Recent posts, a Back link that restores the directory search; [[knowledge/concepts/detail-page-pattern]]). Since [[REQ-009]] there is a post feed at `/feed` (the third lazy page). Since [[REQ-010]] there is Account settings at `/me` (the fourth lazy page; called My Profile until [[REQ-012]], which also took it out of the header nav and named its phone tab "Account"): the signed-in user edits their own details and password, with a save bar, a leave prompt and a success toast. Since [[REQ-011]] alumni also edit a headline, location, degree, start year and a mentorship switch, shown on the profile page (headline, location, badge, degree with years) and as a Mentor tag on the directory card. Photo upload is not built (no API for it).
 
@@ -45,3 +45,5 @@ React 19 + Vite 8 + TypeScript 6 SPA, rebuilt from scratch in [[REQ-001]]. Since
 - [[REQ-010]] — My Profile page (`/me`, renamed Account settings in REQ-012), fourth lazy route, `features/me` (form, save bar, leave prompt, toast), `config/mePath`, Textarea and Toast primitives, `authApi` `updateMyProfile`/`changePassword`, My Profile in nav, tab bar, avatar menu (with View profile) and Home, `--tab-bar-height` on `AppShell`
 - [[REQ-011]] — headline, location, degree, start year and mentorship on My Profile (new `Switch` primitive), the public profile (headline, location, "Degree · years", sage badge) and the directory card (Mentor tag); `success-soft` / `success-strong` tokens
 - [[REQ-012]] — My Profile renamed Account settings (heading, tab title, avatar menu, Home card); `/me` dropped from the header nav; `NAV_ITEMS` split into `HEADER_NAV_ITEMS` and `TAB_NAV_ITEMS` (phone tab "Account")
+- [[REQ-013]] — Start year shown at every width on Account settings.
+- [[REQ-014]] — public About page (`/about`, fifth lazy route, `features/about`, `config/aboutPath.ts`), `SiteFooter` under every `AppShell` page, "About Alma" link in `AuthLayout`.

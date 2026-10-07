@@ -36,10 +36,14 @@
 
 ## Candidate verdicts
 
-| Candidate | Verdict | Why |
+| Candidate | Verdict | Target / Reason |
 |---|---|---|
-| corr CAND-001, CAND-002, CAND-003 | discard | One-off test and copy fixes; fixed in this REQ |
-| reflect CAND-001 | promote (at wrapup, if you approve) | Third REQ in a row where the lazy-feature lists were only partly updated |
-| reflect CAND-002 | demote-to-gotcha | Public page = sibling of RequireAuth group, no API call |
-| reflect CAND-003 | discard | Footer checked visually; no fixed bar clashes seen |
-| reflect CAND-004 | discard | Covered by README note and the test itself |
+| corr CAND-001 | discard | one-off test fix, done in this REQ |
+| corr CAND-002 | discard | one-off test fix, done in this REQ |
+| corr CAND-003 | discard | one-off copy fix, done in this REQ |
+| reflect CAND-001 | promote | LESSON-REQ-014-1 (extends L-REQ-009-4: third miss in a row; not on origin/redesign either) |
+| reflect CAND-002 | demote-to-gotcha | ^g42 |
+| reflect CAND-003 | discard | footer checked visually at 390px with the tab bar; no clash seen |
+| reflect CAND-004 | discard | covered by the page README and the test itself |
+
+Dedup vs origin/redesign as of 42 seconds ago: no existing lesson covers the same claim beyond L-REQ-009-4, which this one extends.
