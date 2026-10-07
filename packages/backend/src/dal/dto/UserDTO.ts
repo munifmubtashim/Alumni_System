@@ -1,4 +1,4 @@
-import type  { BaseDTO } from "./baseDTO";
+import type  { BaseDTO } from "./BaseDTO";
 
 
 export class UserDTO implements BaseDTO {

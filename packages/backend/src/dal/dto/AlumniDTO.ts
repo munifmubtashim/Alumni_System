@@ -1,4 +1,4 @@
-import type { BaseDTO } from "./baseDTO";
+import type { BaseDTO } from "./BaseDTO";
 
 // What a new alumni row is built from: user_id plus the stored profile columns (years as numbers).
 export type AlumniDTOInit = Pick<AlumniDTO, "user_id"> &
