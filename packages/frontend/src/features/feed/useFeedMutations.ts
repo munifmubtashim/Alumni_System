@@ -45,8 +45,11 @@ import { feedErrorMessage } from './feedErrors';
  * - onError applies the inverse edit (never a snapshot restore, so two
  *   overlapping writes cannot undo each other), unless no live token is left:
  *   after a 401 SessionBridge has cleared the cache and is leaving the page;
+ * - an edit's inverse is "put the old text back only if the text is still what
+ *   this edit wrote": a newer overlapping edit is left for the refetch;
  * - onSettled refetches a key only when this is the last running mutation on it,
- *   so a refetch cannot drop another write's pending row.
+ *   so a refetch cannot drop another write's pending row. A paused (offline)
+ *   mutation is not running: it must not stop the others from refetching.
  * Mutations are not retried (ADR-02). Each hook adds `errorMessage`, the text to
  * show for a failure.
  */
@@ -79,16 +82,28 @@ function canRollBack(): boolean {
   return getLiveToken() !== null;
 }
 
+/**
+ * How many mutations under `mutationKey` are running: pending and not paused.
+ * `isMutating` would also count a write paused while offline (CORR-003).
+ */
+function running(client: QueryClient, mutationKey: readonly unknown[]): number {
+  return client.getMutationCache().findAll({
+    mutationKey,
+    status: 'pending',
+    predicate: (mutation) => !mutation.state.isPaused,
+  }).length;
+}
+
 /** Refetches the post list when no other feed write is still running. */
 async function settlePosts(client: QueryClient) {
-  if (client.isMutating({ mutationKey: FEED_MUTATION_KEY }) === 1) {
+  if (running(client, FEED_MUTATION_KEY) === 1) {
     await client.invalidateQueries({ queryKey: POSTS_QUERY_KEY, exact: true });
   }
 }
 
 /** Refetches a thread when no other write on it is still running. */
 async function settleComments(client: QueryClient, postId: number) {
-  if (client.isMutating({ mutationKey: commentsMutationKey(postId) }) === 1) {
+  if (running(client, commentsMutationKey(postId)) === 1) {
     await client.invalidateQueries({ queryKey: commentsQueryKey(postId), exact: true });
   }
 }
@@ -164,18 +179,23 @@ export function useUpdatePost() {
       const found = findPost(client.getQueryData<PostsData>(POSTS_QUERY_KEY), id);
       if (!found) return undefined;
       const before = { caption: found.post.caption, updated_at: found.post.updated_at };
+      const wrote = caption.trim();
       editPosts(client, (data) =>
-        replacePost(data, id, { caption: caption.trim(), updated_at: new Date() }),
+        replacePost(data, id, { caption: wrote, updated_at: new Date() }),
       );
-      return before;
+      return { before, wrote };
     },
     onSuccess: (saved: Post, { id }) => {
       editPosts(client, (data) =>
         replacePost(data, id, { caption: saved.caption, updated_at: saved.updated_at }),
       );
     },
-    onError: (_error, { id }, before) => {
-      if (before && canRollBack()) editPosts(client, (data) => replacePost(data, id, before));
+    onError: (_error, { id }, ctx) => {
+      if (!ctx || !canRollBack()) return;
+      // Inverse edit: a newer overlapping edit changed the text, so leave it.
+      const now = findPost(client.getQueryData<PostsData>(POSTS_QUERY_KEY), id)?.post;
+      if (now?.caption === ctx.wrote)
+        editPosts(client, (data) => replacePost(data, id, ctx.before));
     },
     onSettled: () => settlePosts(client),
   });
@@ -291,14 +311,19 @@ export function useUpdateComment(postId: number) {
       editComments(client, postId, (l) =>
         replaceComment(l, id, { content, updated_at: new Date() }),
       );
-      return before;
+      return { before, wrote: content };
     },
     onSuccess: (saved: Comment, { id }) => {
       editComments(client, postId, (list) => replaceComment(list, id, saved));
     },
-    onError: (_error, { id }, before) => {
-      if (before && canRollBack())
-        editComments(client, postId, (list) => replaceComment(list, id, before));
+    onError: (_error, { id }, ctx) => {
+      if (!ctx || !canRollBack()) return;
+      // Inverse edit: a newer overlapping edit changed the text, so leave it.
+      const now = client
+        .getQueryData<FeedComment[]>(commentsQueryKey(postId))
+        ?.find((c) => c.id === id);
+      if (now?.content === ctx.wrote)
+        editComments(client, postId, (list) => replaceComment(list, id, ctx.before));
     },
     onSettled: () => settleComments(client, postId),
   });
@@ -331,9 +356,12 @@ export function useDeleteComment(postId: number) {
         client.getQueryData<FeedComment[]>(commentsQueryKey(postId)),
         id,
       );
-      // Thread not loaded: count the one comment we know about. The count
-      // never drops below 0, so remember what was really taken off.
-      const wanted = Math.max(removed.length, 1);
+      // Thread not loaded: count the one comment we know about. A pending
+      // reply (negative id) is not counted: its own failed create takes it
+      // off the count (CORR-002). The count never drops below 0, so remember
+      // what was really taken off.
+      const saved = removed.filter(({ comment }) => comment.id > 0);
+      const wanted = Math.max(saved.length, 1);
       const posts = client.getQueryData<PostsData>(POSTS_QUERY_KEY);
       const before = findPost(posts, postId)?.post.comment_count ?? 0;
       const count = Math.min(before, wanted);

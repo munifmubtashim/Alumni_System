@@ -8,7 +8,7 @@ import { CURRENT_USER_QUERY_KEY } from '@/features/auth';
 import { clearToken, setToken } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
 import { feedPosts, type FeedComment, type FeedPost, type PostsData } from './cacheEdits';
-import { commentsQueryKey, POSTS_QUERY_KEY } from './constants';
+import { commentsQueryKey, postMutationKey, POSTS_QUERY_KEY } from './constants';
 import {
   useCreateComment,
   useCreatePost,
@@ -292,6 +292,65 @@ describe('useUpdatePost', () => {
     expect(posts()[0]?.caption).toBe('Post 1');
     expect(result.current.errorMessage).toBe('You can only change your own posts');
   });
+
+  it('a failed edit does not undo a newer overlapping edit (inverse edit, CORR-001)', async () => {
+    seedPosts(post(1, { caption: 'A' }));
+    const first = renderHook(() => useUpdatePost(), { wrapper });
+    const second = renderHook(() => useUpdatePost(), { wrapper });
+    act(() => {
+      first.result.current.mutate({ id: 1, caption: 'B' });
+    });
+    const toB = await take('put', '/posts/1');
+    act(() => {
+      second.result.current.mutate({ id: 1, caption: 'C' });
+    });
+    const toC = await take('put', '/posts/1');
+    expect(posts()[0]?.caption).toBe('C');
+
+    toB.fail(500);
+    await waitFor(() => {
+      expect(first.result.current.isError).toBe(true);
+    });
+    expect(posts()[0]?.caption).toBe('C');
+
+    toC.ok(post(1, { caption: 'C' }));
+    await waitFor(() => {
+      expect(second.result.current.isSuccess).toBe(true);
+    });
+    expect(posts()[0]?.caption).toBe('C');
+  });
+
+  it('refetches even while another feed write is paused offline (CORR-003)', async () => {
+    seedPosts(post(1));
+    // A write paused while offline: pending, but not running.
+    client.getMutationCache().build(
+      client,
+      { mutationKey: postMutationKey('create') },
+      {
+        context: undefined,
+        data: undefined,
+        error: null,
+        failureCount: 0,
+        failureReason: null,
+        isPaused: true,
+        status: 'pending',
+        variables: { caption: 'Offline' },
+        submittedAt: Date.now(),
+      },
+    );
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useUpdatePost(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 1, caption: 'New' });
+    });
+    (await take('put', '/posts/1')).ok(post(1, { caption: 'New' }));
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+    await waitFor(() => {
+      expect(feedRefetches(invalidate)).toEqual([{ queryKey: POSTS_QUERY_KEY, exact: true }]);
+    });
+  });
 });
 
 describe('useDeletePost', () => {
@@ -436,6 +495,33 @@ describe('useUpdateComment', () => {
     });
     expect(thread()?.[0]?.content).toBe('Edited');
   });
+
+  it('a failed edit does not undo a newer overlapping edit (inverse edit, CORR-001)', async () => {
+    client.setQueryData(commentsQueryKey(1), [comment(1, { content: 'A' })]);
+    const first = renderHook(() => useUpdateComment(1), { wrapper });
+    const second = renderHook(() => useUpdateComment(1), { wrapper });
+    act(() => {
+      first.result.current.mutate({ id: 1, content: 'B' });
+    });
+    const toB = await take('put', '/comments/1');
+    act(() => {
+      second.result.current.mutate({ id: 1, content: 'C' });
+    });
+    const toC = await take('put', '/comments/1');
+
+    toB.fail(500);
+    await waitFor(() => {
+      expect(first.result.current.isError).toBe(true);
+    });
+    expect(thread()?.[0]?.content).toBe('C');
+
+    toC.fail(500);
+    await waitFor(() => {
+      expect(second.result.current.isError).toBe(true);
+    });
+    // Each failure puts back only its own text: C was this edit's, B was before it.
+    expect(thread()?.[0]?.content).toBe('B');
+  });
 });
 
 describe('useDeleteComment', () => {
@@ -494,6 +580,34 @@ describe('useDeleteComment', () => {
       expect(result.current.isError).toBe(true);
     });
     expect(countOf(1)).toBe(1);
+  });
+
+  it('does not count a pending reply, so its failed create does not count twice (CORR-002)', async () => {
+    seedPosts(post(1, { comment_count: 3 }));
+    client.setQueryData(commentsQueryKey(1), [comment(1), comment(2), comment(3)]);
+    const reply = renderHook(() => useCreateComment(1), { wrapper });
+    const remove = renderHook(() => useDeleteComment(1), { wrapper });
+    act(() => {
+      reply.result.current.mutate({ content: 'Pending', parent_id: 1 });
+    });
+    const create = await take('post', '/posts/1/comments');
+    expect(countOf(1)).toBe(4);
+
+    act(() => {
+      remove.result.current.mutate({ id: 1 });
+    });
+    (await take('delete', '/comments/1')).ok({ message: 'Comment deleted' });
+    await waitFor(() => {
+      expect(remove.result.current.isSuccess).toBe(true);
+    });
+    expect(thread()?.map((c) => c.id)).toEqual([2, 3]);
+    expect(countOf(1)).toBe(3);
+
+    create.fail(404, 'Comment not found');
+    await waitFor(() => {
+      expect(reply.result.current.isError).toBe(true);
+    });
+    expect(countOf(1)).toBe(2);
   });
 
   it('treats a 404 as success and refetches the thread and the feed', async () => {

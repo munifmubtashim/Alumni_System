@@ -7,7 +7,10 @@
    in ink-secondary. Off-scale values are calc() of tokens. `.card` overrides
    Card's padding and gap: Card's CSS is in the main bundle (via RouteError),
    so this rule in the lazy chunk wins (G30). Overrides of Menu and Button
-   use two-class selectors, more specific than the primitives' own. */
+   use two-class selectors, more specific than the primitives' own. Touch
+   targets (UI-001): the menu button and the comment toggle are 32px tall
+   below 48rem and at least 24px from 48rem; negative margins keep the
+   layout where it was. */
 
 .card {
   gap: calc(var(--space-2) + var(--space-1) / 2);
@@ -57,7 +60,8 @@ a.name:hover {
 }
 
 .menu .menuTrigger {
-  padding: var(--space-1);
+  margin: calc(var(--space-1) * -1);
+  padding: var(--space-2);
   color: var(--ink-secondary);
 }
 
@@ -78,6 +82,8 @@ a.name:hover {
 .toggle {
   appearance: none;
   align-self: flex-start;
+  min-block-size: var(--space-6);
+  margin-block: calc((var(--space-6) - var(--text-caption-line)) / -2);
   padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
@@ -148,7 +154,14 @@ a.name:hover {
     font-size: var(--text-body-sm-size);
   }
 
+  .menu .menuTrigger {
+    margin: 0;
+    padding: var(--space-1);
+  }
+
   .toggle {
+    min-block-size: var(--space-5);
+    margin-block: calc((var(--space-5) - var(--text-label-line)) / -2);
     font: var(--text-label);
   }
 }

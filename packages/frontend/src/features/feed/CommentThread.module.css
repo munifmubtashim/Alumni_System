@@ -8,7 +8,10 @@
    ink-muted, which is under 4.5:1 on surface-raised. Replies indent by the
    avatar width plus the gap. Reply box: a pill input (padding 7px 12px /
    8px 14px), 16px text below 48rem so iOS does not zoom, text-label size from
-   48rem. Off-scale values are calc() of tokens. */
+   48rem. Off-scale values are calc() of tokens. Touch targets (UI-001):
+   Reply / Edit / Delete are 32px tall with 4px side padding below 48rem
+   (the meta line grows to 24px; the rest overlaps the gaps around it, not
+   the name link above) and 24px tall from 48rem with the line unchanged. */
 
 .thread {
   display: flex;
@@ -92,7 +95,10 @@ a.name:hover {
 
 .action {
   appearance: none;
-  padding: 0;
+  min-block-size: var(--space-6);
+  margin-block: calc(var(--space-1) * -1);
+  padding: 0 var(--space-1);
+  vertical-align: middle;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -197,6 +203,11 @@ a.name:hover {
   .text {
     font-size: var(--text-label-size);
     line-height: var(--text-label-line);
+  }
+
+  .action {
+    min-block-size: var(--space-5);
+    padding-inline: 0;
   }
 
   .input {
