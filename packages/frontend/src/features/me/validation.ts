@@ -34,7 +34,7 @@ export const PASSWORD_MAX_BYTES = 72;
 /**
  * The year order rule (alumni): start year after graduation year. The server's
  * message is the same and starts with "Graduation year", so it lands on that
- * field, which shows at every width (Start year is hidden on phones).
+ * field.
  */
 export const YEAR_ORDER_MESSAGE = "Graduation year can't be before the start year";
 

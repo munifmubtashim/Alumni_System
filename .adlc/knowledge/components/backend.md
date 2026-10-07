@@ -27,7 +27,7 @@ Express 4 + Postgres API in three npm workspaces that form one pipeline: routes 
 
 ## Gotchas
 
-[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes · [[knowledge/gotchas#^g21|G21]] LIKE escaping · [[knowledge/gotchas#^g22|G22]] baseDTO casing · [[knowledge/gotchas#^g23|G23]] NUL → 400 · [[knowledge/gotchas#^g24|G24]] TestManager sweep
+[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes · [[knowledge/gotchas#^g21|G21]] LIKE escaping · [[knowledge/gotchas#^g22|G22]] BaseDTO file name · [[knowledge/gotchas#^g23|G23]] NUL → 400 · [[knowledge/gotchas#^g24|G24]] TestManager sweep
 
 ## Touched by
 

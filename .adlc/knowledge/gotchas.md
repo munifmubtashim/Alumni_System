@@ -502,7 +502,7 @@ Use both. They serve different purposes.
 
 ---
 
-## G22 — `dal/dto/baseDTO.ts` is lower-case in git; import it as `./baseDTO` ^g22
+## G22 — `dal/dto/BaseDTO.ts`: git name, disk name and imports must share one casing ^g22
 
 | Field | Value |
 |---|---|
@@ -512,11 +512,13 @@ Use both. They serve different purposes.
 | Status | confirmed |
 | Severity | trap |
 
-**What:** Git tracks `baseDTO.ts`. Four DTOs imported `./BaseDTO`, which works on a case-insensitive Mac checkout (and `core.ignorecase=true` hides the mismatch), but fails `tsc` with TS1261 in any fresh clone, worktree or Linux CI. Fixed in REQ-005 by importing `./baseDTO`.
+**What:** Since REQ-013 the file is `BaseDTO.ts` in git and on disk (like the other DTOs), and the four DTOs import `./BaseDTO`. A mismatch works on a case-insensitive Mac checkout (`core.ignorecase=true` hides it) but fails `tsc` with TS1261 in a fresh clone, worktree, Linux CI, or wherever the disk name differs from the import.
 
-**Don't:** Import with the exact case git tracks (`git ls-files` shows it). Renaming the file to `BaseDTO.ts` would also work, but needs a two-step `git mv` on macOS.
+**History:** git used to track `baseDTO.ts`; REQ-005 changed the imports to `./baseDTO`, and later the disk name drifted to `BaseDTO.ts` again (G32). That lowercase rule no longer applies.
 
-**Related:** [[REQ-005]]
+**Don't:** rename a tracked file by case alone on macOS: use a two-step `git mv` (`a` → temp → `A`) and check `git ls-files` afterwards. Import with the exact case git tracks.
+
+**Related:** [[REQ-005]] · [[REQ-013]] · [[knowledge/gotchas#^g32|G32]]
 
 ---
 
@@ -708,7 +710,7 @@ Use both. They serve different purposes.
 **Don't:** replace the subquery with a join, or split the update and its read-back into two statements.
 **Related:** [[knowledge/lessons/LESSON-REQ-009-1-profile-links-need-the-alumni-id|L-REQ-009-1]]
 
-## G32 — Backend typecheck needs a fresh businessLogic dist and stops early on this machine ^g32
+## G32 — Backend typecheck needs a fresh businessLogic dist ^g32
 
 | Field | Value |
 |---|---|
@@ -720,12 +722,12 @@ Use both. They serve different purposes.
 
 **What:**
 - `npm run typecheck:backend` type-checks `api` against `businessLogic/dist/*.d.ts`: after adding a Manager method, run `tsc` in `packages/backend/src/businessLogic` first or it fails with "does not exist". Tests and `tsconfig.test.json` read the source, so they never show it.
-- On this checkout git tracks `dal/dto/baseDTO.ts` but the file on disk is `BaseDTO.ts` (core.ignorecase hides it), so `tsc` fails TS1261 at the dal step; the script chains with `&&`, so `tsconfig.test.json` is never checked. `npx tsc -p tsconfig.test.json` by hand hits the same TS1261 (it includes dal), so it is not a workaround (REQ-011): check with a scratch tsconfig outside the repo that extends it, sets `forceConsistentCasingInFileNames: false` and `typeRoots` to the root `node_modules/@types` (without `typeRoots` it fails TS2688 for `node`), or fix the file name with a two-step `git mv`.
+- Fixed in REQ-013: the TS1261 casing failure at the dal step (git tracked `baseDTO.ts`, the disk had `BaseDTO.ts`) is gone, since the file is now `BaseDTO.ts` everywhere (G22). The script chains with `&&`, so a failure in an early step still skips `tsconfig.test.json`.
 
 **Where:** `packages/backend/package.json` (typecheck script), `packages/backend/src/dal/dto/`
 
-**Don't:** trust a green `typecheck:backend` as proof that test files compile; rename the file without checking `git ls-files` (the tracked name is lowercase).
-**Related:** [[knowledge/gotchas#^g12|G12]]
+**Don't:** trust a green `typecheck:backend` as proof that `dist/` is current (it reads `dist/*.d.ts` only for `api`; tests read the source).
+**Related:** [[knowledge/gotchas#^g12|G12]] · [[knowledge/gotchas#^g22|G22]]
 
 ## G33 — Two contrast pairs the tokens do not cover ^g33
 
@@ -844,7 +846,7 @@ Use both. They serve different purposes.
 - Backend messages start with the API field name ("Bio", "Company", "Job title"), which differs from the UI labels (About, Current role): use an explicit prefix table, "prefix + space", longest first ("Expected graduation year" before "Graduation year").
 - `optionalYear` checks the 10-character text limit before the year rules, so a long year says "must be at most 10 characters", not "is not valid": mirror that order.
 - `PUT /api/me` clears every omitted optional field, including `photo_url`: always send the stored value back.
-- A cross-field message must start with the label of a field that is visible at every width (REQ-011: "Graduation year can't be before the start year" lands on the field phones still show). `mentorship_available` is a boolean sent every time; omitted means false on every full-replace route.
+- A cross-field message lands on the field its text starts with (REQ-011: "Graduation year can't be before the start year" lands on Graduation year). Keep that field visible at every width; since REQ-013 every /me field is. `mentorship_available` is a boolean sent every time; omitted means false on every full-replace route.
 
 **Where:** `features/me/profileErrors.ts`, `features/me/validation.ts`; `businessLogic/src/validation.ts:31`
 

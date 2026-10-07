@@ -16,3 +16,7 @@ Hiding an editable field below a width has four consequences: (1) an error on th
 ## Saw it in
 
 - Start year on My Profile (`features/me/ProfileForm.tsx`, `Section.module.css` `.wideOnly`); CAND-011, CAND-018, CAND-024, CAND-A02 and the UI-001/002 findings.
+
+## Update (REQ-013, 2026-10-07)
+
+The user chose the cheaper option: REQ-013 showed Start year at every width and deleted `.wideOnly`, `isHidden`, `HIDDEN_FIELD_HINT` and `withOrderHint` (about 60 lines, two exports, five tests). Point 1 (error routing) therefore applies only if you must hide an editable field; before hiding one, count that machinery, because showing the field is often cheaper. Points 2 to 4 still hold.

@@ -15,4 +15,4 @@ Before planning a rename or label change, grep the work branch for every constan
 
 ## Saw it in
 
-- REQ-012 cut from `redesign` while REQ-011 was unmerged: `HIDDEN_FIELD_HINT` ("Open My Profile on a wider screen…") exists only on REQ-011's branch and will be stale after both merge (CAND-001, correctness C-1).
+- REQ-012 cut from `redesign` while REQ-011 was unmerged: `HIDDEN_FIELD_HINT` ("Open My Profile on a wider screen…") exists only on REQ-011's branch and will be stale after both merge (resolved: REQ-013 deleted the constant) (CAND-001, correctness C-1).

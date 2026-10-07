@@ -36,17 +36,6 @@
   gap: var(--space-3) calc(var(--space-3) + var(--space-1) / 2);
 }
 
-/* Desktop-only field (S5 phone has no Start year): out of the layout, the tab
-   order and the accessibility tree below 48rem; its value is kept. Only set
-   below the breakpoint, so the wrapper never sets display otherwise (G18).
-   ProfileForm.tsx's isHidden reads this display:none to put a hidden field's
-   error on the form; change both together (matchMedia if a second field). */
-@media (width < 48rem) {
-  .wideOnly {
-    display: none;
-  }
-}
-
 /* Qualified with the span and data-size so it outranks the Avatar's own size rule (G30). */
 span.avatar[data-size] {
   align-self: flex-start;

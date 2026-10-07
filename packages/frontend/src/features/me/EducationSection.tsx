@@ -13,8 +13,8 @@ export interface EducationSectionProps {
  * University, department and the year: graduation year for alumni, expected
  * graduation year for students (required, with department). Alumni also get
  * Degree (beside University) and Start year (beside Graduation year), as in
- * S5 (REQ-011). Start year is in the DOM at every width but hidden below 48rem
- * by CSS, as S5 phone has none; its value is kept and sent unchanged.
+ * S5 (REQ-011). Start year shows at every width, although S5 phone has none
+ * (REQ-013): phones stack the fields in form order (University, Degree, Department, Start year, Graduation year).
  * Hidden for an account with no profile row, whose University is in Personal.
  */
 export function EducationSection({ bind, kind }: EducationSectionProps) {
@@ -53,14 +53,12 @@ export function EducationSection({ bind, kind }: EducationSectionProps) {
           </div>
           {department}
           <div className={styles.row}>
-            <div className={styles.wideOnly}>
-              <Input
-                label="Start year"
-                inputMode="numeric"
-                autoComplete="off"
-                {...bind('start_year')}
-              />
-            </div>
+            <Input
+              label="Start year"
+              inputMode="numeric"
+              autoComplete="off"
+              {...bind('start_year')}
+            />
             <Input
               label="Graduation year"
               inputMode="numeric"

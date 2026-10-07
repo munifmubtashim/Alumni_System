@@ -23,6 +23,7 @@
 - **Tests:** `createRoutes(pageRoutes)` puts test pages under `AppShell`. To test "a guest sees the header", use an unknown path, not `/login` ([[knowledge/gotchas#^g19|G19]]).
 
 - **Deliberate design deviation ([[REQ-012]]).** `/me` is "Account settings" (the S1/S2/S3/S5 screens still draw "My Profile"): it is not in the header nav (reached from the avatar menu and the Home card) and the phone tab bar's third tab reads "Account". `HEADER_NAV_ITEMS` and `TAB_NAV_ITEMS` in `app/AppShell/navItems.tsx` are separate lists so the two navs can differ.
+- **Deliberate design deviation ([[REQ-013]]).** Account settings shows Start year at every width, although the S5 phone design has none: phones stack Degree, Start year, Graduation year, so no editable field is ever hidden.
 
 ## Related
 
