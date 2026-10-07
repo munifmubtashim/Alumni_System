@@ -199,8 +199,8 @@ describe('AppShell', () => {
   });
 
   // REQ-004 AC7 kept S1's nav links out until their pages exist. REQ-006 AC2
-  // adds Directory, REQ-009 Feed, REQ-010 My Profile: a guest's banner has only the "Account" nav from
-  // HeaderAuth; a signed-in user's has only the "Main" nav.
+  // adds Directory, REQ-009 Feed (REQ-012 keeps /me out of it): a guest's banner has only the
+  // "Account" nav from HeaderAuth; a signed-in user's has only the "Main" nav.
   it('shows the guest only the Account nav, and a signed-in user only the Main nav', async () => {
     renderAt('/does-not-exist');
 
@@ -230,7 +230,7 @@ describe('AppShell', () => {
       within(banner)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Alma', 'Directory', 'Feed', 'My Profile']);
+    ).toEqual(['Alma', 'Directory', 'Feed']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -342,15 +342,15 @@ describe('Header main nav', () => {
     );
   });
 
-  it('links to /me and marks only My Profile current there', async () => {
+  // REQ-012 AC1: Account settings is reached from the avatar menu, not the header nav.
+  it('has no link to /me, and marks nothing current there', async () => {
     renderNavAt('/me');
     await screen.findByRole('heading', { name: 'Me stub' });
 
-    const me = within(mainNav()).getByRole('link', { name: 'My Profile' });
-    expect(me).toHaveAttribute('href', '/me');
-    expect(me).toHaveAttribute('aria-current', 'page');
-    for (const name of ['Directory', 'Feed']) {
-      expect(within(mainNav()).getByRole('link', { name })).not.toHaveAttribute('aria-current');
+    const links = within(mainNav()).getAllByRole('link');
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/directory', '/feed']);
+    for (const link of links) {
+      expect(link).not.toHaveAttribute('aria-current');
     }
   });
 
@@ -407,15 +407,15 @@ describe('Bottom tab bar (phone)', () => {
     expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
   });
 
-  it('lists the same pages as the header nav, and only those that exist', async () => {
+  it("lists the header nav's pages plus Account, and only pages that exist", async () => {
     renderNavAt('/other');
     await screen.findByRole('heading', { name: 'Other stub' });
 
     const labels = within(tabs())
       .getAllByRole('link')
       .map((link) => link.textContent);
-    expect(labels).toEqual(['Directory', 'Feed', 'My Profile']);
-    expect(labels).toEqual(
+    expect(labels).toEqual(['Directory', 'Feed', 'Account']);
+    expect(labels.slice(0, -1)).toEqual(
       within(mainNav())
         .getAllByRole('link')
         .map((link) => link.textContent),
@@ -425,7 +425,7 @@ describe('Bottom tab bar (phone)', () => {
       '/directory',
     );
     expect(within(tabs()).getByRole('link', { name: 'Feed' })).toHaveAttribute('href', '/feed');
-    expect(within(tabs()).getByRole('link', { name: 'My Profile' })).toHaveAttribute('href', '/me');
+    expect(within(tabs()).getByRole('link', { name: 'Account' })).toHaveAttribute('href', '/me');
   });
 
   it('sits outside the header, after the page', async () => {
@@ -461,11 +461,11 @@ describe('Bottom tab bar (phone)', () => {
     );
   });
 
-  it('marks the My Profile tab current at /me, with its own decorative icon', async () => {
+  it('marks the Account tab current at /me, with its own decorative icon', async () => {
     renderNavAt('/me');
     await screen.findByRole('heading', { name: 'Me stub' });
 
-    const link = within(tabs()).getByRole('link', { name: 'My Profile' });
+    const link = within(tabs()).getByRole('link', { name: 'Account' });
     expect(link).toHaveAttribute('aria-current', 'page');
     expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(within(tabs()).getByRole('link', { name: 'Feed' })).not.toHaveAttribute('aria-current');
@@ -538,7 +538,7 @@ describe('Header auth area', () => {
     expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('offers View profile, My Profile and Log out to an alumni user (no Admin settings)', async () => {
+  it('offers View profile, Account settings and Log out to an alumni user (no Admin settings)', async () => {
     const user = userEvent.setup();
     await renderSignedIn();
 
@@ -547,7 +547,7 @@ describe('Header auth area', () => {
     const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
     expect(items.map((item) => item.textContent)).toEqual([
       'View profile',
-      'My Profile',
+      'Account settings',
       'Log out',
     ]);
   });
@@ -569,7 +569,7 @@ describe('Header auth area', () => {
     await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
 
     const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
-    expect(items.map((item) => item.textContent)).toEqual(['My Profile', 'Log out']);
+    expect(items.map((item) => item.textContent)).toEqual(['Account settings', 'Log out']);
   });
 
   it('View profile opens the public profile for the alumni id', async () => {
@@ -585,19 +585,23 @@ describe('Header auth area', () => {
     expect(getToken()).not.toBeNull();
   });
 
-  it('My Profile opens /me and marks it current in the nav', async () => {
+  it('Account settings opens /me and marks the Account tab current', async () => {
     const user = userEvent.setup();
     const { router } = renderNavAt('/other');
 
     await user.click(await screen.findByRole('button', { name: 'Account menu for Amina' }));
-    await user.click(await screen.findByRole('menuitem', { name: 'My Profile' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Account settings' }));
 
     expect(await screen.findByRole('heading', { name: 'Me stub' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/me');
-    expect(within(mainNav()).getByRole('link', { name: 'My Profile' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    expect(
+      within(screen.getByRole('navigation', { name: 'Main tabs' })).getByRole('link', {
+        name: 'Account',
+      }),
+    ).toHaveAttribute('aria-current', 'page');
+    for (const link of within(mainNav()).getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
   });
 
   it('closes the avatar menu on Escape and returns focus to the button', async () => {
@@ -645,7 +649,7 @@ describe('Header auth area', () => {
     expect(screen.queryByRole('banner')).not.toBeInTheDocument();
   });
 
-  it('reads "Account menu" and still offers My Profile and Log out while /me has failed', async () => {
+  it('reads "Account menu" and still offers Account settings and Log out while /me has failed', async () => {
     mockApi({ 'GET /me': fail(404) });
     setToken(makeToken());
     const user = userEvent.setup();
@@ -660,7 +664,7 @@ describe('Header auth area', () => {
       within(screen.getByRole('banner')).getByRole('button', { name: 'Account menu' }),
     );
     const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
-    expect(items.map((item) => item.textContent)).toEqual(['My Profile', 'Log out']);
+    expect(items.map((item) => item.textContent)).toEqual(['Account settings', 'Log out']);
     await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
 
     await waitFor(() => {
@@ -1017,18 +1021,18 @@ function meRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
   return createRoutes([{ element: <RequireAuth />, children: [{ ...ME_ROUTE, lazy }] }]);
 }
 
-describe('My Profile route', () => {
+describe('Account settings route', () => {
   beforeEach(() => {
     mockApi({ 'GET /me': ok(AMINA) });
   });
 
-  it('renders the My Profile page for a signed-in visit', async () => {
+  it('renders the Account settings page for a signed-in visit', async () => {
     setToken(makeToken());
     renderAt('/me');
 
     const main = screen.getByRole('main');
     expect(
-      await within(main).findByRole('heading', { level: 1, name: 'My Profile' }),
+      await within(main).findByRole('heading', { level: 1, name: 'Account settings' }),
     ).toBeInTheDocument();
   });
 
@@ -1047,7 +1051,7 @@ describe('My Profile route', () => {
       '/me',
       meRoutesWith(async () => {
         await chunk.opened;
-        return { Component: () => <h1>My Profile loaded</h1> };
+        return { Component: () => <h1>Account settings loaded</h1> };
       }),
     );
 
@@ -1063,6 +1067,8 @@ describe('My Profile route', () => {
       await chunk.opened;
     });
 
-    expect(await screen.findByRole('heading', { name: 'My Profile loaded' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Account settings loaded' }),
+    ).toBeInTheDocument();
   });
 });

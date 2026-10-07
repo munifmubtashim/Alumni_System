@@ -225,9 +225,11 @@ describe('/me through the real route (RequireAuth)', () => {
       me.release();
     });
     expect(await findForm()).toHaveValue('Sophia Martins');
-    expect(within(main).getByRole('heading', { level: 1, name: 'My Profile' })).toBeInTheDocument();
+    expect(
+      within(main).getByRole('heading', { level: 1, name: 'Account settings' }),
+    ).toBeInTheDocument();
     await waitFor(() => {
-      expect(document.title).toBe('My Profile · Alma');
+      expect(document.title).toBe('Account settings · Alma');
     });
   });
 
@@ -257,12 +259,12 @@ describe('MePage loading and error views', () => {
 
     const main = screen.getByRole('main');
     expect(
-      await within(main).findByRole('heading', { level: 1, name: 'My Profile' }),
+      await within(main).findByRole('heading', { level: 1, name: 'Account settings' }),
     ).toBeInTheDocument();
     expect(within(main).getByRole('status')).toHaveTextContent('Loading your profile…');
     expect(main.querySelector('[aria-busy="true"]')).not.toBeNull();
     await waitFor(() => {
-      expect(document.title).toBe('My Profile · Alma');
+      expect(document.title).toBe('Account settings · Alma');
     });
 
     act(() => {

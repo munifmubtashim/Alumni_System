@@ -18,9 +18,10 @@ const LOGIN_PATH = '/login';
  * Never blocks when the session is gone or the target is /login (ADV-002): a
  * 401 logout clears the token and then navigates, so `shouldBlock` reads the
  * token synchronously at navigation time, and `active` from a ref so the one
- * stable blocker function always sees the latest value. A
- * navigation that stays on the same path (e.g. the nav's own "My Profile"
- * link) is not blocked either: it does not leave the form.
+ * stable blocker function always sees the latest value. A navigation that
+ * stays on the same path (e.g. the phone tab bar's own "Account" tab, or the
+ * avatar menu's "Account settings") is not blocked either: it does not leave
+ * the form.
  */
 export function useLeaveGuard(active: boolean): Blocker {
   const activeRef = useRef(active);

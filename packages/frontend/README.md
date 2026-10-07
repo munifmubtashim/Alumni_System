@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed and My Profile (edit your own profile), on top of the design system.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed and Account settings (edit your own profile), on top of the design system.
 
 ## Stack
 
@@ -62,7 +62,7 @@ packages/frontend/
                       router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), relativeTime.ts
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
                       directory/, profile/, feed/ and me/ (lazy-loaded directory, alumni profile,
-                      post feed and My Profile pages)
+                      post feed and Account settings pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
                       Textarea, Card, Tag, Alert, Menu, SegmentedControl, Switch, ThemeToggle,
                       Avatar, Chip, Skeleton, SearchField, Popover, Toast
@@ -114,12 +114,12 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 
 REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
 
-- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) and My Profile at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
+- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) and Account settings at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1.
 - **Mentor tag:** a card closes with a "Mentor" tag when the alumnus has `mentorship_available` on (REQ-011). The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
-- **Header:** after S1. `MainNav` (desktop) shows the Directory, Feed and My Profile links (`NAV_ITEMS`) to signed-in users only, each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, My Profile, Log out) sit on the right.
+- **Header:** after S1. `MainNav` (desktop) shows the Directory and Feed links (`HEADER_NAV_ITEMS`) to signed-in users only, each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`, `TAB_NAV_ITEMS`) replaces it and adds an Account tab for `/me`. The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, Account settings, Log out) sit on the right. Unlike S1, `/me` is not in the header nav (REQ-012; see `src/app/README.md`).
 
 ## Profile page
 
@@ -140,9 +140,9 @@ REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on p
 - **Author link:** the name links to `/alumni/<author_alumni_id>` (the alumni id, not the user id) and is plain text when the author has no alumni profile.
 - More: `src/features/feed/README.md`.
 
-## My Profile
+## Account settings
 
-REQ-010. `/me` (signed in; the header's "My Profile" link, the My Profile tab on phones and the avatar menu) lets the signed-in user edit their own details and change their password, after the S5 designs.
+REQ-010, renamed from My Profile in REQ-012. `/me` (signed in; the avatar menu's "Account settings", the Home card and, on phones, the Account tab) lets the signed-in user edit their own details and change their password, after the S5 designs.
 
 - **Saving:** one Save sends `PUT /api/me` when a profile field changed, then `PUT /api/me/password` when a password was typed. A save bar shows while there are unsaved changes, a prompt asks before leaving with them, and a toast confirms a save. Not optimistic.
 - **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (hidden below 48rem, value kept) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).
@@ -157,7 +157,7 @@ ADR-04: no form library for now.
 - On submit with errors: show them per field (`Input error`) and focus the first invalid field. Otherwise call the `useMutation`. The submit button gets `loading` (disabled, `aria-busy`), so it can't be pressed twice.
 - Server errors go through a pure mapper (`features/auth/authErrors.ts`): login 401 → form Alert "Email or password is incorrect"; sign-up 409 → email field error with a "Log in instead" link; 400 → its message; network or 5xx → "Couldn't reach the server, try again".
 - Fields hidden by the role switch keep their values but are not validated or sent (`toRegisterInput`).
-- **Revisit** when a form needs dynamic field arrays, or when the field rules move into `@alumni/shared`. My Profile (up to 12 fields, REQ-010; 17 controls since REQ-011) reached the old 8-field mark and stayed with controlled state (ADR-04).
+- **Revisit** when a form needs dynamic field arrays, or when the field rules move into `@alumni/shared`. Account settings (up to 12 fields, REQ-010; 17 controls since REQ-011) reached the old 8-field mark and stayed with controlled state (ADR-04).
 
 ## Primitives added in REQ-002
 

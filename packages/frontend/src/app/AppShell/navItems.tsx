@@ -12,12 +12,22 @@ export interface NavItem {
 }
 
 /**
- * The app's sections, shared by the header nav (desktop) and the bottom tab
- * bar (phone), in S1's order. Only pages that exist are listed: add Admin
- * here when its page is built (S1 shows all four).
+ * The header nav (desktop), in S1's order. Only pages that exist are listed:
+ * add Admin here when its page is built (S1 shows all four). Account settings
+ * (/me) is deliberately left out: on desktop it is reached from the avatar
+ * menu and the Home card (REQ-012, a deviation from S1, which draws it here).
  */
-export const NAV_ITEMS: readonly NavItem[] = [
+export const HEADER_NAV_ITEMS: readonly NavItem[] = [
   { to: DIRECTORY_PATH, label: 'Directory', icon: <GridIcon /> },
   { to: FEED_PATH, label: 'Feed', icon: <ChatBubbleIcon /> },
-  { to: ME_PATH, label: 'My Profile', icon: <PersonIcon /> },
+];
+
+/**
+ * The bottom tab bar (phone): the header's pages plus Account (/me), since a
+ * phone has no other one-tap way there. "Account settings" is too long for a
+ * tab, so the tab reads "Account" (S1's phone bar draws "Profile").
+ */
+export const TAB_NAV_ITEMS: readonly NavItem[] = [
+  ...HEADER_NAV_ITEMS,
+  { to: ME_PATH, label: 'Account', icon: <PersonIcon /> },
 ];

@@ -28,7 +28,7 @@ const QUICK_LINKS: readonly QuickLink[] = [
   },
   {
     to: ME_PATH,
-    title: 'My Profile',
+    title: 'Account settings',
     description: 'Keep your details current so classmates can find you',
   },
 ];

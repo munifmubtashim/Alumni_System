@@ -2,7 +2,7 @@ import { NavLink } from 'react-router';
 import { cx } from '@/components/ui/cx';
 import { useHasSession } from '@/features/auth';
 import styles from './MainNav.module.css';
-import { NAV_ITEMS } from './navItems';
+import { HEADER_NAV_ITEMS } from './navItems';
 
 /**
  * The header's main nav (docs/design/screens/app/S1-Desktop-*), shown only to
@@ -16,7 +16,7 @@ export function MainNav() {
 
   return (
     <nav aria-label="Main" className={styles.nav}>
-      {NAV_ITEMS.map((item) => (
+      {HEADER_NAV_ITEMS.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}

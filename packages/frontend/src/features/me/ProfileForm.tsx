@@ -43,7 +43,7 @@ export const TOAST_DISMISS_LABEL = 'Dismiss';
 /** S5-UnsavedToast's caption under the cards, after a save, while nothing is unsaved. */
 export const ALL_SAVED_TEXT = 'All sections saved — no unsaved changes.';
 /** Added to the form-level message when the field in error is hidden at this width. */
-export const HIDDEN_FIELD_HINT = 'Open My Profile on a wider screen to change it.';
+export const HIDDEN_FIELD_HINT = 'Open Account settings on a wider screen to change it.';
 /**
  * The year order message on Graduation year when Start year is hidden at this
  * width: it names a field the user cannot see, so it gets the same hint.

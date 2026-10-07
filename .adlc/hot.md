@@ -2,6 +2,11 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] ship-gate-cleared | REQ-012-account-settings-nav-labels
+## [2026-10-07] lesson | L-REQ-012-1..2 — sibling-branch constants, record design deviations
+## [2026-10-07] req-ready-to-merge | REQ-012-account-settings-nav-labels | My Profile → Account settings; /me out of header nav; tab "Account"
+## [2026-10-07] task-plan-cleared | REQ-012-account-settings-nav-labels
+## [2026-10-07] work-path-set | REQ-012-account-settings-nav-labels | branch (cut from redesign) at /Users/munifmubtashim/Alumni_System
 ## [2026-10-07] ship-gate-cleared | REQ-011-profile-headline-location-mentorship
 ## [2026-10-07] req-ready-to-merge | REQ-011-profile-headline-location-mentorship | alumni headline, location, degree, start year, mentorship
 ## [2026-10-07] lesson | L-REQ-011-1..3 — split validators, css-hidden fields, full-replace boolean
