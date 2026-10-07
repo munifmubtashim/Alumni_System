@@ -20,6 +20,7 @@ Add a lazy `/feed` page (design S4) with a composer, post cards, expandable comm
 | `packages/backend/src/businessLogic/src/CommentManager.ts` | `updateComment` (owner-or-admin, content only) | medium |
 | `packages/backend/src/businessLogic/src/CommentManager.test.ts` (new) | manager tests | low |
 | `packages/backend/src/dal/query/CommentQuery.ts` | `updateComment` SQL, sets `updated_at` | medium |
+| `packages/backend/src/dal/query/CommentQuery.ts`, `PostQuery.ts` (+ tests), `packages/shared/src/types/post.types.ts`, `comment.types.ts` | return `author_alumni_id` (LEFT JOIN alumni, null for students) so the author link can point at `/alumni/:alumniId` (TASK-009; added after implementation found `/alumni/:id` takes the alumni id, not the user id) | low |
 | `packages/backend/src/dal/query/PostQuery.ts` (+ test) | `getAllPosts` order gets `posts.id DESC` tie-break so offset paging is stable (ADV-004) | low |
 | `packages/backend/src/api/routes/routes.test.ts`, `routeGuard.test.ts` | new route must answer 401 without a token | low |
 | `packages/shared/src/types/comment.types.ts` | `UpdateCommentInput` | low |
@@ -42,7 +43,7 @@ Add a lazy `/feed` page (design S4) with a composer, post cards, expandable comm
 
 **Permissions.** `permissions.ts`: `canModify(me, authorId) = me.user_id === authorId || me.role === 'admin'`. This only decides what to show; the API stays the judge and a 403 shows the error text. Matches REQ-003: posts and comments are owner-or-admin for both edit and delete.
 
-**UI.** `FeedPage` (`h1 Feed`, `Composer`, list, states), `PostCard` (author `Avatar` + name as `Link` to `/alumni/:user_id`, `<time>`, text, `Menu` with Edit / Delete, count toggle button "N comments" / "Hide comments"), `CommentThread` (comments, one-level replies indented, "Reply" sets the parent, reply box as a pill input), inline edit (textarea with Save / Cancel) for posts and comments, `FeedStates` (skeletons, "No posts yet" empty state per S4-EmptyFeed, error with Retry, load-more). Every colour, space and type value is a token; layout sizes (640px column, avatar sizes via existing `Avatar` sizes) stay literal as per conventions. Composer placeholder follows S4 ("What's on your mind, <first name>?" on desktop, shorter on phone via the same text for both is acceptable; any difference is listed in the final comparison). Delete is removed at once and put back on failure; whether a post with comments asks first is Open question 1.
+**UI.** `FeedPage` (`h1 Feed`, `Composer`, list, states), `PostCard` (author `Avatar` + name as `Link` to `/alumni/:author_alumni_id` (plain text when it is null, e.g. a student), `<time>`, text, `Menu` with Edit / Delete, count toggle button "N comments" / "Hide comments"), `CommentThread` (comments, one-level replies indented, "Reply" sets the parent, reply box as a pill input), inline edit (textarea with Save / Cancel) for posts and comments, `FeedStates` (skeletons, "No posts yet" empty state per S4-EmptyFeed, error with Retry, load-more). Every colour, space and type value is a token; layout sizes (640px column, avatar sizes via existing `Avatar` sizes) stay literal as per conventions. Composer placeholder follows S4 ("What's on your mind, <first name>?" on desktop, shorter on phone via the same text for both is acceptable; any difference is listed in the final comparison). Delete is removed at once and put back on failure; whether a post with comments asks first is Open question 1.
 
 **Routing and nav.** `FEED_ROUTE` in `router.tsx` built exactly like `PROFILE_ROUTE` (lazy import by file path, `HydrateFallback` on the route object, no `index.ts`); add `feed` to `LAZY_FEATURES` and the ESLint ban. `NAV_ITEMS` gets `{ to: FEED_PATH, label: 'Feed', icon }`; desktop `MainNav` and phone `BottomTabs` both read it. Home gets a "Catch up on the feed" card.
 
@@ -61,7 +62,7 @@ flowchart LR
 
 ## Task DAG
 
-T1, T2 → T3 → T4 → T5 → T6, T7 → T8 (T3 needs T1 only for the contract it calls; T2 and T1 are independent.)
+T1, T2 → T3, T9 → T4 → T5 → T6, T7 → T8 (T9 added during implement: author_alumni_id) (T3 needs T1 only for the contract it calls; T2 and T1 are independent.)
 
 | Task | Tier | Depends |
 |---|---|---|
@@ -72,6 +73,7 @@ T1, T2 → T3 → T4 → T5 → T6, T7 → T8 (T3 needs T1 only for the contract
 | TASK-005 feed UI | 3 | 002, 004 |
 | TASK-006 route, nav, tab, Home card, lazy checks | 4 | 005 |
 | TASK-007 docs | 4 | 005 |
+| TASK-009 author_alumni_id on posts and comments (added during implement) | 2 | 001 |
 | TASK-008 S4 comparison and fixes | 5 | 006, 007 |
 
 ## Test strategy
@@ -101,6 +103,10 @@ Layers kept (route → controller → manager → query; no HTTP mapping in mana
 | ADV-007 odd data and states | Fixed in TASK-004/005: client trims posts, blank disables Post, client caps post text at 2000 (API has no cap; not changed), `white-space: pre-wrap` + `overflow-wrap: anywhere`, a 404 on a thread shows "This post is no longer available" and refetches the feed; `['me']` is guaranteed loaded by `RequireAuth` |
 | ADV-008 admin edit looks like the author wrote it | Accepted: REQ-003 lets admins edit; the card shows an "edited" mark when `updated_at` is later than `created_at` (more than 1 s) (TASK-005) |
 | ADV-009 restore after a 401 resurrects old data | Fixed: skip rollback when no live token remains (ADR-09, TASK-004) |
+
+## Correction found during implement
+
+The plan said authors link to `/alumni/:user_id`. Wrong: `GET /api/alumni/:id` matches `alumni.id`. Fix is TASK-009 (additive field, user-approved). The adversary and I both missed it; lesson candidate recorded.
 
 ## Risks
 

@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-009 |
 | Tier | 5 |
-| Status | pending |
+| Status | complete |
 | Repo | alumni-system |
 | Depends on | TASK-006, TASK-007 |
 | Blocks | — |
@@ -40,3 +40,6 @@ If the design .dc.html files need `support.js` to render and it is missing, say 
 
 - Architecture: [[specs/2026-10/m/REQ-009-post-feed-page/architecture]]
 - Lessons checked: [[knowledge/lessons/LESSON-REQ-008-6-copying-between-lazy-features-needs-a-home]], G26, G28, G29, G30
+
+
+Done 2026-10-07: 10 screenshots + `ui-evidence/s4-comparison.md`. One difference fixed (phone placeholder), D3 (field fill token) needs a decision. Phone width was checked in 390px iframes because the window would not resize. The empty state was shown by paging past the end in the browser; no data changed.

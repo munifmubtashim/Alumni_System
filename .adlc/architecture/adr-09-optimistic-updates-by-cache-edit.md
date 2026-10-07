@@ -33,5 +33,5 @@ Cancel in-flight reads of the exact key, write the expected result (a temporary 
 ## Consequences
 
 - New write features follow the same three-step shape and the same test style (edit function, then hook behaviour on failure).
-- A 401 during a mutation is handled by SessionBridge as before (ADR-03); the rollback runs but the user is on `/login`.
+- A 401 during a mutation is handled by SessionBridge as before (ADR-03). The rollback is skipped once no live token remains, so the next user never sees the old feed or pending rows.
 - Fixes a gap in ADR-02: optimistic writes are allowed, but only by this route.

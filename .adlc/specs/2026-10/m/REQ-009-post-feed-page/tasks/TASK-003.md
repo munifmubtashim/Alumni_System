@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-009 |
 | Tier | 1 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-001 |
 | Blocks | TASK-004 |
@@ -29,12 +29,14 @@ All post and comment endpoints are callable through one typed service module.
 
 ## Acceptance
 
-- [ ] Test per function: method, URL, params/body, error passes through (fake adapter, G26)
-- [ ] Service import boundaries lint clean
+- [x] Test per function: method, URL, params/body, error passes through (fake adapter, G26)
+- [x] Service import boundaries lint clean
 
 ## Notes
 
 `deletePost`/`deleteComment` answer 200 with a message body; ignore it.
+
+Implementation (2026-10-07): `postsApi.ts` defines `ListPostsParams` and `PostInput` locally (no post input type exists in `@alumni/shared`; editing shared was out of scope). Tests are table-driven: one case list checks method, URL, body and return per function, and the same list (plus `listPosts`) checks a 403 rejects with the AxiosError. G26 asks not to copy the adapter helpers into another test file; with `src/test/` outside this task's files, the two helpers are repeated here once more. The shared helper stays the open follow-up QUAL-002.
 
 ## Related
 

@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-009 |
 | Tier | 2 |
-| Status | pending |
+| Status | complete |
 | Repo | alumni-system |
 | Depends on | TASK-003 |
 | Blocks | TASK-005 |
@@ -32,13 +32,23 @@ Server state and optimistic writes for the feed work and are tested without any 
 
 ## Acceptance
 
-- [ ] `cacheEdits` tests cover every function without mutating input
-- [ ] Hook tests: success path, failure rolls back, count correct after rollback
-- [ ] `permissions` tests: owner, admin, other, student
+- [x] `cacheEdits` tests cover every function without mutating input
+- [x] Hook tests: success path, failure rolls back, count correct after rollback
+- [x] `permissions` tests: owner, admin, other, student
 
 ## Notes
 
 No UI in this task. No `index.ts` in `features/feed` (ADR-08).
+
+Done 2026-10-07. typecheck, lint, format:check, `npm test` (70 files, 957 tests) all pass.
+
+- **Hook API (for TASK-005):** `usePosts()` (`data` = flat deduped `FeedPost[]`, plus `hasNextPage`/`fetchNextPage`), `useComments(postId, enabled)`, `useCreatePost()` `{caption}`, `useUpdatePost()` `{id, caption}`, `useDeletePost()` `{id}`, `useCreateComment(postId)` `{content, parent_id?}`, `useUpdateComment(postId)` `{id, content}`, `useDeleteComment(postId)` `{id}`. Each mutation adds `errorMessage: string | null`. Pending items have a negative `id` and a `clientKey` (use as React key). `canModify(me, authorId)`.
+- **Pages keep `fetched`** (server length) so offset = previous offset + `fetched`, and "more" = `fetched === 20`, whatever the cache edits did.
+- **Mutation keys:** posts `['feed','posts',action]`, comments `['feed','comments',postId,action]`. Posts refetch only when `isMutating(['feed']) === 1` (comment create/delete change the count too); a thread refetches when `isMutating(['feed','comments',postId]) === 1`. Invalidate and edits use exact keys.
+- **Comment delete** removes replies too and drops the count by that many; rollback adds back only what the 0 clamp really took off.
+- **Post create/update** trim the caption; the API's bare row is merged over the temp post, so author fields stay. Delete success also removes that post's thread cache.
+- **Deviation:** added `feedErrors.ts` (+ test), not in the file list: `feedErrorMessage(error)`, the API's 4xx message as is, "Couldn't reach the server" for 5xx/no response. Reuses the auth message constants. Inside `features/feed`, so within the architecture's blast radius.
+- **Follow-up:** the hook test builds its own JWT (8th copy, G26 / QUAL-002 shared helper still open). ADR-09's Consequences line says "the rollback runs" after a 401, while its Decision says it is skipped; the code follows the Decision. Fix the ADR wording at wrapup.
 
 ## Related
 

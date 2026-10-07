@@ -37,6 +37,11 @@ Things the feed and its nav need from shared layers exist before the feature is 
 
 Do not add feed code here.
 
+Implementation (2026-10-07):
+- `relativeTime.ts` and its test moved with plain `mv`, byte-identical. Only `PostCard.tsx` imported it; `RecentPosts.tsx` never did, so it is unchanged. `features/profile/README.md` had a line naming the old file; updated (one line, not in the file table).
+- `MenuItem` sets `data-tone` always (same pattern as `Alert`). Danger text is `--error`. Measured: `--error` on `--accent-soft` (the normal highlight) is 4.48:1 light and 4.25:1 dark, under 4.5, so the highlighted or focused danger item uses `--surface-sunken` (`error` on `surface-sunken` is already a passing row in `styles/contrast.test.ts`; no new row needed).
+- Gates: typecheck, lint, format:check clean; `npm test` 64 files, 889 tests pass.
+
 ## Related
 
 - Architecture: [[specs/2026-10/m/REQ-009-post-feed-page/architecture]]

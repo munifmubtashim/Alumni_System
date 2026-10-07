@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-009 |
 | Tier | 4 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | TASK-005 |
 | Blocks | TASK-008 |
@@ -27,7 +27,7 @@ Repo docs describe the feed and the new comment-edit endpoint.
 
 ## Acceptance
 
-- [ ] No stale statement about 'only Directory in nav', 'two lazy pages', or 'no comment edit'
+- [x] No stale statement about 'only Directory in nav', 'two lazy pages', or 'no comment edit'
 
 ## Notes
 
