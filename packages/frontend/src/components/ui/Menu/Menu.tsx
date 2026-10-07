@@ -42,12 +42,20 @@ export interface MenuItemProps {
   /** Called when the item is picked by click, Enter or Space. The menu then closes. */
   onSelect: () => void;
   disabled?: boolean;
+  /** `danger` colours the item with the error token, for destructive actions such as "Delete post". */
+  tone?: 'default' | 'danger';
 }
 
-export function MenuItem({ children, onSelect, disabled = false }: MenuItemProps) {
+export function MenuItem({
+  children,
+  onSelect,
+  disabled = false,
+  tone = 'default',
+}: MenuItemProps) {
   return (
     <BaseMenu.Item
       className={styles.item}
+      data-tone={tone}
       disabled={disabled}
       onClick={() => {
         onSelect();
