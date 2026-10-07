@@ -250,10 +250,10 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
   });
 });
 
-// ADR-08: each lazy feature (directory, profile, feed, me) is reached only through the
+// ADR-08: each lazy feature (directory, profile, feed, me, about) is reached only through the
 // router's lazy import(). This ban is the typescript-eslint copy of the rule,
 // so it has its own rule id.
-describe('ESLint lazy-feature boundary (features/directory, profile, feed, me)', () => {
+describe('ESLint lazy-feature boundary (features/directory, profile, feed, me, about)', () => {
   const LAZY_RULE = '@typescript-eslint/no-restricted-imports';
 
   it.each([
@@ -286,6 +286,12 @@ describe('ESLint lazy-feature boundary (features/directory, profile, feed, me)',
     ['src/features/profile', "import { x } from '@/features/me/fields';"],
     ['src/features/me', "import { x } from '../feed/feedFormat';"],
     ['src/features/me/__fixture__', "import { x } from '../../profile';"],
+    ['src/app/__fixture__', "import { AboutPage } from '@/features/about/AboutPage';"],
+    ['src/app/__fixture__', "import { x } from '../../features/about';"],
+    ['src/features/auth', "import { x } from '../about/AboutPage';"],
+    ['src/features/about', "import { x } from '../feed/feedFormat';"],
+    ['src/features/about/__fixture__', "import { x } from '../../me';"],
+    ['src/features/feed', "import { x } from '@/features/about/AboutPage';"],
   ])('rejects a static import in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', dir);
     expect(ruleIds(messages)).toContain(LAZY_RULE);
@@ -310,6 +316,8 @@ describe('ESLint lazy-feature boundary (features/directory, profile, feed, me)',
     ['src/features/me', "import { useCurrentUser } from '@/features/auth';"],
     ['src/app/__fixture__', "import { x } from '@/features/media';"],
     ['src/app/__fixture__', "export const page = () => import('@/features/me/MePage');"],
+    ['src/features/about', "import { x } from './AboutPage';"],
+    ['src/app/__fixture__', "export const page = () => import('@/features/about/AboutPage');"],
   ])('allows in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Ok.ts', dir);
     expect(ruleIds(messages)).not.toContain(LAZY_RULE);

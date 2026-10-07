@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Logo } from '@/components/ui/Logo';
+import { ABOUT_PATH } from '@/config/aboutPath';
 import { BRAND_NAME } from '@/config/brand';
 import styles from './AuthLayout.module.css';
 
@@ -80,6 +81,11 @@ export function AuthLayout({
             </p>
           </div>
           {children}
+          <p className={styles.about}>
+            <Link to={ABOUT_PATH} className={styles.aboutLink}>
+              About {BRAND_NAME}
+            </Link>
+          </p>
         </section>
       </div>
     </div>

@@ -1,0 +1,65 @@
+/* Footer after docs/design/screens/app/S7-*: a hairline, then © and the links
+   in a column up to 900px (56.25rem). Phones stack and centre them. The ©
+   uses ink-secondary rather than S7's muted grey: ink-muted on the page
+   background is under 4.5:1 (G33). */
+
+.footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  max-width: 56.25rem;
+  margin-inline: auto;
+}
+
+.copyright {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+}
+
+.links {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.link {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.link:hover {
+  color: var(--ink-primary);
+  text-decoration: underline;
+}
+
+@media (width >= 48rem) {
+  .footer {
+    padding: calc(var(--space-5) + var(--space-1)) var(--space-6);
+  }
+
+  .inner {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .copyright,
+  .link {
+    font-size: var(--text-label-size);
+    line-height: var(--text-label-line);
+  }
+
+  .links {
+    gap: calc(var(--space-4) + var(--space-1));
+  }
+}
