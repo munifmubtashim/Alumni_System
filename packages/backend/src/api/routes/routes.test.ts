@@ -316,6 +316,7 @@ describe('owner-or-admin routes pass the manager’s decision through', () => {
     ['PUT /api/alumni/1', { method: 'put', path: '/api/alumni/1' }, () => vi.mocked(AlumniManager.prototype.updateOwnAlumni)],
     ['PUT /api/posts/1', { method: 'put', path: '/api/posts/1' }, () => vi.mocked(PostManager.prototype.updatePost)],
     ['DELETE /api/posts/1', { method: 'delete', path: '/api/posts/1' }, () => vi.mocked(PostManager.prototype.deletePost)],
+    ['PUT /api/comments/1', { method: 'put', path: '/api/comments/1' }, () => vi.mocked(CommentManager.prototype.updateComment)],
     ['DELETE /api/comments/1', { method: 'delete', path: '/api/comments/1' }, () => vi.mocked(CommentManager.prototype.deleteComment)],
   ];
 
@@ -334,6 +335,20 @@ describe('owner-or-admin routes pass the manager’s decision through', () => {
       manager().mockRejectedValue(new AppError(404, 'Not found'));
       expect((await call(route, tokenFor(STUDENT))).status).toBe(404);
     });
+  });
+
+  it('PUT /api/comments/:id hands the manager the token’s id and role, the raw id and the body', async () => {
+    vi.mocked(CommentManager.prototype.updateComment).mockResolvedValue({ id: 5, content: 'x' } as never);
+
+    const res = await call({ method: 'put', path: '/api/comments/5' }, tokenFor(ADMIN), { content: 'x', user_id: 99 });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ id: 5, content: 'x' });
+    expect(CommentManager.prototype.updateComment).toHaveBeenCalledWith(
+      { id: ADMIN.sub, role: 'admin' },
+      '5',
+      { content: 'x', user_id: 99 },
+    );
   });
 
   it('AC7: PUT/DELETE /api/posts/:id hand the manager the token’s id and role', async () => {

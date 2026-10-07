@@ -1,8 +1,11 @@
 import pool from "../config/db.js";
 import { CommentDTO } from "../dto/CommentDTO.js";
 
-// Comment row + public author fields (never the password).
-const COMMENT_COLUMNS = `c.*, u.name AS author_name, u.photo_url AS author_photo`;
+// Comment row + public author fields (never the password). author_alumni_id is the
+// author's alumni.id for the /alumni/:id link, null without an alumni row; a scalar
+// subquery (lowest id, as findAlumniByUserId) so rows are never duplicated.
+const COMMENT_COLUMNS = `c.*, u.name AS author_name, u.photo_url AS author_photo,
+         (SELECT MIN(a.id) FROM alumni a WHERE a.user_id = c.user_id) AS author_alumni_id`;
 
 export class CommentQuery {
     constructor() {
@@ -22,6 +25,20 @@ export class CommentQuery {
 
     public async findCommentById(id: number): Promise<CommentDTO | undefined> {
         const info = await pool.query('SELECT * FROM comments WHERE id = $1', [id]);
+        return info.rows[0];
+    }
+
+    // Changes only the text and updated_at; user_id, post_id and parent_id never change.
+    // One statement, so a comment deleted since the caller's lookup gives no row (undefined),
+    // never an empty body. The result has the same author fields as the list rows.
+    public async updateComment(id: number, content: string): Promise<CommentDTO | undefined> {
+        const info = await pool.query(
+            `WITH c AS (
+                UPDATE comments SET content = $1, updated_at = NOW() WHERE id = $2 RETURNING *
+             )
+             SELECT ${COMMENT_COLUMNS} FROM c JOIN users u ON u.id = c.user_id`,
+            [content, id]
+        );
         return info.rows[0];
     }
 

@@ -26,6 +26,47 @@ describe('PostQuery', () => {
     await expect(new PostQuery().findPostById(999)).resolves.toBeUndefined();
   });
 
+  it('getAllPosts orders newest first with an id tie-break, so offset paging is stable', async () => {
+    poolQuery.mockResolvedValue({ rows: [] });
+
+    await new PostQuery().getAllPosts(20, 40);
+
+    const [sql, params] = poolQuery.mock.calls[0]!;
+    expect(sql).toMatch(/ORDER BY posts\.created_at DESC, posts\.id DESC\s+LIMIT \$1 OFFSET \$2/);
+    expect(params).toEqual([20, 40]);
+  });
+
+  // author_alumni_id: the author's alumni.id for the /alumni/:id link. A scalar subquery
+  // (lowest id, as findAlumniByUserId) gives null for a user with no alumni row and can
+  // never duplicate a post when a user has two alumni rows (a JOIN could).
+  const ALUMNI_ID_SUBQUERY =
+    /\(SELECT MIN\(a\.id\) FROM alumni a WHERE a\.user_id = posts\.user_id\) AS author_alumni_id/;
+
+  it('getAllPosts returns author_alumni_id through a scalar subquery, not a join on alumni', async () => {
+    const rows = [
+      { id: 2, user_id: 7, author_alumni_id: 3 },
+      { id: 1, user_id: 8, author_alumni_id: null },
+    ];
+    poolQuery.mockResolvedValue({ rows });
+
+    await expect(new PostQuery().getAllPosts(20, 0)).resolves.toEqual(rows);
+
+    const [sql] = poolQuery.mock.calls[0]!;
+    expect(sql).toMatch(ALUMNI_ID_SUBQUERY);
+    expect(sql).not.toMatch(/JOIN alumni/i);
+  });
+
+  it('getPostsByUserId returns author_alumni_id the same way', async () => {
+    poolQuery.mockResolvedValue({ rows: [] });
+
+    await new PostQuery().getPostsByUserId(7);
+
+    const [sql, params] = poolQuery.mock.calls[0]!;
+    expect(sql).toMatch(ALUMNI_ID_SUBQUERY);
+    expect(sql).not.toMatch(/JOIN alumni/i);
+    expect(params).toEqual([7]);
+  });
+
   describe('updatePost', () => {
     it('sets both fields, then updated_at, and never user_id', async () => {
       poolQuery.mockResolvedValue({ rows: [{ id: 42 }] });

@@ -5,6 +5,12 @@ import { PostDTO } from "../dto/PostDTO.js";
 const POST_PATCH_COLUMNS = ["caption", "media_url"] as const;
 export type PostPatch = { caption?: string | null; media_url?: string | null };
 
+// Post row + public author fields. author_alumni_id is the author's alumni.id (the id
+// /alumni/:id takes), null for a user with no alumni row. A scalar subquery picking the
+// lowest id (as findAlumniByUserId does), so a second alumni row never duplicates a post.
+const POST_COLUMNS = `posts.*, users.name AS author_name, users.photo_url AS author_photo,
+         (SELECT MIN(a.id) FROM alumni a WHERE a.user_id = posts.user_id) AS author_alumni_id`;
+
 export class PostQuery {
     constructor() {
     }
@@ -21,12 +27,13 @@ export class PostQuery {
         return info.rows[0];
     }
 
+// The id tie-break keeps offset paging stable when posts share a created_at.
 public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDTO[]> {
     const info = await pool.query(
-        `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+        `SELECT ${POST_COLUMNS}
          FROM posts
          JOIN users ON posts.user_id = users.id
-         ORDER BY posts.created_at DESC
+         ORDER BY posts.created_at DESC, posts.id DESC
          LIMIT $1 OFFSET $2`,
         [limit, offset]
     );
@@ -35,7 +42,7 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
 
     public async getPostsByUserId(user_id: number): Promise<PostDTO[]> {
         const info = await pool.query(
-            `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+            `SELECT ${POST_COLUMNS}
              FROM posts
              JOIN users ON posts.user_id = users.id
              WHERE posts.user_id = $1
