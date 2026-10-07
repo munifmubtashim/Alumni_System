@@ -7,6 +7,15 @@ Append-only chronological log of significant events. One line per entry. Newest 
 ## [2026-10-07] req-ready-to-merge | REQ-012-account-settings-nav-labels | My Profile → Account settings; /me out of header nav; tab "Account"
 ## [2026-10-07] task-plan-cleared | REQ-012-account-settings-nav-labels
 ## [2026-10-07] work-path-set | REQ-012-account-settings-nav-labels | branch (cut from redesign) at /Users/munifmubtashim/Alumni_System
+## [2026-10-07] ship-gate-cleared | REQ-011-profile-headline-location-mentorship
+## [2026-10-07] req-ready-to-merge | REQ-011-profile-headline-location-mentorship | alumni headline, location, degree, start year, mentorship
+## [2026-10-07] lesson | L-REQ-011-1..3 — split validators, css-hidden fields, full-replace boolean
+## [2026-10-07] gotcha | G39 migrations, G40 frontend traps, G41 route tests (G32, G38 updated)
+## [2026-10-07] verify-gate-cleared | REQ-011-profile-headline-location-mentorship | findings: C0/M1/m3 open (2 rounds; 7 fixed)
+## [2026-10-07] implement-gate-cleared | REQ-011-profile-headline-location-mentorship
+## [2026-10-07] architect-gate-cleared | REQ-011-profile-headline-location-mentorship
+## [2026-10-07] work-path-set | REQ-011-profile-headline-location-mentorship | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-07] spec-gate-cleared | REQ-011-profile-headline-location-mentorship
 **Committed and shared.** Only ever add entries — never rewrite or reorder old ones. Git is configured (`merge=union` via `.adlc/.gitattributes`) so that when two branches both add entries, it keeps both instead of raising a conflict — the team keeps one shared history with no merge pain. Only ever *append*; never rewrite or reorder existing lines (that defeats the union merge).
 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.

@@ -44,9 +44,20 @@ describe('AlumniCard', () => {
     expect(screen.getByText('Design Lead, Terra Climate')).toBeInTheDocument();
   });
 
-  it('carries no Mentor tag', () => {
-    renderCard(amira);
+  it.each([
+    ['false', false],
+    ['missing', undefined],
+  ])('carries no Mentor tag when mentorship_available is %s', (_label, flag) => {
+    renderCard({ ...amira, mentorship_available: flag });
     expect(screen.queryByText(/mentor/i)).toBeNull();
+  });
+
+  it('shows a Mentor tag at the end of the card when mentorship_available is true', () => {
+    renderCard({ ...amira, mentorship_available: true });
+    expect(screen.getByText('Mentor')).toHaveAttribute('data-tone', 'accent');
+    expect(screen.getByRole('link')).toHaveAccessibleName(
+      'Amira Mendes Class of 2017 Product Design Design Lead, Terra Climate Mentor',
+    );
   });
 
   it.each([

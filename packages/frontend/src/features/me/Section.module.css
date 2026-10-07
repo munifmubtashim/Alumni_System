@@ -1,4 +1,4 @@
-/* Shared by the /me section cards (Personal, Education, Career, Password).
+/* Shared by the /me section cards (Personal, Education, Career, Mentorship, Password).
    Design: docs/design/screens/app/S5-Desktop-Light and S5-Phone-Light
    (.section-card, .row2). Card: surface-raised, border-subtle hairline,
    radius-lg (14px). Padding 16px phone (space-4), 22px from 48rem
@@ -34,6 +34,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3) calc(var(--space-3) + var(--space-1) / 2);
+}
+
+/* Desktop-only field (S5 phone has no Start year): out of the layout, the tab
+   order and the accessibility tree below 48rem; its value is kept. Only set
+   below the breakpoint, so the wrapper never sets display otherwise (G18).
+   ProfileForm.tsx's isHidden reads this display:none to put a hidden field's
+   error on the form; change both together (matchMedia if a second field). */
+@media (width < 48rem) {
+  .wideOnly {
+    display: none;
+  }
 }
 
 /* Qualified with the span and data-size so it outranks the Avatar's own size rule (G30). */

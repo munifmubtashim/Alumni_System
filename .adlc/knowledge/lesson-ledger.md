@@ -59,3 +59,6 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-010-5 | A new nav entry or menu item means grepping every README for the old entry list, not only the lazy-page counts | frontend, docs, navigation, vault | guideline | REQ-010 |
 | LESSON-REQ-012-1 | A spec that names a constant must be checked against the branch it will be built on: it may exist only on an unmerged sibling branch | frontend, process | guideline | REQ-012 |
 | LESSON-REQ-012-2 | Record a deliberate departure from a design screen on a vault page when it is made, so later design-compare reviews cite it instead of re-flagging it | frontend, docs | guideline | REQ-012 |
+| LESSON-REQ-011-1 | Build the student validator from a shared part, never by spreading the alumni validator and deleting keys | backend, validation, students | guideline | REQ-011 |
+| LESSON-REQ-011-2 | A form field hidden by a CSS breakpoint needs its errors routed, a reflow decision, its own class and a browser check | frontend, forms, responsive, a11y | trap | REQ-011 |
+| LESSON-REQ-011-3 | On a full-replace endpoint, a NOT NULL boolean must be sent every time: omitted means false | api, put, boolean, defaults | guideline | REQ-011 |

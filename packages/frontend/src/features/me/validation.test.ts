@@ -3,20 +3,25 @@ import { describe, expect, it } from 'vitest';
 import {
   BIO_MAX,
   COMPANY_MAX,
+  DEGREE_MAX,
   DEPARTMENT_MAX,
   EMPTY_PASSWORD_VALUES,
   EXPECTED_YEAR_SPAN,
   EXPERIENCE_MAX,
   GRADUATION_YEAR_SPAN,
+  HEADLINE_MAX,
   JOB_TITLE_MAX,
   LINKEDIN_URL_MAX,
+  LOCATION_MAX,
   NAME_MAX,
   PASSWORD_MAX_BYTES,
   PASSWORD_MIN_CHARS,
   PASSWORD_MISMATCH_MESSAGE,
   UNIVERSITY_MAX,
   YEAR_MIN,
+  YEAR_ORDER_MESSAGE,
   YEAR_TEXT_MAX,
+  hasMentorship,
   isDirty,
   planSave,
   profileFields,
@@ -45,15 +50,20 @@ const base: MyProfile = {
 
 const blank: ProfileValues = {
   name: '',
+  headline: '',
+  location: '',
   bio: '',
   university: '',
+  degree: '',
   department: '',
+  start_year: '',
   graduation_year: '',
   expected_graduation_year: '',
   job_title: '',
   current_company: '',
   linkedin_url: '',
   experience: '',
+  mentorship_available: false,
 };
 
 function values(patch: Partial<ProfileValues> = {}): ProfileValues {
@@ -84,6 +94,9 @@ describe('limits', () => {
     expect(BIO_MAX).toBe(2000);
     expect(EXPERIENCE_MAX).toBe(5000);
     expect(LINKEDIN_URL_MAX).toBe(255);
+    expect(HEADLINE_MAX).toBe(120);
+    expect(LOCATION_MAX).toBe(100);
+    expect(DEGREE_MAX).toBe(100);
     expect(YEAR_TEXT_MAX).toBe(10);
     expect(YEAR_MIN).toBe(1900);
     expect(GRADUATION_YEAR_SPAN).toBe(10);
@@ -116,9 +129,13 @@ describe('profileFields', () => {
   it('lists the shown fields per kind in form order', () => {
     expect(profileFields('alumni')).toEqual([
       'name',
+      'headline',
+      'location',
       'bio',
       'university',
+      'degree',
       'department',
+      'start_year',
       'graduation_year',
       'job_title',
       'current_company',
@@ -128,6 +145,17 @@ describe('profileFields', () => {
     expect(profileFields('student')).toContain('expected_graduation_year');
     expect(profileFields('student')).not.toContain('graduation_year');
     expect(profileFields('none')).toEqual(['name', 'university']);
+  });
+
+  it('gives headline, location, degree, start year and the switch to alumni only', () => {
+    for (const kind of ['student', 'none'] as const) {
+      expect(profileFields(kind)).not.toContain('headline');
+      expect(profileFields(kind)).not.toContain('location');
+      expect(profileFields(kind)).not.toContain('degree');
+      expect(profileFields(kind)).not.toContain('start_year');
+      expect(hasMentorship(kind)).toBe(false);
+    }
+    expect(hasMentorship('alumni')).toBe(true);
   });
 });
 
@@ -145,6 +173,27 @@ describe('toValues', () => {
       university: 'NSU',
       graduation_year: '2019',
     });
+  });
+
+  it('reads the new alumni fields, and the switch as on only when it is true', () => {
+    const profile = {
+      ...base,
+      headline: 'PM at Meridian',
+      location: null,
+      degree: 'B.A. Economics',
+      start_year: 2012,
+      mentorship_available: true,
+    } as unknown as MyProfile;
+    expect(toValues(profile)).toMatchObject({
+      headline: 'PM at Meridian',
+      location: '',
+      degree: 'B.A. Economics',
+      start_year: '2012',
+      mentorship_available: true,
+    });
+    expect(toValues(base).mentorship_available).toBe(false);
+    const odd = { ...base, mentorship_available: 'true' } as unknown as MyProfile;
+    expect(toValues(odd).mentorship_available).toBe(false);
   });
 });
 
@@ -250,6 +299,58 @@ describe('validateProfile', () => {
     ).toEqual({ linkedin_url: 'LinkedIn URL must be at most 255 characters' });
   });
 
+  it('caps headline at 120, location and degree at 100 (alumni)', () => {
+    expect(
+      validateProfile(
+        values({ headline: ` ${'a'.repeat(120)} `, location: 'a'.repeat(100), degree: 'B.Sc.' }),
+        'alumni',
+        NOW,
+      ),
+    ).toEqual({});
+    expect(
+      validateProfile(
+        values({
+          headline: 'a'.repeat(121),
+          location: 'a'.repeat(101),
+          degree: 'a'.repeat(101),
+        }),
+        'alumni',
+        NOW,
+      ),
+    ).toEqual({
+      headline: 'Headline must be at most 120 characters',
+      location: 'Location must be at most 100 characters',
+      degree: 'Degree must be at most 100 characters',
+    });
+  });
+
+  it('checks the start year like the graduation year', () => {
+    const err = { start_year: 'Start year is not valid' };
+    expect(validateProfile(values({ start_year: '1900' }), 'alumni', NOW)).toEqual({});
+    expect(validateProfile(values({ start_year: '2036' }), 'alumni', NOW)).toEqual({});
+    expect(validateProfile(values({ start_year: '1899' }), 'alumni', NOW)).toEqual(err);
+    expect(validateProfile(values({ start_year: '2037' }), 'alumni', NOW)).toEqual(err);
+    expect(validateProfile(values({ start_year: '12' }), 'alumni', NOW)).toEqual(err);
+    expect(validateProfile(values({ start_year: '12345678901' }), 'alumni', NOW)).toEqual({
+      start_year: 'Start year must be at most 10 characters',
+    });
+  });
+
+  it('puts a start year after the graduation year on the graduation year', () => {
+    expect(YEAR_ORDER_MESSAGE.startsWith('Graduation year ')).toBe(true);
+    const order = (start_year: string, graduation_year: string) =>
+      validateProfile(values({ start_year, graduation_year }), 'alumni', NOW);
+    expect(order('2017', '2016')).toEqual({ graduation_year: YEAR_ORDER_MESSAGE });
+    expect(order(' 2017 ', '2016')).toEqual({ graduation_year: YEAR_ORDER_MESSAGE });
+    expect(order('2016', '2016')).toEqual({});
+    expect(order('2012', '2016')).toEqual({});
+    // Only when both are set and valid; each year's own error wins.
+    expect(order('2017', '')).toEqual({});
+    expect(order('', '2016')).toEqual({});
+    expect(order('20x7', '2016')).toEqual({ start_year: 'Start year is not valid' });
+    expect(order('2017', '1899')).toEqual({ graduation_year: 'Graduation year is not valid' });
+  });
+
   it('rejects a NUL character in any text field', () => {
     expect(validateProfile(values({ name: 'A\u0000da', bio: 'x\u0000' }), 'alumni', NOW)).toEqual({
       name: 'Name contains an invalid character',
@@ -265,6 +366,13 @@ describe('validateProfile', () => {
     });
     expect(validateProfile(bad, 'none', NOW)).toEqual({});
     expect(Object.keys(validateProfile(bad, 'alumni', NOW))).toEqual(['bio', 'graduation_year']);
+    const alumniOnly = student({
+      headline: 'a'.repeat(121),
+      location: 'a'.repeat(101),
+      degree: 'a'.repeat(101),
+      start_year: 'nope',
+    });
+    expect(validateProfile(alumniOnly, 'student', NOW)).toEqual({});
   });
 
   it('returns errors in form order', () => {
@@ -354,6 +462,16 @@ describe('isDirty', () => {
 
   it('ignores fields the kind does not show', () => {
     expect(isDirty({ ...saved, bio: 'changed' }, saved, 'none', pw())).toBe(false);
+    expect(isDirty({ ...saved, headline: 'changed' }, saved, 'student', pw())).toBe(false);
+    expect(isDirty({ ...saved, mentorship_available: true }, saved, 'student', pw())).toBe(false);
+  });
+
+  it('counts the new alumni fields and the switch', () => {
+    expect(isDirty({ ...saved, headline: 'PM' }, saved, 'alumni', pw())).toBe(true);
+    expect(isDirty({ ...saved, start_year: '2012' }, saved, 'alumni', pw())).toBe(true);
+    expect(isDirty({ ...saved, mentorship_available: true }, saved, 'alumni', pw())).toBe(true);
+    const on = { ...saved, mentorship_available: true };
+    expect(isDirty(on, on, 'alumni', pw())).toBe(false);
   });
 });
 
@@ -434,20 +552,30 @@ describe('toUpdateInput', () => {
     current_company: 'Acme',
     linkedin_url: 'https://x.co',
     experience: 'Lots',
+    headline: ' PM at Meridian ',
+    location: 'Toronto ',
+    degree: '',
+    start_year: '2012',
+    mentorship_available: true,
   });
 
   it('sends every alumni field trimmed, plus the stored photo_url, never email', () => {
     const input = toUpdateInput(typed, 'alumni', 'https://example.com/a.png');
     expect(input).toEqual({
       name: 'Ada',
+      headline: 'PM at Meridian',
+      location: 'Toronto',
       bio: 'Hi',
       university: 'NSU',
+      degree: '',
       department: 'CSE',
+      start_year: '2012',
       graduation_year: '2019',
       job_title: '',
       current_company: 'Acme',
       linkedin_url: 'https://x.co',
       experience: 'Lots',
+      mentorship_available: true,
       photo_url: 'https://example.com/a.png',
     });
     expect(input).not.toHaveProperty('email');
@@ -459,6 +587,9 @@ describe('toUpdateInput', () => {
     expect(input.expected_graduation_year).toBe('2028');
     expect(input).not.toHaveProperty('graduation_year');
     expect(input.photo_url).toBe('https://example.com/a.png');
+    for (const key of ['headline', 'location', 'degree', 'start_year', 'mentorship_available']) {
+      expect(input).not.toHaveProperty(key);
+    }
   });
 
   it('sends only name, university and photo_url for an account with no profile row', () => {
@@ -467,6 +598,11 @@ describe('toUpdateInput', () => {
       university: 'NSU',
       photo_url: 'https://example.com/a.png',
     });
+  });
+
+  it('always sends the switch for alumni, off as false', () => {
+    const input = toUpdateInput({ ...typed, mentorship_available: false }, 'alumni', null);
+    expect(input.mentorship_available).toBe(false);
   });
 
   it('leaves photo_url out when none is stored', () => {

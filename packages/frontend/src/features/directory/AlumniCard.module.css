@@ -2,7 +2,9 @@
    card). Nearest tokens: padding space-4 on phone and space-5 from 48rem
    (design 16px / 20px), gap space-3 (12px / 10px). The design's divider is
    the details block's top border. Department shows on phone too (AC8), where
-   the phone design leaves it out. The hover border follows Button secondary. */
+   the phone design leaves it out. The hover border follows Button secondary.
+   The Mentor tag (accent Tag, REQ-011) closes the card, left-aligned, as on
+   S2 desktop; the phone design shows no tag, but it shows at every width. */
 
 .card {
   display: flex;
@@ -68,6 +70,11 @@ a.card:hover {
   margin: 0;
   font: var(--text-body-sm);
   overflow-wrap: anywhere;
+}
+
+/* A block line of its own, so the link's name reads "… Terra Climate Mentor" (G27). */
+.tags {
+  display: flex;
 }
 
 .skeletonName {

@@ -7,6 +7,9 @@ export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const NAME_MAX = 100;
 export const DEPARTMENT_MAX = 100;
 export const UNIVERSITY_MAX = 150;
+export const HEADLINE_MAX = 120;
+export const LOCATION_MAX = 100;
+export const DEGREE_MAX = 100;
 
 export function optionalText(value: unknown, field: string, max: number): string | undefined {
   if (value === undefined || value === null) return undefined;
@@ -16,6 +19,13 @@ export function optionalText(value: unknown, field: string, max: number): string
   const trimmed = value.trim();
   if (trimmed.length > max) throw new AppError(400, `${field} must be at most ${max} characters`);
   return trimmed || undefined;
+}
+
+// true or false only; omitted means false (full-replace save). null, "true", 1 and the like are 400.
+export function optionalBoolean(value: unknown, field: string): boolean {
+  if (value === undefined) return false;
+  if (typeof value !== "boolean") throw new AppError(400, `${field} must be true or false`);
+  return value;
 }
 
 export function requiredText(value: unknown, field: string, max: number): string {
@@ -80,28 +90,46 @@ export function requiredExpectedYear(value: unknown): string {
   return year;
 }
 
-// Student details: department + expected year are required; the alumni-style details are optional
-// (full replace: omitted ones are cleared). user_id/id are never accepted.
+// Student details: department + expected year are required; the shared details are optional
+// (full replace: omitted ones are cleared). Alumni-only fields in the body are ignored, never validated
+// or returned. user_id/id are never accepted.
 export function validateStudentFields(body: Record<string, unknown>): StudentEditableFields {
-  const { department: _department, graduation_year: _year, ...details } = validateAlumniFields(body);
   return {
-    ...details,
+    ...validateSharedDetails(body),
     department: requiredText(body.department, "Department", DEPARTMENT_MAX),
     expected_graduation_year: requiredExpectedYear(body.expected_graduation_year),
   };
 }
 
-// Editable alumni fields (full replace: omitted fields are cleared). user_id/id are never accepted.
-export function validateAlumniFields(body: Record<string, unknown>): AlumniEditableFields {
+type SharedDetails = Pick<AlumniEditableFields, "current_company" | "job_title" | "experience" | "bio" | "linkedin_url">;
+
+// Details alumni and students both have.
+function validateSharedDetails(body: Record<string, unknown>): SharedDetails {
   return {
-    department: optionalText(body.department, "Department", DEPARTMENT_MAX),
-    graduation_year: optionalYear(body.graduation_year, "Graduation year"),
     current_company: optionalText(body.current_company, "Company", 100),
     job_title: optionalText(body.job_title, "Job title", 100),
     experience: optionalText(body.experience, "Experience", 5000),
     bio: optionalText(body.bio, "Bio", 2000),
     linkedin_url: optionalWebUrl(body.linkedin_url, "LinkedIn URL"),
   };
+}
+
+// Editable alumni fields (full replace: omitted fields are cleared, mentorship_available becomes false).
+// user_id/id are never accepted.
+export function validateAlumniFields(body: Record<string, unknown>): AlumniEditableFields {
+  const department = optionalText(body.department, "Department", DEPARTMENT_MAX);
+  const graduation_year = optionalYear(body.graduation_year, "Graduation year");
+  const details = validateSharedDetails(body);
+  const headline = optionalText(body.headline, "Headline", HEADLINE_MAX);
+  const location = optionalText(body.location, "Location", LOCATION_MAX);
+  const degree = optionalText(body.degree, "Degree", DEGREE_MAX);
+  const start_year = optionalYear(body.start_year, "Start year");
+  const mentorship_available = optionalBoolean(body.mentorship_available, "Mentorship availability");
+  // Starts with "Graduation year" so the My Profile form shows it on that field, which every width shows.
+  if (start_year && graduation_year && Number(start_year) > Number(graduation_year)) {
+    throw new AppError(400, "Graduation year can't be before the start year");
+  }
+  return { department, graduation_year, ...details, headline, location, degree, start_year, mentorship_available };
 }
 
 // Largest Postgres `integer` (int4); a bigger id can't match a row and would make the query error.

@@ -321,6 +321,38 @@ describe('MePage saving', () => {
     expect(calls.map((call) => call.key)).toContain('GET /alumni/11');
   });
 
+  it('refreshes the directory and profile caches after the new fields and the switch are saved', async () => {
+    mockApi({ 'GET /me': inTurn({ status: 200, data: ALUMNI }), 'PUT /me': echoSave(ALUMNI) });
+    // The real keys of features/directory/useAlumniSearch and
+    // features/profile/useAlumniProfile (string literals: lazy features never
+    // import each other; LESSON-REQ-010-1).
+    const directoryKey = ['alumni', 'search', { q: '', page: 1 }];
+    const profileKey = ['alumni', 'profile', '11'];
+    const user = userEvent.setup();
+    const { client } = renderAt('/me', (c) => {
+      c.setQueryData(directoryKey, { items: [], total: 0 });
+      c.setQueryData(profileKey, PUBLIC_PROFILE);
+    });
+    await findForm();
+
+    await user.type(screen.getByLabelText('Headline'), 'PM at Northwind');
+    await user.click(screen.getByRole('switch', { name: 'Available for mentorship' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByText(PROFILE_SAVED_TEXT)).toBeInTheDocument();
+
+    expect(putBodies()[0]).toMatchObject({
+      headline: 'PM at Northwind',
+      mentorship_available: true,
+    });
+    expect(client.getQueryState(directoryKey)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(profileKey)?.isInvalidated).toBe(true);
+    expect(screen.getByRole('switch', { name: 'Available for mentorship' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(saveBar()).not.toBeInTheDocument();
+  });
+
   it('sends the stored photo_url back on every save, and none when there is none', async () => {
     mockApi({ 'GET /me': inTurn({ status: 200, data: ALUMNI }), 'PUT /me': echoSave(ALUMNI) });
     const user = userEvent.setup();
@@ -353,13 +385,18 @@ describe('MePage saving', () => {
       [
         'bio',
         'current_company',
+        'degree',
         'department',
         'experience',
         'graduation_year',
+        'headline',
         'job_title',
         'linkedin_url',
+        'location',
+        'mentorship_available',
         'name',
         'photo_url',
+        'start_year',
         'university',
       ],
     ],

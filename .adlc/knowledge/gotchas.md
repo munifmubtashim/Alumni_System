@@ -720,7 +720,7 @@ Use both. They serve different purposes.
 
 **What:**
 - `npm run typecheck:backend` type-checks `api` against `businessLogic/dist/*.d.ts`: after adding a Manager method, run `tsc` in `packages/backend/src/businessLogic` first or it fails with "does not exist". Tests and `tsconfig.test.json` read the source, so they never show it.
-- On this checkout git tracks `dal/dto/baseDTO.ts` but the file on disk is `BaseDTO.ts` (core.ignorecase hides it), so `tsc` fails TS1261 at the dal step; the script chains with `&&`, so `tsconfig.test.json` is never checked. Run `npx tsc -p tsconfig.test.json` by hand.
+- On this checkout git tracks `dal/dto/baseDTO.ts` but the file on disk is `BaseDTO.ts` (core.ignorecase hides it), so `tsc` fails TS1261 at the dal step; the script chains with `&&`, so `tsconfig.test.json` is never checked. `npx tsc -p tsconfig.test.json` by hand hits the same TS1261 (it includes dal), so it is not a workaround (REQ-011): check with a scratch tsconfig outside the repo that extends it, sets `forceConsistentCasingInFileNames: false` and `typeRoots` to the root `node_modules/@types` (without `typeRoots` it fails TS2688 for `node`), or fix the file name with a two-step `git mv`.
 
 **Where:** `packages/backend/package.json` (typecheck script), `packages/backend/src/dal/dto/`
 
@@ -844,7 +844,67 @@ Use both. They serve different purposes.
 - Backend messages start with the API field name ("Bio", "Company", "Job title"), which differs from the UI labels (About, Current role): use an explicit prefix table, "prefix + space", longest first ("Expected graduation year" before "Graduation year").
 - `optionalYear` checks the 10-character text limit before the year rules, so a long year says "must be at most 10 characters", not "is not valid": mirror that order.
 - `PUT /api/me` clears every omitted optional field, including `photo_url`: always send the stored value back.
+- A cross-field message must start with the label of a field that is visible at every width (REQ-011: "Graduation year can't be before the start year" lands on the field phones still show). `mentorship_available` is a boolean sent every time; omitted means false on every full-replace route.
 
 **Where:** `features/me/profileErrors.ts`, `features/me/validation.ts`; `businessLogic/src/validation.ts:31`
 
 **Don't:** match by label text or send a partial body.
+
+## G39 — Migration traps: no runner, `IF NOT EXISTS` hides drift, dumps from newer Postgres ^g39
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-011 |
+| Component | db/migrations |
+| Status | confirmed |
+| Severity | trap |
+
+**What:**
+- There is no migration runner: apply `db/migrations/NNN` BEFORE starting the API version that reads its columns, or `GET /api/me` and the alumni writes answer 500 for everyone. Rolling back means reverting the code and leaving the columns (never `DROP COLUMN`).
+- `ADD COLUMN IF NOT EXISTS` silently skips a column that already exists with a different type or default: in a real-database check, read `information_schema.columns` (type, nullable, default), not just presence.
+- `db/backups/*.sql` was dumped by a newer Postgres than local 15: strip the `SET transaction_timeout` line (and COPY data blocks) before loading it into a scratch database, or psql stops at line 13.
+
+**Where:** `db/migrations/004_alumni_profile_fields.sql`; CLAUDE.md Environment section.
+
+**Don't:** run the new API against an unmigrated database; test a migration only on a database that already has the columns.
+**Related:** [[knowledge/gotchas#^g15|G15]] · [[knowledge/lessons/LESSON-REQ-005-2-mocked-sql-tests-need-one-real-run|L-REQ-005-2]] · [[REQ-011]]
+
+## G40 — Frontend traps found building the profile fields ^g40
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-011 |
+| Component | frontend |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Base UI `Switch.Root` renders a span and puts `id` on a hidden checkbox: render it with `nativeButton render={<button type="button" />}` so a plain `<label htmlFor>` names and toggles the focusable switch.
+- `pg` returns INTEGER columns as numbers, so `/api/me` sends `start_year` and `graduation_year` as numbers although `MyProfile` types them as strings: client code must accept both (the My Profile `text()` helper does).
+- Adding a colour token touches four places: `tokens.json`, regenerated `tokens.css`, the design-system README table, and `scripts/generate-tokens.test.ts`, which pins the token count.
+- A boolean in a string-keyed form type (`MeField = keyof ProfileValues`) breaks every `values[field].trim()`: keep it out of the string-keyed type.
+- Under parallel task agents, attribute a failing `npm test` to the file before blaming your change.
+
+**Where:** `components/ui/Switch/Switch.tsx`, `shared/src/types/alumni.types.ts`, `features/me/validation.ts`, `scripts/generate-tokens.test.ts`
+
+**Don't:** point `htmlFor` at the default Switch id; trust a design that shows only one switch state for the off colours (compute the ratios).
+**Related:** [[knowledge/gotchas#^g05|G05]] · [[knowledge/gotchas#^g33|G33]] · [[REQ-011]]
+
+## G41 — Route tests that reach the real validators and owner checks ^g41
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-011 |
+| Component | backend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `routes.test.ts` fakes every async Manager method, so a 400 from a validator or a 403 from the owner check never runs there. To test them through HTTP, delegate the faked method to a real manager from `vi.importActual` and `vi.spyOn` its `alumniQuery` / `userQuery`.
+
+**Where:** `packages/backend/src/api/routes/routes.test.ts` (REQ-011 block)
+
+**Don't:** assert 400/403 in that file with the plain mocks; they would pass without exercising the rule.
+**Related:** [[knowledge/gotchas#^g13|G13]] · [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]]

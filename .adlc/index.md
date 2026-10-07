@@ -26,6 +26,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-008 | Alumni profile page at /alumni/:id (lazy route, S3 designs, Back link keeps directory search) | merged 2026-10-06 (PR #21) | specs/_archive/2026-10/m/REQ-008-alumni-profile-page |
 | REQ-009 | Post feed page at /feed (lazy, S4 designs, optimistic posts and comments, comment edit endpoint) | merged 2026-10-07 (PR #23) | specs/_archive/2026-10/m/REQ-009-post-feed-page |
 | REQ-010 | My Profile page at /me (lazy, S5 designs, API-backed fields only, leave guard, toast) | merged 2026-10-07 (PR #24) | specs/_archive/2026-10/m/REQ-010-my-profile-page |
+| REQ-011 | Alumni headline, location, degree, start year, mentorship (migration 004, API, My Profile, S3 profile, S2 card) | ready to merge 2026-10-07 | specs/2026-10/m/REQ-011-profile-headline-location-mentorship |
 | REQ-012 | Rename My Profile to Account settings; /me out of the header nav; phone tab "Account" (kind: task) | ready to merge 2026-10-07 | specs/2026-10/m/REQ-012-account-settings-nav-labels |
 
 ## ADRs
