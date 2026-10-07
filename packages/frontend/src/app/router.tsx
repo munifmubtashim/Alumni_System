@@ -80,9 +80,25 @@ export const ME_ROUTE: RouteObject = {
 };
 
 /**
+ * The public About page, the fifth lazy page (ADR-08, REQ-014), built the same
+ * way as `DIRECTORY_ROUTE`: only this dynamic import may reference
+ * `features/about`, and `HydrateFallback` sits on this route object. It sits
+ * outside `RequireAuth`, so guests can read it.
+ */
+export const ABOUT_ROUTE: RouteObject = {
+  path: 'about',
+  HydrateFallback,
+  lazy: async () => {
+    const { AboutPage } = await import('@/features/about/AboutPage');
+    return { Component: AboutPage };
+  },
+};
+
+/**
  * Pages inside AppShell (header). Home is the first signed-in page; the
- * directory, the profile, the feed and Account settings (/me) are lazy. Any unknown path
- * shows the empty shell.
+ * directory, the profile, the feed and Account settings (/me) are lazy and need
+ * a session; About (public, lazy) is the one page outside `RequireAuth`. Any
+ * unknown path shows the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
   {
@@ -95,6 +111,7 @@ const DEFAULT_PAGE_ROUTES: RouteObject[] = [
       ME_ROUTE,
     ],
   },
+  ABOUT_ROUTE,
   { path: '*', element: null },
 ];
 

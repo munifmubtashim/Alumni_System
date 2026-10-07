@@ -68,6 +68,21 @@
   font: var(--text-label);
 }
 
+.about {
+  text-align: center;
+}
+
+/* Quiet on purpose: the form stays the page's one call to action. */
+.aboutLink {
+  color: var(--ink-secondary);
+  font: var(--text-label);
+  text-decoration: underline;
+}
+
+.aboutLink:hover {
+  color: var(--ink-primary);
+}
+
 .pitch {
   display: none;
   flex-direction: column;

@@ -59,10 +59,10 @@ packages/frontend/
                       MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants and small pure contracts: brand.ts (BRAND_NAME, SUPPORT_EMAIL,
                       supportMailto), directoryReturn.ts (DIRECTORY_PATH, profilePath, the directory-to-profile
-                      router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), relativeTime.ts
+                      router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), aboutPath.ts (ABOUT_PATH), relativeTime.ts
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
-                      directory/, profile/, feed/ and me/ (lazy-loaded directory, alumni profile,
-                      post feed and Account settings pages)
+                      directory/, profile/, feed/, me/ and about/ (lazy-loaded directory, alumni profile,
+                      post feed, Account settings and public About pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
                       Textarea, Card, Tag, Alert, Menu, SegmentedControl, Switch, ThemeToggle,
                       Avatar, Chip, Skeleton, SearchField, Popover, Toast
@@ -114,7 +114,7 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 
 REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
 
-- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) and Account settings at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
+- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) Account settings at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) and the public About page at `/about` (`ABOUT_ROUTE`, `import('@/features/about/AboutPage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1.

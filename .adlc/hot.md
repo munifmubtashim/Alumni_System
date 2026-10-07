@@ -2,6 +2,10 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] ship-gate-cleared | REQ-014-about-page
+## [2026-10-07] req-ready-to-merge | REQ-014-about-page | public /about, site footer, auth links; 0 critical/major, 6 minor open
+## [2026-10-07] work-path-set | REQ-014-about-page | branch feat/REQ-014-about-page
+## [2026-10-07] task-plan-cleared | REQ-014-about-page
 ## [2026-10-07] ship-gate-cleared | REQ-013-casing-fix-start-year-all-widths
 ## [2026-10-07] lesson | L-REQ-013-1 — note resolved evidence in lessons/ADRs when code is deleted
 ## [2026-10-07] req-ready-to-merge | REQ-013-casing-fix-start-year-all-widths | BaseDTO casing fix; Start year at every width

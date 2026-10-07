@@ -4,7 +4,14 @@
 // still succeeds.
 import type { RouteObject } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { DIRECTORY_ROUTE, FEED_ROUTE, ME_ROUTE, PROFILE_ROUTE, routes } from './router';
+import {
+  ABOUT_ROUTE,
+  DIRECTORY_ROUTE,
+  FEED_ROUTE,
+  ME_ROUTE,
+  PROFILE_ROUTE,
+  routes,
+} from './router';
 
 // Vite reads every source file as text at test time (src/ tests have no Node
 // types, so no `fs`). Test files are left out; the lazy features themselves are
@@ -40,6 +47,12 @@ const LAZY_FEATURES = [
     route: ME_ROUTE,
     path: 'me',
     dynamicImport: "import('@/features/me/MePage')",
+  },
+  {
+    name: 'about',
+    route: ABOUT_ROUTE,
+    path: 'about',
+    dynamicImport: "import('@/features/about/AboutPage')",
   },
 ] as const;
 
@@ -181,6 +194,9 @@ describe('the static-import check', () => {
     ['me', "import { x } from '../../features/me';", '/src/app/AppShell/x.tsx'],
     ['feed', "import { x } from '../feed/feedFormat';", '/src/features/me/x.tsx'],
     ['me', "import { x } from '@/features/me/fields';", '/src/features/profile/x.tsx'],
+    ['about', "import { AboutPage } from '@/features/about/AboutPage';", '/src/app/x.tsx'],
+    ['about', "import { x } from '../about/AboutPage';", '/src/features/auth/x.tsx'],
+    ['feed', "import { x } from '../feed/feedFormat';", '/src/features/about/x.tsx'],
   ])('flags, for features/%s, the static import in %j', (feature, source, file) => {
     expect(staticImportsOf(feature, source, file)).toHaveLength(1);
   });

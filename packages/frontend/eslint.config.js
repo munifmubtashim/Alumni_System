@@ -74,7 +74,7 @@ const CONFIG_FORBIDDEN_LAYERS = ['features', 'components', 'store', 'services'];
 // through (erased at build). Dynamic import() is never matched. '../<name>' and
 // '../../<name>' are the sibling forms used from inside features/.
 // src/app/lazyRoutes.test.ts is the second layer of this guard.
-const LAZY_FEATURES = ['directory', 'profile', 'feed', 'me'];
+const LAZY_FEATURES = ['directory', 'profile', 'feed', 'me', 'about'];
 
 function lazyBan(feature) {
   return {
