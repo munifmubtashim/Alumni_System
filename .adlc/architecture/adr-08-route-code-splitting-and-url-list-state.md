@@ -45,6 +45,8 @@ Each large page is a route with `lazy: () => import(...)`. List state (query, fi
 
 The profile page (`/alumni/:id`) was the second lazy page and the feed (`/feed`, REQ-009) the third. The import guard (ESLint and `lazyRoutes.test.ts`) now runs one check per lazy feature from a `LAZY_FEATURES` list, each leaving out only that feature's own folder, so one lazy feature cannot import another statically either. Two lazy features that need to share something meet in `config/` (`relativeTime` moved there for the feed).
 
+My Profile (`/me`, REQ-010, `ME_ROUTE` in `router.tsx`) is the fourth lazy page, added to `LAZY_FEATURES` like the others. Its path lives in `config/mePath.ts`, because the nav, the avatar menu and Home all link to it.
+
 ## Open questions
 
 - [ ] Prefetching a chunk on hover/focus of its nav link: not decided here.
