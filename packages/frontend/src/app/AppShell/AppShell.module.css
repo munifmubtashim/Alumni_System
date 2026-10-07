@@ -7,7 +7,18 @@
    Sizes with no token use a calc() of tokens: 14px = space-3 + space-1 / 2,
    20px = space-4 + space-1. */
 
+/* --tab-bar-height: how tall BottomTabs is on phones (0 from 48rem, where it
+   is hidden), so a page's own fixed bottom bar can sit just above it (ADV-001,
+   REQ-010). The sum mirrors BottomTabs.module.css: hairline, bar padding
+   (space-1 top, space-2 + space-1 / 2 bottom), tab padding (space-2 twice),
+   the 1.25rem icon, the space-1 gap and one caption line. BottomTabs uses it
+   as its min height, so the two never disagree by more than a wrapped label. */
 .shell {
+  --tab-bar-height: calc(
+    1px + var(--space-1) + var(--space-2) * 2 + 1.25rem + var(--space-1) +
+      var(--text-caption-line) + var(--space-2) + var(--space-1) / 2
+  );
+
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -131,6 +142,10 @@ span.avatar[data-size='xs'] {
 }
 
 @media (width >= 48rem) {
+  .shell {
+    --tab-bar-height: 0px;
+  }
+
   .header {
     flex-wrap: nowrap;
     gap: var(--space-5);

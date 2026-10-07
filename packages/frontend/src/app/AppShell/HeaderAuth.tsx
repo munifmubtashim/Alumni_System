@@ -1,15 +1,19 @@
+import { useNavigate } from 'react-router';
 import { ButtonLink } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from '@/components/ui/Menu';
+import { profilePath } from '@/config/directoryReturn';
+import { ME_PATH } from '@/config/mePath';
 import { useCurrentUser, useHasSession, useLogout } from '@/features/auth';
 import styles from './AppShell.module.css';
 
 /**
  * The header's auth area. Guests get Log in and Sign up links. A signed-in
- * user gets an avatar menu (initials, chevron) that shows their name and email
- * above Log out; while ['me'] is loading or has failed the button reads
- * "Account menu" and still offers Log out (ADV-006). View profile and Admin
- * settings join it when those pages exist.
+ * user gets an avatar menu (initials, chevron): their name and email, View
+ * profile (their public /alumni/:id page, only with an alumni row, so never
+ * for a student), My Profile (/me), then Log out. While ['me'] is loading or
+ * has failed the button reads "Account menu" and still offers My Profile and
+ * Log out (ADV-006). Admin settings join it when that page exists.
  */
 export function HeaderAuth() {
   const hasSession = useHasSession();
@@ -32,6 +36,8 @@ export function HeaderAuth() {
 function UserMenu() {
   const { data: user } = useCurrentUser();
   const logout = useLogout();
+  const navigate = useNavigate();
+  const alumniId = user?.alumni_id ?? null;
   const trimmed = user?.name.trim() ?? '';
   const avatarName = trimmed.length > 0 ? trimmed : '?';
 
@@ -54,9 +60,13 @@ function UserMenu() {
             <span className={styles.menuName}>{user.name}</span>
             <span className={styles.menuEmail}>{user.email}</span>
           </MenuLabel>
-          <MenuSeparator />
+          {alumniId !== null && (
+            <MenuItem onSelect={() => void navigate(profilePath(alumniId))}>View profile</MenuItem>
+          )}
         </>
       )}
+      <MenuItem onSelect={() => void navigate(ME_PATH)}>My Profile</MenuItem>
+      <MenuSeparator />
       <MenuItem onSelect={logout}>Log out</MenuItem>
     </Menu>
   );
