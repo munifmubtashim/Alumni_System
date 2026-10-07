@@ -1,0 +1,154 @@
+/* Design: S4 post card. Padding 16px phone / 18px desktop, rows 10px / 12px
+   apart. Avatar 32px / 36px: Avatar xs (32px) at both sizes, the nearest
+   existing size. Name 13px / 14px semibold, time 11px / 12px (text-caption)
+   in ink-secondary, not the design's ink-muted, which is under 4.5:1 on
+   surface-raised. Text 13px / 14px at line-height 1.6 (text-label size /
+   text-body-sm), keeping the author's line breaks. Toggle 12px / 13px medium
+   in ink-secondary. Off-scale values are calc() of tokens. `.card` overrides
+   Card's padding and gap: Card's CSS is in the main bundle (via RouteError),
+   so this rule in the lazy chunk wins (G30). Overrides of Menu and Button
+   use two-class selectors, more specific than the primitives' own. */
+
+.card {
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  min-width: 0;
+}
+
+.byline {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.name {
+  color: var(--ink-primary);
+  font: var(--text-label);
+  font-weight: var(--text-heading-sm-weight);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  border-radius: var(--radius-sm);
+}
+
+a.name:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.time {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  font-weight: var(--text-body-weight);
+}
+
+.menu {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.menu .menuTrigger {
+  padding: var(--space-1);
+  color: var(--ink-secondary);
+}
+
+.dots {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.text {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-body-sm);
+  font-size: var(--text-label-size);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.toggle {
+  appearance: none;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  cursor: pointer;
+}
+
+.toggle:hover:where(:not(:disabled)) {
+  color: var(--accent-strong);
+}
+
+.toggle:disabled {
+  cursor: default;
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.question {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-body-sm);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.confirmActions .confirmButton {
+  padding: var(--space-2) var(--space-4);
+}
+
+.confirmActions .danger[data-variant='secondary'] {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.confirmActions .danger[data-variant='secondary']:hover {
+  border-color: var(--error);
+  color: var(--error);
+  text-decoration: underline;
+}
+
+@media (width >= 48rem) {
+  .card {
+    gap: var(--space-3);
+    padding: calc(var(--space-4) + var(--space-1) / 2);
+  }
+
+  .name {
+    font-size: var(--text-body-sm-size);
+    line-height: var(--text-body-sm-line);
+  }
+
+  .text {
+    font-size: var(--text-body-sm-size);
+  }
+
+  .toggle {
+    font: var(--text-label);
+  }
+}
