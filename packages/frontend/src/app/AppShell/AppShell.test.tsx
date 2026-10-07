@@ -19,7 +19,7 @@ import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
-import { createRoutes, DIRECTORY_ROUTE, PROFILE_ROUTE, routes } from '../router';
+import { createRoutes, DIRECTORY_ROUTE, FEED_ROUTE, PROFILE_ROUTE, routes } from '../router';
 
 // ---- tokens and a fake API at the axios adapter (the REQ-001 test policy) ----
 
@@ -192,7 +192,7 @@ describe('AppShell', () => {
   });
 
   // REQ-004 AC7 kept S1's nav links out until their pages exist. REQ-006 AC2
-  // adds Directory: a guest's banner has only the "Account" nav from
+  // adds Directory, REQ-009 Feed: a guest's banner has only the "Account" nav from
   // HeaderAuth; a signed-in user's has only the "Main" nav.
   it('shows the guest only the Account nav, and a signed-in user only the Main nav', async () => {
     renderAt('/does-not-exist');
@@ -223,7 +223,7 @@ describe('AppShell', () => {
       within(banner)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Alma', 'Directory']);
+    ).toEqual(['Alma', 'Directory', 'Feed']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -248,12 +248,17 @@ function DirectoryStub() {
   return <h1>Directory stub</h1>;
 }
 
+function FeedStub() {
+  return <h1>Feed stub</h1>;
+}
+
 function OtherStub() {
   return <h1>Other stub</h1>;
 }
 
 const NAV_TEST_ROUTES: RouteObject[] = [
   { path: 'directory/*', element: <DirectoryStub /> },
+  { path: 'feed', element: <FeedStub /> },
   { path: 'other', element: <OtherStub /> },
 ];
 
@@ -307,6 +312,18 @@ describe('Header main nav', () => {
       );
     },
   );
+
+  it('links to /feed and marks only Feed current there', async () => {
+    renderNavAt('/feed');
+    await screen.findByRole('heading', { name: 'Feed stub' });
+
+    const feed = within(mainNav()).getByRole('link', { name: 'Feed' });
+    expect(feed).toHaveAttribute('href', '/feed');
+    expect(feed).toHaveAttribute('aria-current', 'page');
+    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
 
   it('goes to the directory on click and becomes current', async () => {
     const user = userEvent.setup();
@@ -368,7 +385,7 @@ describe('Bottom tab bar (phone)', () => {
     const labels = within(tabs())
       .getAllByRole('link')
       .map((link) => link.textContent);
-    expect(labels).toEqual(['Directory']);
+    expect(labels).toEqual(['Directory', 'Feed']);
     expect(labels).toEqual(
       within(mainNav())
         .getAllByRole('link')
@@ -378,6 +395,7 @@ describe('Bottom tab bar (phone)', () => {
       'href',
       '/directory',
     );
+    expect(within(tabs()).getByRole('link', { name: 'Feed' })).toHaveAttribute('href', '/feed');
   });
 
   it('sits outside the header, after the page', async () => {
@@ -401,13 +419,25 @@ describe('Bottom tab bar (phone)', () => {
     expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('marks the Feed tab current at /feed, with its own decorative icon', async () => {
+    renderNavAt('/feed');
+    await screen.findByRole('heading', { name: 'Feed stub' });
+
+    const link = within(tabs()).getByRole('link', { name: 'Feed' });
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(tabs()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+
   it('is not marked current on another page', async () => {
     renderNavAt('/other');
     await screen.findByRole('heading', { name: 'Other stub' });
 
-    expect(within(tabs()).getByRole('link', { name: 'Directory' })).not.toHaveAttribute(
-      'aria-current',
-    );
+    for (const link of within(tabs()).getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
   });
 });
 
@@ -822,5 +852,66 @@ describe('Profile route', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('banner')).toHaveTextContent('Alma');
     expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'chunk failed' }));
+  });
+});
+
+// ---- the lazy /feed route (ADR-08, REQ-009) ----
+
+/** A route tree whose feed route is `FEED_ROUTE` with another `lazy`. */
+function feedRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
+  return createRoutes([{ element: <RequireAuth />, children: [{ ...FEED_ROUTE, lazy }] }]);
+}
+
+describe('Feed route', () => {
+  beforeEach(() => {
+    mockApi({ 'GET /me': ok(AMINA), 'GET /posts': ok([]) });
+  });
+
+  it('renders the feed page for a signed-in visit, with Feed current', async () => {
+    setToken(makeToken());
+    renderAt('/feed');
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { level: 1, name: 'Feed' }),
+    ).toBeInTheDocument();
+    expect(within(mainNav()).getByRole('link', { name: 'Feed' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('sends a guest to /login without loading posts', async () => {
+    const { router } = renderAt('/feed');
+
+    expect(await screen.findByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(apiCalls).not.toContain('GET /posts');
+  });
+
+  it('keeps the shell and shows Loading… in main while the page code loads', async () => {
+    const chunk = gate();
+    setToken(makeToken());
+    renderAt(
+      '/feed',
+      feedRoutesWith(async () => {
+        await chunk.opened;
+        return { Component: () => <h1>Feed loaded</h1> };
+      }),
+    );
+
+    const banner = screen.getByRole('banner');
+    expect(
+      await within(banner).findByRole('button', { name: 'Account menu for Amina' }),
+    ).toBeInTheDocument();
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
+
+    await act(async () => {
+      chunk.open();
+      await chunk.opened;
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Feed loaded' })).toBeInTheDocument();
   });
 });

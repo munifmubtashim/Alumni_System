@@ -92,4 +92,4 @@ Rules:
 - Components: [[knowledge/components/frontend]]
 - Gotchas: —
 - Lessons: —
-- ADRs: [[architecture/adr-01-ui-layer-headless-css-modules]]
+- ADRs: [[architecture/adr-01-ui-layer-headless-css-modules]] · optimistic writes are covered by [[architecture/adr-09-optimistic-updates-by-cache-edit|ADR-09]]

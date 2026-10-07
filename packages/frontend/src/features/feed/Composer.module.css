@@ -1,0 +1,91 @@
+/* Design: S4 composer. Phone (S4-Phone-Light): no avatar, padding 14px, gap
+   10px. Desktop: avatar (36px; nearest Avatar size xs, 32px) beside the field,
+   padding 16px, gap 12px. Off-scale values are calc() of tokens: 14px =
+   space-3 + space-1 / 2, 10px = space-2 + space-1 / 2.
+   .card overrides Card's padding and gap: Card's CSS is in the main bundle
+   (via RouteError), so this same-specificity rule in the lazy chunk wins (G30).
+   The field follows the Input primitive (sunken fill, border-strong, accent
+   border on focus, ink-secondary placeholder) rather than the design's white
+   field with a subtle border, for contrast. 16px text below 48rem (no iOS zoom),
+   text-body-sm (design 14px) from 48rem. Post: 9px 18px in the design, the
+   Retry padding here (space-2 space-4). */
+
+.card {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: calc(var(--space-3) + var(--space-1) / 2);
+  min-width: 0;
+}
+
+/* Two classes: more specific than Avatar's own display rule (G30). */
+.card .avatar {
+  display: none;
+}
+
+.form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: calc(var(--space-2) + var(--space-1) / 2);
+  min-width: 0;
+}
+
+.field {
+  inline-size: 100%;
+  min-inline-size: 0;
+  resize: vertical;
+  padding: calc(var(--space-2) + var(--space-1) / 2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--ink-primary);
+  font: var(--text-body);
+  overflow-wrap: anywhere;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+.field::placeholder {
+  color: var(--ink-secondary);
+}
+
+.field:focus,
+.field:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.count {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+}
+
+.actions .post {
+  padding: var(--space-2) var(--space-4);
+}
+
+@media (width >= 48rem) {
+  .card {
+    padding: var(--space-4);
+  }
+
+  .card .avatar {
+    display: inline-flex;
+  }
+
+  .field {
+    font: var(--text-body-sm);
+  }
+}

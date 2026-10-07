@@ -128,6 +128,33 @@ describe('Menu', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
+  it('a danger item is marked with its tone and still selects', async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    render(
+      <Menu trigger="Post actions">
+        <MenuItem onSelect={onEdit}>Edit</MenuItem>
+        <MenuItem onSelect={onDelete} tone="danger">
+          Delete post
+        </MenuItem>
+      </Menu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Post actions' }));
+    const item = await screen.findByRole('menuitem', { name: 'Delete post' });
+    expect(item).toHaveAttribute('data-tone', 'danger');
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute('data-tone', 'default');
+    await user.click(item);
+
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Post actions' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
   it('names an icon-only trigger with label', () => {
     render(
       <Menu trigger={<span aria-hidden="true">JD</span>} label="Account menu for Jane Doe">

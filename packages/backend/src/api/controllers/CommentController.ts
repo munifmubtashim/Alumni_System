@@ -23,6 +23,20 @@ export const addComment = async (req: Request, res: Response) => {
   }
 };
 
+// PUT /api/comments/:id (requires authMiddleware)
+export const updateComment = async (req: Request, res: Response) => {
+  try {
+    const comment = await commentManager.updateComment(
+      { id: Number(req.user.sub), role: req.user.role },
+      req.params.id,
+      req.body ?? {},
+    );
+    res.status(200).json(comment);
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
 // DELETE /api/comments/:id (requires authMiddleware)
 export const deleteComment = async (req: Request, res: Response) => {
   try {

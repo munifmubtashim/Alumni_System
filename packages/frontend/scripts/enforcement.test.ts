@@ -250,10 +250,10 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
   });
 });
 
-// ADR-08: each lazy feature (directory, profile) is reached only through the
+// ADR-08: each lazy feature (directory, profile, feed) is reached only through the
 // router's lazy import(). This ban is the typescript-eslint copy of the rule,
 // so it has its own rule id.
-describe('ESLint lazy-feature boundary (features/directory, features/profile)', () => {
+describe('ESLint lazy-feature boundary (features/directory, profile, feed)', () => {
   const LAZY_RULE = '@typescript-eslint/no-restricted-imports';
 
   it.each([
@@ -275,6 +275,11 @@ describe('ESLint lazy-feature boundary (features/directory, features/profile)', 
     ['src/features/directory', "import { x } from '../profile/format';"],
     ['src/features/directory', "import { x } from '@/features/profile/ProfilePage';"],
     ['src/features/directory/__fixture__', "import { x } from '../../profile';"],
+    ['src/app/__fixture__', "import { FeedPage } from '@/features/feed/FeedPage';"],
+    ['src/features/home', "import { x } from '../feed/feedFormat';"],
+    ['src/features/profile', "import { PostCard } from '../feed/PostCard';"],
+    ['src/features/feed', "import { x } from '../profile/format';"],
+    ['src/features/feed/__fixture__', "import { x } from '../../directory';"],
   ])('rejects a static import in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', dir);
     expect(ruleIds(messages)).toContain(LAZY_RULE);
@@ -293,6 +298,8 @@ describe('ESLint lazy-feature boundary (features/directory, features/profile)', 
     ['src/features/profile', "import { x } from '@/features/profile/format';"],
     ['src/app/__fixture__', "export const page = () => import('@/features/profile/ProfilePage');"],
     ['src/features/profile', "import type { DirectoryParams } from '../directory/params';"],
+    ['src/features/feed', "import { PostCard } from './PostCard';"],
+    ['src/app/__fixture__', "export const page = () => import('@/features/feed/FeedPage');"],
   ])('allows in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Ok.ts', dir);
     expect(ruleIds(messages)).not.toContain(LAZY_RULE);

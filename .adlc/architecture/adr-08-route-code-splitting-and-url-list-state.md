@@ -43,7 +43,7 @@ Each large page is a route with `lazy: () => import(...)`. List state (query, fi
 
 ## Amendment — REQ-008 (2026-10-07)
 
-The profile page (`/alumni/:id`) is the second lazy page. The import guard (ESLint and `lazyRoutes.test.ts`) now runs one check per lazy feature from a `LAZY_FEATURES` list, each leaving out only that feature's own folder, so one lazy feature cannot import another statically either. Two lazy features that need to share something meet in `config/`.
+The profile page (`/alumni/:id`) was the second lazy page and the feed (`/feed`, REQ-009) the third. The import guard (ESLint and `lazyRoutes.test.ts`) now runs one check per lazy feature from a `LAZY_FEATURES` list, each leaving out only that feature's own folder, so one lazy feature cannot import another statically either. Two lazy features that need to share something meet in `config/` (`relativeTime` moved there for the feed).
 
 ## Open questions
 

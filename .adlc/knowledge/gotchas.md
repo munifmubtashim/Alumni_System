@@ -688,3 +688,103 @@ Use both. They serve different purposes.
 **Where:** `features/profile/RecentPosts.module.css`, `RecentPosts.tsx`, `ProfileStates.tsx`, `ProfileHeader.module.css`
 
 **Related:** [[knowledge/gotchas#^g18|G18]] · [[knowledge/gotchas#^g27|G27]]
+
+## G31 — SQL traps in the post and comment queries ^g31
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-009 |
+| Component | backend dal |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- An edit that must answer 404 when the row was deleted meanwhile is one CTE (`WITH u AS (UPDATE … RETURNING *) SELECT u.*, author fields FROM u JOIN users`); zero rows means the Manager throws the 404 (the dal cannot import `AppError`).
+- A 0-or-1 child id (`author_alumni_id`) is a scalar subquery `(SELECT MIN(a.id) FROM alumni a WHERE a.user_id = …)`, not a LEFT JOIN: `findAlumniByUserId` shows the schema does not guarantee one alumni row per user, and a join would duplicate feed rows.
+
+**Where:** `packages/backend/src/dal/query/CommentQuery.ts`, `PostQuery.ts`
+
+**Don't:** replace the subquery with a join, or split the update and its read-back into two statements.
+**Related:** [[knowledge/lessons/LESSON-REQ-009-1-profile-links-need-the-alumni-id|L-REQ-009-1]]
+
+## G32 — Backend typecheck needs a fresh businessLogic dist and stops early on this machine ^g32
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-009 |
+| Component | backend tooling |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- `npm run typecheck:backend` type-checks `api` against `businessLogic/dist/*.d.ts`: after adding a Manager method, run `tsc` in `packages/backend/src/businessLogic` first or it fails with "does not exist". Tests and `tsconfig.test.json` read the source, so they never show it.
+- On this checkout git tracks `dal/dto/baseDTO.ts` but the file on disk is `BaseDTO.ts` (core.ignorecase hides it), so `tsc` fails TS1261 at the dal step; the script chains with `&&`, so `tsconfig.test.json` is never checked. Run `npx tsc -p tsconfig.test.json` by hand.
+
+**Where:** `packages/backend/package.json` (typecheck script), `packages/backend/src/dal/dto/`
+
+**Don't:** trust a green `typecheck:backend` as proof that test files compile; rename the file without checking `git ls-files` (the tracked name is lowercase).
+**Related:** [[knowledge/gotchas#^g12|G12]]
+
+## G33 — Two contrast pairs the tokens do not cover ^g33
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-009 |
+| Component | frontend css, accessibility |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- `--error` text on the Menu highlight (`--accent-soft`) is 4.48:1 light and 4.25:1 dark, under 4.5:1; a highlighted danger item sits on `--surface-sunken` instead.
+- `--ink-muted` on `--surface-raised` is under 4.5:1, and S4 uses it for times; card meta text uses `--ink-secondary`. `contrast.test.ts` has no ink-muted text pair, so nothing flags it.
+
+**Where:** `components/ui/Menu/Menu.module.css`, `features/feed/PostCard.module.css`, `CommentThread.module.css`
+
+**Don't:** copy a muted grey from a design file for text on a card without a contrast check.
+**Related:** [[knowledge/concepts/design-tokens]]
+
+## G34 — Test traps found building the feed ^g34
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-009 |
+| Component | frontend tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- Axios has serialised the body to a JSON string before a fake adapter runs: `JSON.parse(config.data)`.
+- After `fetchNextPage()` inside `act`, wait for the hook's rendered `data` with `waitFor`; `result.current` can still hold the old pages.
+- A helper default parameter (`me = ME`) cannot express "no user" with `undefined`; take `null`.
+- `invalidateQueries` refetches only active queries; with no observer assert `getQueryState(key).isInvalidated`.
+- To test "a paused mutation is ignored" seed one with `getMutationCache().build(client, { mutationKey }, { status: 'pending', isPaused: true, … })`; toggling `onlineManager` pauses every write and a mounted client resumes them all.
+- The test setup defines `matchMedia` (reporting "narrow"), so a hook that reads a width breakpoint must be told the width in each test.
+
+**Where:** `features/feed/*.test.tsx`, `services/postsApi.test.ts`
+
+**Don't:** copy the fake-adapter and token helpers into another test file (now 10 copies, see G26); build the shared helper at the next feature.
+**Related:** [[knowledge/gotchas#^g26|G26]] · [[knowledge/gotchas#^g29|G29]]
+
+## G35 — Menu focus, delete state and tap targets in the feed ^g35
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-07 |
+| REQ | REQ-009 |
+| Component | frontend components |
+| Status | confirmed |
+| Severity | careful |
+
+**What:**
+- A Base UI `MenuItem` closes after `onSelect` and puts focus back on its trigger after the callback: move focus to the edit box or confirm one animation frame later.
+- Keep a delete's mutation hook and error in a parent that stays mounted (`FeedPage`, `CommentThread`); the optimistic remove unmounts the card and a hook inside it loses the rollback error.
+- Text-only inline actions (Reply · Edit · Delete) are about 16px tall with `padding: 0`; use `min-block-size` plus a negative margin no bigger than the gap to the nearest link, or the button covers it.
+
+**Where:** `features/feed/EditBox.tsx`, `PostCard.tsx`, `FeedPage.tsx`, `CommentThread.module.css`
+
+**Don't:** put the delete hook inside the item being deleted.
+**Related:** [[knowledge/gotchas#^g25|G25]] · [[knowledge/gotchas#^g30|G30]]

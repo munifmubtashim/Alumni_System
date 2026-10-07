@@ -8,7 +8,7 @@
 - `BackLink` — "Back to directory", restoring the directory's search through router state read by `config/directoryReturn`. Below 48rem the text is visually hidden and an `aria-hidden` "Profile" title sits beside the arrow.
 - `ProfileHeader` — avatar (`size="lg"`, 72px on phone), the name as `h1`, the headline, a LinkedIn link only for a safe http(s) URL, and the tab title. Never shows the email.
 - Sections: `AboutSection`, `EducationSection`, `EmploymentSection` (on a shared `Timeline`) and `RecentPosts` (`PostCard`, `usePostsByUser`, newest 5). Each hides when it has no data; Recent posts owns its loading, error and empty states so a posts failure keeps the profile.
-- Pure helpers: `format.ts` (`present`, `headline`, `educationLine`, `employmentTitle`, `safeLinkedInUrl`, `commentCountText`) and `relativeTime.ts`.
+- Pure helpers: `format.ts` (`present`, `headline`, `educationLine`, `employmentTitle`, `safeLinkedInUrl`, `commentCountText`). `PostCard` takes its time text from `config/relativeTime` (shared with the feed).
 - Hooks: `useAlumniProfile` (`['alumni','profile',id]`, no `placeholderData`), `usePostsByUser` (`['posts','user',userId]`, idle until the profile gives the `user_id`).
 
 **May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/styles/**`, and types from `@alumni/shared`. Not `@/app/**` (tests may import its providers). Not `@/features/directory/**`: the two lazy features meet only through `config/directoryReturn` (ADR-06, ADR-08).

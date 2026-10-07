@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DIRECTORY_PATH } from '@/config/directoryReturn';
+import { FEED_PATH } from '@/config/feedPath';
 import { useCurrentUser } from '@/features/auth';
 import styles from './HomePage.module.css';
 
@@ -11,14 +12,19 @@ interface QuickLink {
 
 /**
  * The cards under the greeting (docs/design/screens/app/S1-*). Only pages
- * that exist are listed; add the feed, profile and admin cards when those
- * pages are built.
+ * that exist are listed; add the profile and admin cards when those pages are
+ * built.
  */
 const QUICK_LINKS: readonly QuickLink[] = [
   {
     to: DIRECTORY_PATH,
     title: 'Browse the directory',
     description: 'Find classmates by year, department or field',
+  },
+  {
+    to: FEED_PATH,
+    title: 'Catch up on the feed',
+    description: 'See what alumni and students are sharing',
   },
 ];
 

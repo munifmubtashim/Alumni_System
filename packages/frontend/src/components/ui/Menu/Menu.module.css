@@ -60,6 +60,18 @@
   background: var(--accent-soft);
 }
 
+/* Destructive item. --error on --accent-soft is under 4.5:1 in both themes,
+   so the highlighted danger item sits on --surface-sunken instead (a tested
+   pair in styles/contrast.test.ts). */
+.item[data-tone='danger'] {
+  color: var(--error);
+}
+
+.item[data-tone='danger'][data-highlighted],
+.item[data-tone='danger']:focus-visible {
+  background: var(--surface-sunken);
+}
+
 .item[data-disabled] {
   cursor: not-allowed;
   color: var(--ink-muted);

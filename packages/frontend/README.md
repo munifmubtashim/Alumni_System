@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages) and an alumni Profile page, on top of the design system. The feed comes in a later REQ.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page and the post Feed, on top of the design system.
 
 ## Stack
 
@@ -59,15 +59,16 @@ packages/frontend/
                       MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants and small pure contracts: brand.ts (BRAND_NAME, SUPPORT_EMAIL,
                       supportMailto), directoryReturn.ts (DIRECTORY_PATH, profilePath, the directory-to-profile
-                      router-state handover)
+                      router-state handover), feedPath.ts (FEED_PATH), relativeTime.ts
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
-                      directory/ and profile/ (lazy-loaded directory and alumni profile pages)
+                      directory/, profile/ and feed/ (lazy-loaded directory, alumni profile and
+                      post feed pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
                       Card, Tag, Alert, Menu, SegmentedControl, ThemeToggle, Avatar, Chip,
                       Skeleton, SearchField, Popover
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
     services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi,
-                      httpErrors
+                      postsApi, httpErrors
     styles/           tokens.css (generated), global.css, contrast test
     test/             Vitest setup and harness smoke test
 ```
@@ -93,7 +94,7 @@ Each folder's README says what belongs there and what may import it:
 
 ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log out, and get sent to `/login` with a notice when the session ends.
 
-- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home), `/directory` and `/alumni/:id`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
+- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home), `/directory`, `/alumni/:id` and `/feed`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
 - **Endpoints:** `services/authApi.ts` has `login`, `register` and `getMe` (`GET /me`). They only return data.
 - **Token store:** `services/authToken.ts` keeps the token in `localStorage['token']`. `subscribe(listener)` fires on `setToken`/`clearToken` and on another tab's change. `isTokenExpired(token)` decodes the JWT `exp` (10 s leeway; a malformed token counts as expired). `getLiveToken()` returns the token only if it is present and not expired, with no side effects. `features/auth` reads it with `useLiveToken()` / `useHasSession()` (`useSyncExternalStore`).
 - **401s:** `httpClient` has one response interceptor. On a 401 from a request that carried a token (not `/auth/login` or `/auth/register`), it calls the handler registered with `setUnauthorizedHandler(fn)`, passing that request's token, then re-throws. `services/` never imports app or feature code.
@@ -113,11 +114,11 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 
 REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
 
-- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`) and the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import either feature statically, not even the other one: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
+- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) and the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1. The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
-- **Header:** after S1. `MainNav` (desktop) shows the Directory link to signed-in users only, marked current on `/directory` and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name, email, Log out) sit on the right.
+- **Header:** after S1. `MainNav` (desktop) shows the Directory and Feed links (`NAV_ITEMS`) to signed-in users only, each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`) replaces it. The compact `ThemeToggle` and the avatar menu (name, email, Log out) sit on the right.
 
 ## Profile page
 
@@ -128,6 +129,15 @@ REQ-008. `/alumni/:id` (signed in; every directory card links to it) shows one a
 - **Back link:** "Back to directory" restores the search, filters and page the user left (the card passes `location.search` in router state; `config/directoryReturn.ts` owns the contract). A direct visit goes to plain `/directory`. On phones it shows as an arrow and "Profile" under the shell's top bar.
 - **Accessibility:** every state has an `h1` and a tab title; focus moves to the heading only when focus was on the page body or on something that disappeared.
 - More: `src/features/profile/README.md`.
+
+## Feed
+
+REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on phones and Home's "Catch up on the feed" card) shows posts from `GET /api/posts`, newest first, 20 per page with Load more, after the S4 designs.
+
+- **Writing:** the composer posts trimmed text (Post stays disabled while blank). Comments and one level of replies live in a thread under each card, fetched only when it is opened. The author or an admin sees Edit and Delete (posts in the "Post actions" menu, comments in the "Reply · Edit · Delete" row); the API still decides, and a refused write shows its message. A post with comments asks inline before deletion ("Delete this post and its N comments?").
+- **Optimistic writes (ADR-09):** new posts and comments, edits and deletes show at once and are undone if the API refuses. `onMutate` edits the cache with a pure function from `cacheEdits.ts`, `onError` applies the inverse edit (no whole-cache snapshot), `onSettled` invalidates only when it is the last mutation on that key. Keys are `['feed','posts']` and `['feed','comments',postId]`. A pending item (negative id) has no menu, Reply or thread toggle.
+- **Author link:** the name links to `/alumni/<author_alumni_id>` (the alumni id, not the user id) and is plain text when the author has no alumni profile.
+- More: `src/features/feed/README.md`.
 
 ## Forms
 
@@ -145,7 +155,7 @@ ADR-04: no form library for now.
 - `Input` `error` prop: `aria-invalid`, error text linked by `aria-describedby`, error border.
 - `Button` `loading` prop: disabled, `aria-busy`, label kept, pulsing dot. `ButtonLink`: Button styles on a react-router `Link`.
 - `Alert`: `tone="error"` (`role="alert"`) or `"info"` (`role="status"`), optional title.
-- `Menu`, `MenuItem`, `MenuLabel`, `MenuSeparator`: Base UI Menu (`label` names an icon-only trigger); keyboard support; no shadow.
+- `Menu`, `MenuItem`, `MenuLabel`, `MenuSeparator`: Base UI Menu (`label` names an icon-only trigger); keyboard support; no shadow. `MenuItem tone="danger"` (REQ-009) shows a destructive item, such as "Delete post", in the error color (`--error`).
 - `SegmentedControl<T>`: Base UI RadioGroup; `ThemeToggle` is a thin wrapper over it.
 
 ## Brand and primitives added in REQ-004

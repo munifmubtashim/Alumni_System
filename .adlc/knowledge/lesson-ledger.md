@@ -48,3 +48,7 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-008-4 | Give each lazy feature its own import ban and guard check, each exempting only its own folder | frontend, eslint, lazy-routes, adr | guideline | REQ-008 |
 | LESSON-REQ-008-5 | Decide at architect time how to match a design that uses the browser default line height | frontend, design-system, stylelint, tokens | guideline | REQ-008 |
 | LESSON-REQ-008-6 | Helpers copied between lazy features need a decided shared home and a tracked follow-up, not a code comment | frontend, lazy-routes, duplication, tests | guideline | REQ-008 |
+| LESSON-REQ-009-1 | Link a person to their profile with the alumni id, and check which id a route takes before planning the link | frontend, api, routing, alumni, profile | trap | REQ-009 |
+| LESSON-REQ-009-2 | Undo only what the mutation wrote, and let the settle check count itself and ignore paused writes | frontend, tanstack-query, optimistic, adr-09 | guideline | REQ-009 |
+| LESSON-REQ-009-3 | Offset-paged lists need an id tie-break in the query and offsets taken from the server page lengths | api, frontend, pagination, tanstack-query | guideline | REQ-009 |
+| LESSON-REQ-009-4 | Adding a lazy feature means editing six places, and the vault copies have no check | frontend, lazy-routes, eslint, docs, vault | guideline | REQ-009 |
