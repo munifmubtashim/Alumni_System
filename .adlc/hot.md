@@ -2,6 +2,10 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] ship-gate-cleared | REQ-011-profile-headline-location-mentorship
+## [2026-10-07] req-ready-to-merge | REQ-011-profile-headline-location-mentorship | alumni headline, location, degree, start year, mentorship
+## [2026-10-07] lesson | L-REQ-011-1..3 — split validators, css-hidden fields, full-replace boolean
+## [2026-10-07] gotcha | G39 migrations, G40 frontend traps, G41 route tests (G32, G38 updated)
 ## [2026-10-07] verify-gate-cleared | REQ-011-profile-headline-location-mentorship | findings: C0/M1/m3 open (2 rounds; 7 fixed)
 ## [2026-10-07] implement-gate-cleared | REQ-011-profile-headline-location-mentorship
 ## [2026-10-07] architect-gate-cleared | REQ-011-profile-headline-location-mentorship

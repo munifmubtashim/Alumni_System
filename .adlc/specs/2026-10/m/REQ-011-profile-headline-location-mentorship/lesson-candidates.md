@@ -122,3 +122,36 @@
 **Claim:** Do not hide an editable field with CSS at a width breakpoint when browser zoom can reach it; zoomed desktop users lose the field.
 **Saw it in:** `packages/frontend/src/features/me/Section.module.css:2070`
 **Context:** Start year is `display: none` below 48rem, which 200% zoom on a 1280px window also triggers.
+
+## Candidate verdicts
+
+Dedup basis: origin/redesign as of 6 hours ago (45 lessons on it, none from REQ-011); no duplicate found. REQ-012's lessons (on its own branch) do not overlap.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001 | demote-to-gotcha | ^g39 |
+| CAND-002 | demote-to-gotcha | ^g32 (updated in place: the workaround was wrong) |
+| CAND-003 | demote-to-gotcha | ^g40 |
+| CAND-004 | discard | duplicate of LESSON-REQ-004-2 (check design colours against token pairs) |
+| CAND-005 | promote | LESSON-REQ-011-1 |
+| CAND-006 | demote-to-gotcha | ^g32 (typeRoots note) |
+| CAND-007 | discard | one-off layout trick, documented in the CSS |
+| CAND-008 | discard | duplicate of LESSON-REQ-004-2 |
+| CAND-009 | demote-to-gotcha | ^g40 (last bullet) |
+| CAND-010 | demote-to-gotcha | ^g40 |
+| CAND-011 | promote | LESSON-REQ-011-2 |
+| CAND-012 | discard | test selector detail |
+| CAND-013 | demote-to-gotcha | ^g41 |
+| CAND-014 | demote-to-gotcha | ^g39 |
+| CAND-015 | demote-to-gotcha | ^g40 |
+| CAND-016 | discard | duplicate of LESSON-REQ-010-5 (grep every doc list) |
+| (TASK-009a token note) | demote-to-gotcha | ^g40 |
+| CAND-017 | discard | duplicate of LESSON-REQ-010-5 / LESSON-REQ-012-2 (on the REQ-012 branch) |
+| CAND-018 | promote | folded into LESSON-REQ-011-2 |
+| CAND-A01 | discard | fixed in code (typed DTO init), no recurring pattern |
+| CAND-A02 | promote | folded into LESSON-REQ-011-2 |
+| (ui-review note) | promote | folded into LESSON-REQ-011-2 |
+| CAND-019 | promote | LESSON-REQ-011-3 |
+| CAND-020 | demote-to-gotcha | ^g38 (updated in place) |
+| CAND-021 | demote-to-gotcha | ^g39 |
+| CAND-024 | promote | folded into LESSON-REQ-011-2 |
