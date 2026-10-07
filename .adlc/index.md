@@ -28,6 +28,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-010 | My Profile page at /me (lazy, S5 designs, API-backed fields only, leave guard, toast) | merged 2026-10-07 (PR #24) | specs/_archive/2026-10/m/REQ-010-my-profile-page |
 | REQ-011 | Alumni headline, location, degree, start year, mentorship (migration 004, API, My Profile, S3 profile, S2 card) | merged 2026-10-07 (PR #26) | specs/_archive/2026-10/m/REQ-011-profile-headline-location-mentorship |
 | REQ-012 | Rename My Profile to Account settings; /me out of the header nav; phone tab "Account" (kind: task) | merged 2026-10-07 (PR #27) | specs/_archive/2026-10/m/REQ-012-account-settings-nav-labels |
+| REQ-013 | Fix BaseDTO casing (typecheck:backend passes); Start year shown at every width (kind: task) | ready to merge 2026-10-07 | specs/2026-10/m/REQ-013-casing-fix-start-year-all-widths |
 
 ## ADRs
 

@@ -62,3 +62,4 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-011-1 | Build the student validator from a shared part, never by spreading the alumni validator and deleting keys | backend, validation, students | guideline | REQ-011 |
 | LESSON-REQ-011-2 | A form field hidden by a CSS breakpoint needs its errors routed, a reflow decision, its own class and a browser check | frontend, forms, responsive, a11y | trap | REQ-011 |
 | LESSON-REQ-011-3 | On a full-replace endpoint, a NOT NULL boolean must be sent every time: omitted means false | api, put, boolean, defaults | guideline | REQ-011 |
+| LESSON-REQ-013-1 | When a REQ deletes the code a lesson or ADR note cites as evidence, add a dated "resolved in REQ-N" note there | vault, process, docs | guideline | REQ-013 |
