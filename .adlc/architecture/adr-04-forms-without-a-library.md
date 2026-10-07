@@ -32,7 +32,7 @@
 
 ## Decision
 
-**Option 1 now** (accepted at the REQ-002 architecture gate, 2026-10-05). **Revisit when a form passes ~8 fields or needs dynamic field arrays**, which is likely the My Profile REQ, and pick between Option 2 and moving validation into `@alumni/shared` so frontend and backend share one rule set.
+**Option 1 now** (accepted at the REQ-002 architecture gate, 2026-10-05). **Revisit when a form passes ~8 fields or needs dynamic field arrays** (My Profile, REQ-010, reached it and stayed with this option; see Consequences), and pick between Option 2 and moving validation into `@alumni/shared` so frontend and backend share one rule set.
 
 ## Consequences
 
@@ -40,7 +40,8 @@
 |---|---|
 | `features/<x>/validation.ts` holds pure, tested validators per form | convention |
 | Client messages mirror the backend's; the server's 400 message is still shown | rule |
-| Re-decide at the first large form | follow-up |
+| Re-decided at REQ-010 (My Profile, up to 12 fields): **stay with controlled state, pure validators and `useMutation`; no form library.** What held it together: `validation.ts`, `planSave` and `ProfileForm` tests. What hurt: `ProfileForm` grew to ~320 lines, and field rules are now copied three times (backend, auth, me). | decision |
+| Re-decide when a form needs dynamic field arrays, or when the shared field rules move into `@alumni/shared` (follow-up) | follow-up |
 
 ## Related
 

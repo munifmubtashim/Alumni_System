@@ -136,3 +136,22 @@
 
 ## CAND-031 [review-corr]
 A "focus was lost" check (activeElement is body) is right after a user action but wrong in a timer callback. A timer that restores focus can steal it and scroll the page. Restore focus only on explicit dismiss, or use preventScroll.
+
+
+## Candidate verdicts
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-001, 013, 014, 009, 011 | demote-to-gotcha | ^g37 |
+| CAND-003, 004, 005, 012, 031 | demote-to-gotcha | ^g36 |
+| CAND-007, 008 | demote-to-gotcha | ^g38 |
+| CAND-019 (3 reviewers), 030 | promote | LESSON-REQ-010-1 |
+| CAND-017, 020 (arch) | promote | LESSON-REQ-010-2 |
+| CAND-010, 015, 016 | promote | LESSON-REQ-010-3 |
+| CAND-022 | promote | LESSON-REQ-010-4 |
+| CAND-002, 018, 023 | promote | LESSON-REQ-010-5 |
+| CAND-006, 020 (qual) | discard | follow-up REQ (shared client field rules), listed in the PR, not a lesson yet |
+| CAND-021 | discard | follow-up (shared focus-lost helper), listed in the PR |
+| CAND-024 | discard | trivial; follow-up (name contrast pairs by use) |
+
+Cross-branch dedup: compared against origin/redesign (last updated 4 hours ago); no REQ-010 lessons exist there.

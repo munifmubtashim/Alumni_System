@@ -52,3 +52,8 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-009-2 | Undo only what the mutation wrote, and let the settle check count itself and ignore paused writes | frontend, tanstack-query, optimistic, adr-09 | guideline | REQ-009 |
 | LESSON-REQ-009-3 | Offset-paged lists need an id tie-break in the query and offsets taken from the server page lengths | api, frontend, pagination, tanstack-query | guideline | REQ-009 |
 | LESSON-REQ-009-4 | Adding a lazy feature means editing six places, and the vault copies have no check | frontend, lazy-routes, eslint, docs, vault | guideline | REQ-009 |
+| LESSON-REQ-010-1 | When one feature changes data another feature caches, take the other feature's real query keys and test against a real cache | frontend, tanstack-query, cache, lazy-routes | trap | REQ-010 |
+| LESSON-REQ-010-2 | A route guard that owns a query's loading and error state makes the page's own states unreachable; guard on `data === undefined` | frontend, auth, guards, tanstack-query | guideline | REQ-010 |
+| LESSON-REQ-010-3 | Gate a leave prompt on the blocker state and on the current reason to block, because `blocker.reset()` lands a render later | frontend, react-router, forms, tests | trap | REQ-010 |
+| LESSON-REQ-010-4 | When an ADR names a "revisit at X" trigger, the REQ that reaches X records the outcome in that ADR at its architect gate | vault, adr, process, forms | guideline | REQ-010 |
+| LESSON-REQ-010-5 | A new nav entry or menu item means grepping every README for the old entry list, not only the lazy-page counts | frontend, docs, navigation, vault | guideline | REQ-010 |

@@ -25,6 +25,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-007 | App shell and Home match S1 (avatar menu, phone tab bar, quick-link cards) | merged 2026-10-06 (PR #20) | specs/_archive/2026-10/m/REQ-007-app-shell-home-s1 |
 | REQ-008 | Alumni profile page at /alumni/:id (lazy route, S3 designs, Back link keeps directory search) | merged 2026-10-06 (PR #21) | specs/_archive/2026-10/m/REQ-008-alumni-profile-page |
 | REQ-009 | Post feed page at /feed (lazy, S4 designs, optimistic posts and comments, comment edit endpoint) | merged 2026-10-07 (PR #23) | specs/_archive/2026-10/m/REQ-009-post-feed-page |
+| REQ-010 | My Profile page at /me (lazy, S5 designs, API-backed fields only, leave guard, toast) | ready to merge 2026-10-07 | specs/2026-10/m/REQ-010-my-profile-page |
 
 ## ADRs
 
@@ -33,7 +34,7 @@ _(REQ pages by id, with a one-line summary)_
 | [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] | UI layer: Base UI headless + CSS Modules on generated tokens | accepted | 2026-10-04 |
 | [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 |
 | [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] | Frontend session: token store + ['me'] Query; global 401 via registered handler | accepted | 2026-10-05 |
-| [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library for now | accepted | 2026-10-05 |
+| [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library (re-decided at REQ-010: stay) | accepted | 2026-10-05 |
 | [[architecture/adr-05-backend-tests-vitest-supertest\|ADR-05]] | Backend tests: Vitest + supertest, one mocked boundary per level, no DB | accepted | 2026-10-05 |
 | [[architecture/adr-06-config-leaf-layer\|ADR-06]] | `src/config/` leaf layer for app-wide constants | accepted | 2026-10-06 |
 | [[architecture/adr-07-root-layout-and-headerless-auth\|ADR-07]] | Root layout above two shells; header-less auth pages | accepted | 2026-10-06 |

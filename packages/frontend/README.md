@@ -156,7 +156,7 @@ ADR-04: no form library for now.
 - On submit with errors: show them per field (`Input error`) and focus the first invalid field. Otherwise call the `useMutation`. The submit button gets `loading` (disabled, `aria-busy`), so it can't be pressed twice.
 - Server errors go through a pure mapper (`features/auth/authErrors.ts`): login 401 → form Alert "Email or password is incorrect"; sign-up 409 → email field error with a "Log in instead" link; 400 → its message; network or 5xx → "Couldn't reach the server, try again".
 - Fields hidden by the role switch keep their values but are not validated or sent (`toRegisterInput`).
-- **Revisit** when a form passes about 8 fields or needs dynamic field arrays (likely My Profile): pick React Hook Form + Zod, or move validation into `@alumni/shared`.
+- **Revisit** when a form needs dynamic field arrays, or when the field rules move into `@alumni/shared`. My Profile (up to 12 fields, REQ-010) reached the old 8-field mark and stayed with controlled state (ADR-04).
 
 ## Primitives added in REQ-002
 
