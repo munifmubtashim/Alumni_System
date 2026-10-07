@@ -80,3 +80,45 @@
 **Context:** The REQ-010 count sat in three docs; only a grep for the number found them.
 
 - (TASK-009a) Adding a colour token touches four places, not two: tokens.json, regenerated tokens.css, the design-system README table, and `scripts/generate-tokens.test.ts`, which pins the token count (15 -> 17). A REQ that adds tokens should list the generator test in its blast radius up front.
+
+## CAND-017 [review-qual]
+**Claim:** When a component is described as "reusing X" in architecture, the README written at wrapup must be checked against the code, not the plan.
+**Saw it in:** `packages/frontend/src/features/profile/README.md:9` ("a `Tag`") vs `ProfileHeader.tsx` (own `.badge` span)
+**Context:** Architecture said the badge would reuse Tag; the build used a custom pill and the README kept the plan's wording.
+
+## CAND-018 [review-qual]
+**Claim:** A CSS class reused for a second element (e.g. `.icon` on the location pin) inherits every rule on it, including breakpoint `display: none`.
+**Saw it in:** `packages/frontend/src/features/profile/ProfileHeader.tsx` (pin uses `styles.icon`), `ProfileHeader.module.css` (`.icon` hidden below 48rem)
+**Context:** The rule was written for the LinkedIn icon only; the pin vanishes on phones.
+
+## CAND-A01 [review-arch]
+**Claim:** Build a DTO one way only: constructor args or a typed object, never `Object.assign` over a constructor that lacks the new fields.
+**Saw it in:** `packages/backend/src/businessLogic/src/AlumniManager.ts:36`
+**Context:** Five fields were added to the class body but not the constructor, so create used a spread that the compiler cannot check.
+
+## CAND-A02 [review-arch]
+**Claim:** When a form field is hidden by a CSS breakpoint, name the CSS rule in the JS that handles its errors, and prefer a `matchMedia` hook if a second one appears.
+**Saw it in:** `packages/frontend/src/features/me/ProfileForm.tsx:+60`
+**Context:** `getComputedStyle` is used to detect a width-hidden field, which jsdom tests cannot reproduce.
+
+- (ui-review) A rule whose error lands on a visible field but names a CSS-hidden one (year order, `ProfileForm.tsx:53`) gives phone users no way to act; run the hidden-field hint check on the field that carries the message, not just the field that is hidden.
+
+## CAND-019 [review-reflect]
+**Claim:** On a full-replace endpoint, a NOT NULL boolean must be sent every time; the validator treats "omitted" as false, so a partial client silently turns it off.
+**Saw it in:** `packages/backend/src/businessLogic/src/validation.ts:314` (`optionalBoolean`), `features/me/validation.ts` `toUpdateInput`
+**Context:** PUT /api/alumni/:id and PUT /api/me now reset mentorship_available when the key is absent; documented only in conventions-api.md.
+
+## CAND-020 [review-reflect]
+**Claim:** A cross-field backend error message must start with the label of a field visible at every width, because the client maps messages to fields by prefix (extends G38).
+**Saw it in:** `packages/backend/src/businessLogic/src/validation.ts:426`, `features/me/profileErrors.ts:2124`
+**Context:** The start/graduation order rule says "Graduation year can't be before..." so it lands on the field phones still show.
+
+## CAND-021 [review-reflect]
+**Claim:** A migration with no runner needs a deploy-order line: apply it before the API that reads its columns, or the old-schema API answers 500.
+**Saw it in:** `db/migrations/004_alumni_profile_fields.sql:4`, CLAUDE.md Environment section
+**Context:** Written down for 004 only; no gotcha or ADR makes it a standing rule for the next migration (G15 covers schema location, not order).
+
+## CAND-024 [review-corr]
+**Claim:** Do not hide an editable field with CSS at a width breakpoint when browser zoom can reach it; zoomed desktop users lose the field.
+**Saw it in:** `packages/frontend/src/features/me/Section.module.css:2070`
+**Context:** Start year is `display: none` below 48rem, which 200% zoom on a 1280px window also triggers.
