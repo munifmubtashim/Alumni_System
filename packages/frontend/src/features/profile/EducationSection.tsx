@@ -5,14 +5,15 @@ import styles from './Section.module.css';
 import { Timeline, type TimelineItem } from './Timeline';
 
 export interface EducationSectionProps {
-  alumni: Pick<Alumni, 'university' | 'department' | 'graduation_year'>;
+  alumni: Pick<Alumni, 'university' | 'department' | 'graduation_year' | 'degree' | 'start_year'>;
 }
 
 /**
  * The one Education entry the data supports: the university as the title and
- * "Department · Class of YYYY" under it. With no university, that line becomes
- * the title. No degree and no year range (AC5). Not rendered when all three
- * fields are empty (AC7).
+ * `educationLine` under it ("B.Sc. Product Design · 2013–2017", or
+ * "Department · Class of YYYY" when there is no degree or start year). With no
+ * university, that line becomes the title. Not rendered when every field is
+ * empty (AC7; REQ-011 AC11).
  */
 function educationEntry(alumni: EducationSectionProps['alumni']): TimelineItem | undefined {
   const university = present(alumni.university);

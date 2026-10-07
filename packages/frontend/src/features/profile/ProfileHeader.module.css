@@ -7,7 +7,12 @@
    48rem; phone initials text-heading-md (design 24px). Off-scale gaps are
    calc() of tokens: 10px = space-2 + space-1 / 2, 6px = space-1 + space-1 / 2.
    The 72px phone avatar overrides Avatar's own `.avatar[data-size='lg']`, so
-   the selector must be more specific than that rule (ADV-004). */
+   the selector must be more specific than that rule (ADV-004).
+   REQ-011: the badge sits beside the name from 48rem (gap 10px) and under the
+   headline line on phone, where .nameRow is display: contents and `order`
+   moves the badge and the links row (reading order stays name, badge, line).
+   Location and LinkedIn share one row (gap 16px desktop, 14px phone); the pin
+   is decorative ink-muted, allowed only on aria-hidden marks (G27). */
 
 .header {
   display: flex;
@@ -27,6 +32,32 @@
   max-inline-size: 100%;
 }
 
+.nameRow {
+  display: contents;
+}
+
+/* S3 pill: 999px radius, padding 4px 10px, 12px/500 text, a filled 10px dot,
+   gap 6px; sage tint (success-soft) with success-strong text (5.2:1 light,
+   5.5:1 dark, styles/contrast.test.ts). */
+.badge {
+  order: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+  margin-block-start: calc(var(--space-1) + var(--space-1) / 2);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) calc(var(--space-2) + var(--space-1) / 2);
+  font: var(--text-caption);
+  background: var(--success-soft);
+  color: var(--success-strong);
+}
+
+.badgeDot {
+  flex: none;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+}
+
 .name {
   margin: 0;
   color: var(--ink-primary);
@@ -43,11 +74,36 @@
   overflow-wrap: anywhere;
 }
 
+.links {
+  order: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--space-3) + var(--space-1) / 2);
+  margin-block-start: calc(var(--space-1) + var(--space-1) / 2);
+  min-width: 0;
+}
+
+.location {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  font-weight: var(--text-body-weight);
+  overflow-wrap: anywhere;
+}
+
+.pin {
+  color: var(--ink-muted);
+}
+
 .linkedIn {
   display: inline-flex;
   align-items: center;
   gap: calc(var(--space-1) + var(--space-1) / 2);
-  margin-block-start: var(--space-1);
   color: var(--accent);
   font: var(--text-caption);
   text-decoration: none;
@@ -93,8 +149,31 @@
     gap: calc(var(--space-1) + var(--space-1) / 2);
   }
 
+  .nameRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--space-2) + var(--space-1) / 2);
+    min-width: 0;
+  }
+
+  .badge {
+    margin-block-start: 0;
+  }
+
   .name {
     font: var(--text-heading-lg);
+  }
+
+  .links {
+    justify-content: flex-start;
+    gap: var(--space-4);
+    margin-block-start: var(--space-1);
+  }
+
+  .location {
+    font-size: var(--text-label-size);
+    line-height: var(--text-label-line);
   }
 
   .headline {

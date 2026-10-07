@@ -57,10 +57,67 @@ describe('ProfileHeader', () => {
     },
   );
 
-  it('never shows the email, a location or a mentorship badge', () => {
-    const { container } = renderHeader(AMIRA);
+  it('never shows the email', () => {
+    const { container } = renderHeader({
+      ...AMIRA,
+      location: 'Lisbon',
+      mentorship_available: true,
+    });
     expect(container).not.toHaveTextContent('amira@example.com');
-    expect(container).not.toHaveTextContent(/mentor|Lisbon/i);
+  });
+
+  it('looks as before REQ-011 when none of the new values are set', () => {
+    const { container } = renderHeader({
+      ...AMIRA,
+      headline: null,
+      location: '  ',
+      mentorship_available: false,
+    });
+    expect(container).not.toHaveTextContent(/mentor|Location/i);
+    expect(screen.getByText('Design Lead at Terra Climate · Class of 2017')).toBeInTheDocument();
+    expect(container.querySelectorAll('svg')).toHaveLength(1);
+  });
+
+  it('shows the headline under the name in place of job title and company', () => {
+    renderHeader({ ...AMIRA, headline: 'Climate-tech design lead' });
+    expect(screen.getByText('Climate-tech design lead · Class of 2017')).toBeInTheDocument();
+    expect(screen.queryByText(/Terra Climate/)).not.toBeInTheDocument();
+  });
+
+  it('shows the location, named for screen readers, with a decorative pin', () => {
+    renderHeader({ ...AMIRA, location: ' Lisbon, Portugal ' });
+    const location = screen.getByText(/Lisbon, Portugal/);
+    expect(location).toHaveTextContent(/^Location: Lisbon, Portugal$/);
+    expect(location.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('shows the location even without a LinkedIn link', () => {
+    renderHeader({ ...AMIRA, linkedin_url: undefined, location: 'Lisbon' });
+    expect(screen.getByText(/Lisbon/)).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('shows the "Available for mentorship" badge only when the flag is true', () => {
+    const { unmount } = renderHeader({ ...AMIRA, mentorship_available: true });
+    expect(screen.getByText('Available for mentorship')).toBeInTheDocument();
+    unmount();
+    renderHeader({ ...AMIRA, mentorship_available: false });
+    expect(screen.queryByText('Available for mentorship')).not.toBeInTheDocument();
+  });
+
+  it('draws the badge as its own pill with a hidden dot, not a Tag (S3)', () => {
+    renderHeader({ ...AMIRA, mentorship_available: true });
+    const badge = screen.getByText('Available for mentorship');
+    expect(badge).toHaveTextContent(/^Available for mentorship$/);
+    expect(badge).not.toHaveAttribute('data-tone');
+    const dot = badge.querySelector('svg');
+    expect(dot).toHaveAttribute('aria-hidden', 'true');
+    expect(dot).toHaveAttribute('fill', 'currentColor');
+  });
+
+  it('shows no badge when the flag is missing', () => {
+    renderHeader(AMIRA);
+    expect(screen.queryByText(/mentor/i)).not.toBeInTheDocument();
   });
 
   it('uses the large avatar, hidden from assistive tech', () => {
