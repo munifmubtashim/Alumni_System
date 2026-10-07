@@ -1,0 +1,105 @@
+/* Design: docs/design/screens/app/S5-UnsavedToast. An inverse pill: ink-primary
+   surface with surface-page text, the existing inverse pair in both themes
+   (same ratio as body text, so it passes 4.5:1; see contrast.test.ts).
+   Expected differences from S5, each because there is no token for it: no
+   soft shadow (box-shadow is banned), the check is currentcolor rather than
+   S5's light green, radius-lg (14px) for S5's 10px, and the enter animation
+   runs for duration-fast (150ms) instead of 250ms. S5 has no dismiss button;
+   it is added so the message can be closed by keyboard and pointer.
+   Phone: inset full width below the top edge. From 48rem: top-right corner,
+   S5's 24px / 32px offsets (space-5 / space-6). Above the header (z 2) and
+   menus and popovers (z 10). */
+
+.toast {
+  position: fixed;
+  z-index: 20;
+  inset-block-start: var(--space-3);
+  inset-inline: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--ink-primary);
+  color: var(--surface-page);
+  animation: toast-in var(--duration-fast) var(--easing-standard);
+}
+
+@media (width >= 48rem) {
+  .toast {
+    inset-block-start: var(--space-5);
+    inset-inline: auto var(--space-6);
+    max-inline-size: calc(100vw - 2 * var(--space-6));
+  }
+}
+
+.check {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Grows to fill the phone width; a long message wraps instead of overflowing. */
+.message {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font: var(--text-label);
+  overflow-wrap: anywhere;
+}
+
+/* 2.75rem square: a touch-sized target inside the pill. */
+.dismiss {
+  appearance: none;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* The global accent focus ring is too faint on ink-primary, so the ring here
+   uses the toast's own text colour (surface-page), the same 4.5:1+ pair. */
+.dismiss:focus-visible {
+  outline-color: currentcolor;
+  outline-offset: 0;
+}
+
+.icon {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-2)));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
