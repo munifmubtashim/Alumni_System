@@ -2,6 +2,10 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-07] req-merged | REQ-011-profile-headline-location-mentorship | PR #26 into redesign
+## [2026-10-07] req-merged | REQ-012-account-settings-nav-labels | PR #27 into redesign
+## [2026-10-07] req-archived | REQ-011-profile-headline-location-mentorship
+## [2026-10-07] req-archived | REQ-012-account-settings-nav-labels
 ## [2026-10-07] ship-gate-cleared | REQ-012-account-settings-nav-labels
 ## [2026-10-07] lesson | L-REQ-012-1..2 — sibling-branch constants, record design deviations
 ## [2026-10-07] req-ready-to-merge | REQ-012-account-settings-nav-labels | My Profile → Account settings; /me out of header nav; tab "Account"
