@@ -1,18 +1,25 @@
-import type { LoginResponse, MyProfile, RegisterInput, RegisterResponse } from '@alumni/shared';
+import type {
+  ChangePasswordInput,
+  LoginResponse,
+  MyProfile,
+  RegisterInput,
+  RegisterResponse,
+  UpdateMyProfileInput,
+} from '@alumni/shared';
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
-import { getMe, login, register } from './authApi';
+import { changePassword, getMe, login, register, updateMyProfile } from './authApi';
 import { httpClient } from './httpClient';
 
 const originalAdapter = httpClient.defaults.adapter;
 
 // The endpoint functions take no config, so the mock goes on the client's
 // default adapter for one test (restored in afterEach).
-function respondWith(data: unknown): () => InternalAxiosRequestConfig {
+function respondWith(data: unknown, status = 200): () => InternalAxiosRequestConfig {
   let captured: InternalAxiosRequestConfig | undefined;
   const adapter: AxiosAdapter = (config) => {
     captured = config;
-    return Promise.resolve({ data, status: 200, statusText: 'OK', headers: {}, config });
+    return Promise.resolve({ data, status, statusText: String(status), headers: {}, config });
   };
   httpClient.defaults.adapter = adapter;
   return () => {
@@ -85,5 +92,47 @@ describe('authApi', () => {
     expect(config.method).toBe('get');
     expect(config.url).toBe('/me');
     expect(config.data).toBeUndefined();
+  });
+  it('updateMyProfile puts the input to /me and returns the saved profile', async () => {
+    const input: UpdateMyProfileInput = {
+      name: 'Ada',
+      university: 'NSU',
+      photo_url: 'https://example.com/a.png',
+    };
+    const reply: MyProfile = {
+      user_id: 7,
+      name: 'Ada',
+      email: 'ada@b.co',
+      role: 'admin',
+      university: 'NSU',
+      photo_url: 'https://example.com/a.png',
+      alumni_id: null,
+      has_alumni_profile: false,
+      student_id: null,
+      has_student_profile: false,
+    };
+    const sent = respondWith(reply);
+
+    await expect(updateMyProfile(input)).resolves.toEqual(reply);
+
+    const config = sent();
+    expect(config.method).toBe('put');
+    expect(config.url).toBe('/me');
+    expect(bodyOf(config)).toEqual(input);
+  });
+
+  it('changePassword puts both passwords to /me/password and resolves on 204', async () => {
+    const input: ChangePasswordInput = {
+      current_password: 'old-secret',
+      new_password: 'new-secret',
+    };
+    const sent = respondWith('', 204);
+
+    await expect(changePassword(input)).resolves.toBeUndefined();
+
+    const config = sent();
+    expect(config.method).toBe('put');
+    expect(config.url).toBe('/me/password');
+    expect(bodyOf(config)).toEqual(input);
   });
 });

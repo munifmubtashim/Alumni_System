@@ -1,4 +1,11 @@
-import type { LoginResponse, MyProfile, RegisterInput, RegisterResponse } from '@alumni/shared';
+import type {
+  ChangePasswordInput,
+  LoginResponse,
+  MyProfile,
+  RegisterInput,
+  RegisterResponse,
+  UpdateMyProfileInput,
+} from '@alumni/shared';
 import { httpClient } from './httpClient';
 
 // Endpoint functions only: storing the token, caching and navigation belong to
@@ -17,4 +24,15 @@ export async function register(input: RegisterInput): Promise<RegisterResponse> 
 export async function getMe(): Promise<MyProfile> {
   const res = await httpClient.get<MyProfile>('/me');
   return res.data;
+}
+
+// PUT /api/me is a full replace: omitted optional fields are cleared.
+export async function updateMyProfile(input: UpdateMyProfileInput): Promise<MyProfile> {
+  const res = await httpClient.put<MyProfile>('/me', input);
+  return res.data;
+}
+
+// PUT /api/me/password answers 204 with no body.
+export async function changePassword(input: ChangePasswordInput): Promise<void> {
+  await httpClient.put('/me/password', input);
 }
