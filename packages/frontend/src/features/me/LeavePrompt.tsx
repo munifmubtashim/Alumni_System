@@ -17,6 +17,7 @@ export interface LeavePromptProps {
  * changes (useLeaveGuard). There is no dialog primitive, so it is a labelled
  * group, not a modal. Focus moves to "Keep editing" when it appears: the user
  * just pressed a link elsewhere, and the safe choice is under their hand.
+ * Escape from either button also keeps editing.
  */
 export function LeavePrompt({ onStay, onLeave }: LeavePromptProps) {
   const labelId = useId();
@@ -27,7 +28,18 @@ export function LeavePrompt({ onStay, onLeave }: LeavePromptProps) {
   }, []);
 
   return (
-    <div role="group" aria-labelledby={labelId} className={styles.content}>
+    // Escape keeps editing, like closing a dialog with its safe choice.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- the keys come from its buttons
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      className={styles.content}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return;
+        event.preventDefault();
+        onStay();
+      }}
+    >
       <p id={labelId} className={styles.message}>
         <InfoIcon />
         {LEAVE_PROMPT_TEXT}

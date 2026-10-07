@@ -15,6 +15,36 @@ describe('Toast', () => {
     expect(status).not.toContainElement(screen.getByRole('button', { name: 'Dismiss' }));
   });
 
+  it('keeps an empty status region mounted while closed, and writes the message into it', () => {
+    const closed = (
+      <Toast onDismiss={vi.fn()} dismissLabel="Dismiss" data-testid="toast">
+        {null}
+      </Toast>
+    );
+    const { rerender } = render(closed);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    expect(screen.getByTestId('toast')).not.toHaveClass('toast');
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+
+    rerender(
+      <Toast onDismiss={vi.fn()} dismissLabel="Dismiss" data-testid="toast">
+        Saved
+      </Toast>,
+    );
+    // The same node: a live region added together with its text is often not read.
+    expect(screen.getByRole('status')).toBe(status);
+    expect(status).toHaveTextContent(/^Saved$/);
+    expect(screen.getByTestId('toast')).toHaveClass('toast');
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
+
+    rerender(closed);
+    expect(screen.getByRole('status')).toBe(status);
+    expect(status).toBeEmptyDOMElement();
+    expect(screen.getByTestId('toast')).not.toHaveClass('toast');
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('calls onDismiss when the dismiss button is pressed', async () => {
     const user = userEvent.setup();
     const onDismiss = vi.fn();

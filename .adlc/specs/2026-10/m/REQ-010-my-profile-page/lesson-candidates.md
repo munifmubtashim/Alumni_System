@@ -88,3 +88,51 @@
 **Claim:** When adding a lazy feature, also update the "Not another lazy feature" line in every other lazy feature's README.
 **Saw it in:** `packages/frontend/src/features/feed/README.md:17`
 **Context:** feed and profile READMEs still name only the older lazy features after `me` joined `LAZY_FEATURES`; LESSON-REQ-009-4's six lists do not include them.
+
+## CAND-019 [review-qual]
+**Claim:** When a lazy feature must invalidate another feature's cache, use a shared key prefix from `config/`, never a guessed literal, and test against a real cache.
+**Saw it in:** `features/me/useUpdateProfile.ts:24` (`['posts']` vs feed's `['feed','posts']`)
+**Context:** A spy on `invalidateQueries` asserted the same wrong literal, so the test passed with no effect.
+
+## CAND-020 [review-qual]
+**Claim:** Backend field rules (limits, password, year) copied into each feature's validation.ts drift; extract one client module for them.
+**Saw it in:** `features/me/validation.ts:145` vs `features/auth/validation.ts:41`
+**Context:** Third copy of NAME_MAX etc.; me's copy already adds a NUL check that auth lacks.
+
+## CAND-021 [review-qual]
+**Claim:** Extract the repeated "focus was lost" check into one helper.
+**Saw it in:** `features/me/ProfileForm.tsx:47`, `MePage.tsx:40`, `SaveBar.tsx:37`, `features/profile/ProfilePage.tsx:42`
+**Context:** Same four-line test written four times across two REQs.
+
+## CAND-019 [review-arch]
+**Claim:** When a feature invalidates another lazy feature's query keys, grep that feature's key constants first; a root-only key like `['posts']` can match nothing.
+**Saw it in:** `packages/frontend/src/features/me/useUpdateProfile.ts:46` vs `features/feed/constants.ts:23`
+**Context:** Features cannot import each other (ADR-08), so key literals drift silently; consider shared key roots in `config/`.
+
+## CAND-020 [review-arch]
+**Claim:** A guard that owns a query's pending/error state makes the page's own loading/error views dead code; pick one owner and guard on `data === undefined`, not `isError`.
+**Saw it in:** `packages/frontend/src/features/auth/guards.tsx:37-41`, `features/me/MePage.tsx:1524`
+**Context:** A failed background refetch with cached data sets `isError` and unmounts a dirty form.
+
+## CAND-030 [review-corr]
+**Claim:** When invalidating a cache after a write, grep every `queryKey` that renders the changed fields; do not infer keys from feature names.
+**Saw it in:** `packages/frontend/src/features/me/useUpdateProfile.ts:27`
+**Context:** The list used `['posts']` while the feed lives under `['feed','posts']`, so the feed was missed.
+
+## CAND-022 [review-reflect]
+**Claim:** When an ADR names a "revisit at X" trigger, the architect gate for the REQ that hits X records the outcome in that ADR, even if the answer is "stay".
+**Saw it in:** `.adlc/architecture/adr-04-forms-without-a-library.md` (Decision) vs REQ-010 architecture "Deviation: none"
+**Context:** My Profile has 12 fields; ADR-04 predicted it as the revisit point and stayed unchanged.
+
+## CAND-023 [review-reflect]
+**Claim:** A REQ that adds a nav entry or menu item must grep every README for the old list of entries ("Directory and Feed", "Log out" menu text), not only for page counts.
+**Saw it in:** `packages/frontend/src/app/README.md:12`, `packages/frontend/README.md:121`
+**Context:** LESSON-REQ-009-4 covers lazy-page counts; nav and menu prose went stale separately.
+
+## CAND-024 [review-reflect]
+**Claim:** Pin each new surface's colour pair in `contrast.test.ts` under its own `use:` label, even when the ratio equals an existing row.
+**Saw it in:** `packages/frontend/src/components/ui/Toast/Toast.module.css:1`
+**Context:** Toast and save bar reuse existing pairs, but the test names neither, so a token change would not point at them.
+
+## CAND-031 [review-corr]
+A "focus was lost" check (activeElement is body) is right after a user action but wrong in a timer callback. A timer that restores focus can steal it and scroll the page. Restore focus only on explicit dismiss, or use preventScroll.

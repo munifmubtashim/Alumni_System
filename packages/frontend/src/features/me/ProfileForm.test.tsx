@@ -477,4 +477,95 @@ describe('ProfileForm toast', () => {
     expect(screen.queryByText(PASSWORD_SAVED_TEXT)).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
   });
+
+  it('keeps an empty status region in the page before and after the toast', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 204 }));
+    renderForm(ALUMNI);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+
+    await typePassword(user, 'oldpassword', 'newpassword1');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => {
+      expect(status).toHaveTextContent(PASSWORD_SAVED_TEXT);
+    });
+    await user.click(screen.getByRole('button', { name: TOAST_DISMISS_LABEL }));
+    expect(screen.getByRole('status')).toBe(status);
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('does not close while hovered, then closes TOAST_MS after the pointer leaves', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+    api(() => ({ status: 204 }));
+    renderForm(ALUMNI);
+
+    await typePassword(user, 'oldpassword', 'newpassword1');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    const dismiss = await screen.findByRole('button', { name: TOAST_DISMISS_LABEL });
+    await user.hover(dismiss);
+    act(() => {
+      vi.advanceTimersByTime(TOAST_MS * 3);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(PASSWORD_SAVED_TEXT);
+
+    await user.unhover(dismiss);
+    act(() => {
+      vi.advanceTimersByTime(TOAST_MS - 100);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(PASSWORD_SAVED_TEXT);
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('does not close while Dismiss has focus, and focus goes to the heading when it does', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+    api(() => ({ status: 204 }));
+    renderForm(ALUMNI);
+
+    await typePassword(user, 'oldpassword', 'newpassword1');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    const dismiss = await screen.findByRole('button', { name: TOAST_DISMISS_LABEL });
+    act(() => {
+      dismiss.focus();
+    });
+    act(() => {
+      vi.advanceTimersByTime(TOAST_MS * 3);
+    });
+    expect(dismiss).toHaveFocus();
+    expect(screen.getByRole('status')).toHaveTextContent(PASSWORD_SAVED_TEXT);
+
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  it('closes TOAST_MS after focus leaves it', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+    api(() => ({ status: 204 }));
+    renderForm(ALUMNI);
+
+    await typePassword(user, 'oldpassword', 'newpassword1');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    const dismiss = await screen.findByRole('button', { name: TOAST_DISMISS_LABEL });
+    act(() => {
+      dismiss.focus();
+    });
+    act(() => {
+      vi.advanceTimersByTime(TOAST_MS * 2);
+    });
+    act(() => {
+      screen.getByLabelText('Company').focus();
+    });
+    act(() => {
+      vi.advanceTimersByTime(TOAST_MS);
+    });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByLabelText('Company')).toHaveFocus();
+  });
 });

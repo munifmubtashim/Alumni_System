@@ -8,6 +8,7 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 
 ```
 ## [2026-10-07] req-archived | REQ-009-post-feed-page
+## [2026-10-07] verify-gate-cleared | REQ-010-my-profile-page | findings: C0/M1/m6 open (M2 ADR-04 recorded at wrapup; m1 guard follow-up)
 ## [2026-10-07] implement-gate-cleared | REQ-010-my-profile-page | 8 tasks, 1211 tests pass; S5 comparison partial, rest left to review
 ## [2026-10-07] architect-gate-cleared | REQ-010-my-profile-page | 8 tasks, full adversary pass 0C/3M/5m fixed, no new ADR
 ## [2026-10-07] work-path-set | REQ-010-my-profile-page | branch at /Users/munifmubtashim/Alumni_System (feat/REQ-010-my-profile-page)

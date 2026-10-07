@@ -57,6 +57,20 @@ describe('SaveBar', () => {
     expect(onStay).toHaveBeenCalledOnce();
   });
 
+  it('keeps editing on Escape from either prompt button', async () => {
+    const user = userEvent.setup();
+    const onStay = vi.fn();
+    const onLeave = vi.fn();
+    renderInForm(<SaveBar saving={false} onDiscard={vi.fn()} prompt={{ onStay, onLeave }} />);
+
+    await user.keyboard('{Escape}');
+    expect(onStay).toHaveBeenCalledOnce();
+    screen.getByRole('button', { name: 'Leave' }).focus();
+    await user.keyboard('{Escape}');
+    expect(onStay).toHaveBeenCalledTimes(2);
+    expect(onLeave).not.toHaveBeenCalled();
+  });
+
   it('puts focus on Save changes when the prompt closes', async () => {
     const user = userEvent.setup();
     function Host() {

@@ -1,6 +1,6 @@
 import type { MyProfile } from '@alumni/shared';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { QueryClient, QueryClientProvider, QueryObserver } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { AxiosError, type AxiosResponse } from 'axios';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -74,9 +74,34 @@ afterEach(() => {
 });
 
 describe('useUpdateProfile', () => {
-  it('saves the profile, writes ["me"] and marks alumni and posts stale', async () => {
+  it('saves the profile, writes ["me"] and refetches every cache that shows the user', async () => {
     api({ '/me': 200 });
-    const { client, invalidate, result } = setup();
+    const { client, result } = setup();
+    // The keys other features read (they are not imported: lazy features never
+    // import each other). Seeded with data and an active observer each, so
+    // invalidation shows up as a real refetch, not just a spy call.
+    const keys = [
+      ['feed', 'posts'],
+      ['feed', 'comments', 1],
+      ['alumni', 'profile', 11],
+      ['alumni', 'search', {}],
+      ['posts', 'user', 1],
+    ] as const;
+    const fetches = new Map<string, number>();
+    const unsubscribes = keys.map((queryKey) => {
+      client.setQueryData(queryKey, []);
+      const observer = new QueryObserver(client, {
+        queryKey,
+        queryFn: () => {
+          const id = JSON.stringify(queryKey);
+          fetches.set(id, (fetches.get(id) ?? 0) + 1);
+          return [];
+        },
+        staleTime: Infinity,
+      });
+      return observer.subscribe(() => undefined);
+    });
+
     const saved = await act(() =>
       result.current.mutateAsync({ profile: { name: 'Saved name' }, password: null }),
     );
@@ -87,8 +112,19 @@ describe('useUpdateProfile', () => {
       passwordError: null,
     });
     expect(client.getQueryData<MyProfile>(CURRENT_USER_QUERY_KEY)?.name).toBe('Saved name');
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['alumni'] });
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['posts'] });
+    await waitFor(() => {
+      for (const queryKey of keys) {
+        expect(fetches.get(JSON.stringify(queryKey)), JSON.stringify(queryKey)).toBe(1);
+      }
+    });
+    for (const queryKey of keys) {
+      expect(client.getQueryState(queryKey)?.status, JSON.stringify(queryKey)).toBe('success');
+    }
+    // ['me'] holds the saved profile; it is written, not refetched.
+    expect(client.getQueryState(CURRENT_USER_QUERY_KEY)?.isInvalidated).toBe(false);
+    unsubscribes.forEach((unsubscribe) => {
+      unsubscribe();
+    });
   });
 
   it('skips PUT /api/me when only the password is sent, and leaves the cache alone', async () => {

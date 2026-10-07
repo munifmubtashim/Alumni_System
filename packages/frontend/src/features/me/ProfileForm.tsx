@@ -79,6 +79,11 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
   const [passwordFormError, setPasswordFormError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   const toastCount = useRef(0);
+  // The id of the toast under the pointer / holding focus. Kept per id, so a
+  // toast that unmounts while hovered (no mouseleave) never pauses the next.
+  const [hoveredToast, setHoveredToast] = useState<number | null>(null);
+  const [focusedToast, setFocusedToast] = useState<number | null>(null);
+  const toastPaused = toast !== null && (hoveredToast === toast.id || focusedToast === toast.id);
   // A save succeeded in this visit: the "all saved" caption may show while clean.
   const [savedOnce, setSavedOnce] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -100,15 +105,22 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
     if (blocker.state === 'blocked' && !guarding) blocker.reset();
   }, [blocker, guarding]);
 
+  // Auto-close after TOAST_MS, paused while the toast is hovered or holds
+  // focus (WCAG 2.2.1); leaving it starts a fresh TOAST_MS.
   useEffect(() => {
-    if (toast === null) return;
+    if (toast === null || toastPaused) return;
     const timer = setTimeout(() => {
-      setToast(null);
+      // Same as closeToast (inlined to keep the effect's dependencies honest).
+      flushSync(() => {
+        setToast(null);
+      });
+      // preventScroll: this fires on a timer, so it must not jump the page to the top.
+      if (focusIsLost()) headingRef.current?.focus({ preventScroll: true });
     }, TOAST_MS);
     return () => {
       clearTimeout(timer);
     };
-  }, [toast]);
+  }, [toast, toastPaused, headingRef]);
 
   function focusField(field: MeField) {
     const element = formRef.current?.elements.namedItem(field);
@@ -117,6 +129,15 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
 
   function focusHeadingIfLost() {
     if (focusIsLost()) headingRef.current?.focus();
+  }
+
+  // Dismiss unmounts under the pointer or keyboard: focus goes to the heading.
+  // The timer pauses while the toast has focus, but the same rule covers it.
+  function closeToast() {
+    flushSync(() => {
+      setToast(null);
+    });
+    focusHeadingIfLost();
   }
 
   function showToast(text: string) {
@@ -298,20 +319,26 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
         {savedOnce && !dirty && <p className={styles.allSaved}>{ALL_SAVED_TEXT}</p>}
         {showBar && <SaveBar saving={save.isPending} onDiscard={handleDiscard} prompt={prompt} />}
       </form>
-      {toast !== null && (
-        <Toast
-          key={toast.id}
-          dismissLabel={TOAST_DISMISS_LABEL}
-          onDismiss={() => {
-            flushSync(() => {
-              setToast(null);
-            });
-            focusHeadingIfLost();
-          }}
-        >
-          {toast.text}
-        </Toast>
-      )}
+      {/* Always mounted: its status region must be in the page before the
+          message is written into it, or screen readers may not announce it. */}
+      <Toast
+        dismissLabel={TOAST_DISMISS_LABEL}
+        onDismiss={closeToast}
+        onMouseEnter={() => {
+          if (toast !== null) setHoveredToast(toast.id);
+        }}
+        onMouseLeave={() => {
+          setHoveredToast(null);
+        }}
+        onFocus={() => {
+          if (toast !== null) setFocusedToast(toast.id);
+        }}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setFocusedToast(null);
+        }}
+      >
+        {toast?.text ?? null}
+      </Toast>
     </>
   );
 }

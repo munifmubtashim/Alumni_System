@@ -22,9 +22,12 @@ export interface SaveResult {
 }
 
 // Query keys whose rows carry the user's name, photo or profile fields:
-// ['alumni', ...] (the directory and /alumni/:id) and ['posts', ...] (feed and
-// profile cards show the author's name and photo).
-const STALE_AFTER_PROFILE_SAVE = [['alumni'], ['posts']] as const;
+// ['alumni', ...] (the directory and /alumni/:id), ['posts', ...] (recent posts
+// on /alumni/:id) and ['feed', ...] (the feed's ['feed','posts'] and
+// ['feed','comments',id] show the author's name and photo). 'feed' is a string
+// literal, not features/feed's POSTS_QUERY_KEY: lazy features never import
+// each other (ADR-08), so keep it in step with features/feed/constants.ts.
+const STALE_AFTER_PROFILE_SAVE = [['alumni'], ['posts'], ['feed']] as const;
 
 /**
  * Save for /me: one mutation, two calls (LESSON-REQ-002-3). PUT /api/me runs
