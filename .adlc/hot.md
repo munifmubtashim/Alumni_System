@@ -7,6 +7,12 @@ Append-only chronological log of significant events. One line per entry. Newest 
 Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadata after.
 
 ```
+## [2026-10-07] req-archived | REQ-009-post-feed-page
+## [2026-10-07] implement-gate-cleared | REQ-010-my-profile-page | 8 tasks, 1211 tests pass; S5 comparison partial, rest left to review
+## [2026-10-07] architect-gate-cleared | REQ-010-my-profile-page | 8 tasks, full adversary pass 0C/3M/5m fixed, no new ADR
+## [2026-10-07] work-path-set | REQ-010-my-profile-page | branch at /Users/munifmubtashim/Alumni_System (feat/REQ-010-my-profile-page)
+## [2026-10-07] spec-gate-cleared | REQ-010-my-profile-page | build only API-backed fields; mentorship, headline, location, degree, start year, photo upload deferred
+## [2026-10-07] req-merged | REQ-009-post-feed-page | PR #23 into redesign (8d626c48)
 ## [2026-10-07] ship-gate-cleared | REQ-009-post-feed-page | 6 stale vault pages updated (REFL-002)
 ## [2026-10-07] req-ready-to-merge | REQ-009-post-feed-page | feed page /feed, comment edit endpoint, author_alumni_id, ADR-09
 ## [2026-10-07] lesson | L-REQ-009-1..4 — alumni id for profile links, optimistic rollback and settle, offset paging, six lists for a lazy feature
