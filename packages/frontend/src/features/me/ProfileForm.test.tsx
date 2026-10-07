@@ -14,13 +14,11 @@ import { LEAVE_PROMPT_TEXT } from './LeavePrompt';
 import { MENTORSHIP_HELP, MENTORSHIP_LABEL } from './MentorshipSection';
 import {
   ALL_SAVED_TEXT,
-  HIDDEN_FIELD_HINT,
   PASSWORD_SAVED_TEXT,
   PROFILE_SAVED_TEXT,
   ProfileForm,
   TOAST_DISMISS_LABEL,
   TOAST_MS,
-  YEAR_ORDER_HIDDEN_MESSAGE,
 } from './ProfileForm';
 import { SAVE_BAR_LABEL } from './SaveBar';
 import { YEAR_ORDER_MESSAGE } from './validation';
@@ -515,84 +513,56 @@ describe('ProfileForm alumni fields and Mentorship', () => {
     expect(screen.getByLabelText(label)).toHaveAccessibleDescription(message);
   });
 
-  // Below 48rem CSS hides Start year (jsdom applies no CSS, so the test hides
-  // it by hand): its error goes on the form with a hint, never on a field
-  // that cannot take focus.
-  function hideStartYear() {
-    // Class names are not scoped in tests: this is EducationSection's wrapper.
-    const wrapper = screen.getByLabelText('Start year').closest('.wideOnly');
-    if (!(wrapper instanceof HTMLElement)) throw new Error('no Start year wrapper');
-    wrapper.style.display = 'none';
-  }
+  // REQ-013: Start year shows at every width, so its errors stay on it.
+  it('renders Start year with its label for an alumni user, in no width-hidden wrapper', () => {
+    renderForm(ALUMNI);
+    const start = screen.getByLabelText('Start year');
+    expect(start).toBeVisible();
+    expect(start.closest('[style*="display: none"]')).toBeNull();
+  });
 
-  it('shows a hidden Start year check failure on the form, focused', async () => {
+  it('shows a Start year check failure on Start year and focuses it on Save', async () => {
     const user = userEvent.setup();
     api(() => ({ status: 500 }));
     renderForm(ALUMNI);
-    await user.type(screen.getByLabelText('Start year'), '20x7');
-    hideStartYear();
+    const start = screen.getByLabelText('Start year');
+    await user.type(start, '20x7');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(calls).toEqual([]);
-    const alert = screen.getByText(`Start year is not valid. ${HIDDEN_FIELD_HINT}`);
-    expect(alert.closest('[tabindex="-1"]')).toHaveFocus();
+    expect(start).toHaveFocus();
+    expect(start).toHaveAccessibleDescription('Start year is not valid');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('shows a server Start year error on the form when the field is hidden', async () => {
-    const user = userEvent.setup();
-    api(() => ({ status: 400, data: { message: 'Start year is not valid' } }));
-    renderForm(ALUMNI);
-    hideStartYear();
-    await user.type(screen.getByLabelText('Headline'), 'PM');
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
-    const alert = await screen.findByText(`Start year is not valid. ${HIDDEN_FIELD_HINT}`);
-    await waitFor(() => {
-      expect(alert.closest('[tabindex="-1"]')).toHaveFocus();
-    });
-  });
-
-  it('shows a hidden Start year error on the form when a shown field is invalid too', async () => {
+  it('focuses the first invalid field on Save when several are invalid', async () => {
     const user = userEvent.setup();
     api(() => ({ status: 500 }));
     renderForm(ALUMNI);
     await user.type(screen.getByLabelText('Start year'), '20x7');
-    hideStartYear();
     await user.clear(screen.getByLabelText('Full name'));
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(calls).toEqual([]);
     expect(screen.getByLabelText('Full name')).toHaveFocus();
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      `Start year is not valid. ${HIDDEN_FIELD_HINT}`,
+    expect(screen.getByLabelText('Start year')).toHaveAccessibleDescription(
+      'Start year is not valid',
     );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('adds the hint to the year order message when Start year is hidden', async () => {
+  it('shows the plain year order message on Graduation year on blur and on Save', async () => {
     const user = userEvent.setup();
     api(() => ({ status: 500 }));
     renderForm(ALUMNI_FULL);
-    hideStartYear();
     const graduation = screen.getByLabelText('Graduation year');
     await user.clear(graduation);
     await user.type(graduation, '2010');
     await user.tab();
-    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
+    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_MESSAGE);
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(calls).toEqual([]);
     expect(graduation).toHaveFocus();
-    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
-  });
-
-  it('adds the hint to a server year order message when Start year is hidden', async () => {
-    const user = userEvent.setup();
-    api(() => ({ status: 400, data: { message: YEAR_ORDER_MESSAGE } }));
-    renderForm(ALUMNI);
-    hideStartYear();
-    await user.type(screen.getByLabelText('Headline'), 'PM');
-    await user.click(screen.getByRole('button', { name: 'Save changes' }));
-    const graduation = screen.getByLabelText('Graduation year');
-    await waitFor(() => {
-      expect(graduation).toHaveFocus();
-    });
-    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
+    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_MESSAGE);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
 

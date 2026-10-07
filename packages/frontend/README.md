@@ -145,7 +145,7 @@ REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on p
 REQ-010, renamed from My Profile in REQ-012. `/me` (signed in; the avatar menu's "Account settings", the Home card and, on phones, the Account tab) lets the signed-in user edit their own details and change their password, after the S5 designs.
 
 - **Saving:** one Save sends `PUT /api/me` when a profile field changed, then `PUT /api/me/password` when a password was typed. A save bar shows while there are unsaved changes, a prompt asks before leaving with them, and a toast confirms a save. Not optimistic.
-- **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (hidden below 48rem, value kept) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).
+- **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (at every width since REQ-013) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).
 - More: `src/features/me/README.md`.
 
 ## Forms
