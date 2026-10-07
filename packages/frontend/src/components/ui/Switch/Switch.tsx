@@ -49,6 +49,7 @@ export function Switch({
         nativeButton
         render={<button type="button" />}
         checked={checked}
+        // Forward only the boolean: Base UI's second eventDetails argument stays out of our API.
         onCheckedChange={(next) => {
           onCheckedChange(next);
         }}

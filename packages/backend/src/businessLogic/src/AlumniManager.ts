@@ -15,8 +15,9 @@ export class AlumniManager {
     if (existing) throw new AppError(409, "You already have an alumni profile");
     const f = validateAlumniFields(body);
     // validateAlumniFields returns years as text; the columns are INTEGER, so pass numbers.
-    const alumni = Object.assign(new AlumniDTO(userId), {
+    const alumni = new AlumniDTO({
       ...f,
+      user_id: userId,
       graduation_year: f.graduation_year === undefined ? undefined : Number(f.graduation_year),
       start_year: f.start_year === undefined ? undefined : Number(f.start_year),
     });

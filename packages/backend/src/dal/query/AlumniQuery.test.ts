@@ -200,7 +200,10 @@ describe('AlumniQuery.createAlumni (POST /api/alumni)', () => {
   });
 
   it('inserts the five profile fields (REQ-011) with each column bound to its own value', async () => {
-    const dto = Object.assign(new AlumniDTO(42, 'CSE', 2017), {
+    const dto = new AlumniDTO({
+      user_id: 42,
+      department: 'CSE',
+      graduation_year: 2017,
       headline: 'Designer',
       location: 'Oslo',
       degree: 'B.Sc.',
@@ -233,7 +236,7 @@ describe('AlumniQuery.createAlumni (POST /api/alumni)', () => {
   });
 
   it('binds null for missing text fields and false (never null) for a missing mentorship flag', async () => {
-    await alumniQuery.createAlumni(new AlumniDTO(42));
+    await alumniQuery.createAlumni(new AlumniDTO({ user_id: 42 }));
 
     const params = paramsOfLastCall();
     expect(params.slice(8)).toEqual([null, null, null, null, false]);

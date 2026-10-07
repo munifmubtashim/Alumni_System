@@ -1,7 +1,6 @@
 import type { Alumni } from '@alumni/shared';
 import type { Ref } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
-import { cx } from '@/components/ui/cx';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { BRAND_NAME } from '@/config/brand';
 import { headline, present, safeLinkedInUrl } from './format';
@@ -33,7 +32,8 @@ export interface ProfileHeaderProps {
  * a sage pill on success-soft, S3),
  * the line "<headline> · Class of YYYY" under it, then the location and a
  * LinkedIn link (only for a safe http(s) URL). Each part hides when empty.
- * Below 48rem the badge moves under the line (S3 phone). Sets the tab title
+ * Below 48rem the badge moves under the line and the location pin and LinkedIn
+ * icon hide, leaving text only (S3 phone). Sets the tab title
  * to "<name> · Alma". Never shows the email.
  */
 export function ProfileHeader({ alumni, headingRef }: ProfileHeaderProps) {
@@ -79,7 +79,7 @@ export function ProfileHeader({ alumni, headingRef }: ProfileHeaderProps) {
             {location !== undefined && (
               <p className={styles.location}>
                 <svg
-                  className={cx(styles.icon, styles.pin)}
+                  className={styles.locationPin}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

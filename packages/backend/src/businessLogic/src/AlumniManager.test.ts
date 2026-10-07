@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AlumniQuery } from '@alumni/dal';
+import { AlumniDTO, AlumniQuery } from '@alumni/dal';
 import { AlumniManager } from './AlumniManager.js';
 import { expectAppError } from '../../test/expectAppError';
 
@@ -31,6 +31,7 @@ describe('AlumniManager.createAlumni (POST /api/alumni)', () => {
 
     expect(query.findAlumniByUserId).toHaveBeenCalledWith(42);
     const row = query.createAlumni.mock.calls[0][0];
+    expect(row).toBeInstanceOf(AlumniDTO);
     expect(row.user_id).toBe(42);
     expect(row.department).toBe('CSE');
     expect(row.graduation_year).toBe(2020);

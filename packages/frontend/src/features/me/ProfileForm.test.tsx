@@ -20,6 +20,7 @@ import {
   ProfileForm,
   TOAST_DISMISS_LABEL,
   TOAST_MS,
+  YEAR_ORDER_HIDDEN_MESSAGE,
 } from './ProfileForm';
 import { SAVE_BAR_LABEL } from './SaveBar';
 import { YEAR_ORDER_MESSAGE } from './validation';
@@ -547,6 +548,51 @@ describe('ProfileForm alumni fields and Mentorship', () => {
     await waitFor(() => {
       expect(alert.closest('[tabindex="-1"]')).toHaveFocus();
     });
+  });
+
+  it('shows a hidden Start year error on the form when a shown field is invalid too', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 500 }));
+    renderForm(ALUMNI);
+    await user.type(screen.getByLabelText('Start year'), '20x7');
+    hideStartYear();
+    await user.clear(screen.getByLabelText('Full name'));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(calls).toEqual([]);
+    expect(screen.getByLabelText('Full name')).toHaveFocus();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      `Start year is not valid. ${HIDDEN_FIELD_HINT}`,
+    );
+  });
+
+  it('adds the hint to the year order message when Start year is hidden', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 500 }));
+    renderForm(ALUMNI_FULL);
+    hideStartYear();
+    const graduation = screen.getByLabelText('Graduation year');
+    await user.clear(graduation);
+    await user.type(graduation, '2010');
+    await user.tab();
+    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(calls).toEqual([]);
+    expect(graduation).toHaveFocus();
+    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
+  });
+
+  it('adds the hint to a server year order message when Start year is hidden', async () => {
+    const user = userEvent.setup();
+    api(() => ({ status: 400, data: { message: YEAR_ORDER_MESSAGE } }));
+    renderForm(ALUMNI);
+    hideStartYear();
+    await user.type(screen.getByLabelText('Headline'), 'PM');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    const graduation = screen.getByLabelText('Graduation year');
+    await waitFor(() => {
+      expect(graduation).toHaveFocus();
+    });
+    expect(graduation).toHaveAccessibleDescription(YEAR_ORDER_HIDDEN_MESSAGE);
   });
 });
 

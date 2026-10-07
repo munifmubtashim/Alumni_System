@@ -44,6 +44,11 @@ export const TOAST_DISMISS_LABEL = 'Dismiss';
 export const ALL_SAVED_TEXT = 'All sections saved — no unsaved changes.';
 /** Added to the form-level message when the field in error is hidden at this width. */
 export const HIDDEN_FIELD_HINT = 'Open My Profile on a wider screen to change it.';
+/**
+ * The year order message on Graduation year when Start year is hidden at this
+ * width: it names a field the user cannot see, so it gets the same hint.
+ */
+export const YEAR_ORDER_HIDDEN_MESSAGE = `${YEAR_ORDER_MESSAGE}. ${HIDDEN_FIELD_HINT}`;
 
 function isPasswordField(field: MeField): field is PasswordField {
   return field === 'current_password' || field === 'new_password' || field === 'confirm_password';
@@ -51,6 +56,10 @@ function isPasswordField(field: MeField): field is PasswordField {
 
 // A field CSS hides at this width (Start year below 48rem) cannot take focus,
 // so its error must not be left on it unseen.
+// The other half of this check is `.wideOnly` in Section.module.css (the
+// 48rem rule); change them together. jsdom loads no CSS Modules, so tests hide
+// the wrapper by hand. If a second width-hidden field ever appears, replace
+// this DOM walk with a matchMedia hook on the same breakpoint.
 function isHidden(element: Element): boolean {
   for (let node: Element | null = element; node !== null; node = node.parentElement) {
     if (getComputedStyle(node).display === 'none') return true;
@@ -159,6 +168,18 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
     formErrorRef.current?.focus();
   }
 
+  /**
+   * The year order message names Start year; when that field is hidden here,
+   * the message on Graduation year gets the hint. Applied wherever errors are
+   * stored, so the text matches the width at that moment.
+   */
+  function withOrderHint(fieldErrors: MeErrors): MeErrors {
+    if (fieldErrors.graduation_year !== YEAR_ORDER_MESSAGE || !isFieldHidden('start_year')) {
+      return fieldErrors;
+    }
+    return { ...fieldErrors, graduation_year: YEAR_ORDER_HIDDEN_MESSAGE };
+  }
+
   /** Puts `message` on `field`, or on the form when the field is hidden here. */
   function showFieldError(field: MeField, message: string) {
     if (isFieldHidden(field)) {
@@ -201,7 +222,11 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
       setErrors((prev) => {
         const next = { ...prev, [field]: undefined };
         // The order rule's message sits on Graduation year but is about both.
-        if (field === 'start_year' && prev.graduation_year === YEAR_ORDER_MESSAGE) {
+        if (
+          field === 'start_year' &&
+          (prev.graduation_year === YEAR_ORDER_MESSAGE ||
+            prev.graduation_year === YEAR_ORDER_HIDDEN_MESSAGE)
+        ) {
           next.graduation_year = undefined;
         }
         return next;
@@ -211,7 +236,7 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
       // Same rules as Save. Only adds a message: leaving a field must not wipe
       // a server error (e.g. "Current password is incorrect") shown on it.
       const planned = planSave(values, baseline, kind, password).errors;
-      const message = planned[field];
+      const message = withOrderHint(planned)[field];
       if (message !== undefined) setErrors((prev) => ({ ...prev, [field]: message }));
       // Leaving Start year after Graduation year shows the order rule there.
       if (field === 'start_year' && planned.graduation_year === YEAR_ORDER_MESSAGE) {
@@ -280,16 +305,27 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
 
     const plan = planSave(values, baseline, kind, password);
     if (!plan.saveProfile && !plan.savePassword) return;
-    const firstInvalid = visibleFields.find((field) => plan.errors[field] !== undefined);
+    const invalid = visibleFields.filter((field) => plan.errors[field] !== undefined);
+    // An error on a field hidden at this width (Start year on phones) always
+    // goes on the form with the hint, even when a shown field is invalid too,
+    // so it is never stored where nobody can see it (UI-002).
+    const hiddenMessages = invalid
+      .filter((field) => isFieldHidden(field))
+      .map((field) => plan.errors[field]);
+    const hiddenError =
+      hiddenMessages.length === 0 ? null : `${hiddenMessages.join('. ')}. ${HIDDEN_FIELD_HINT}`;
+    const firstShown = invalid.find((field) => !isFieldHidden(field));
     // Render the messages before moving focus, so the field is read with its error.
     flushSync(() => {
-      setErrors(plan.errors);
-      setFormError(null);
+      setErrors(withOrderHint(plan.errors));
+      setFormError(hiddenError);
       setPasswordFormError(null);
     });
-    if (firstInvalid !== undefined) {
-      const message = plan.errors[firstInvalid];
-      if (message !== undefined) showFieldError(firstInvalid, message);
+    if (invalid.length > 0) {
+      // A shown field takes focus so it can be fixed; the form alert (role
+      // "alert") is announced on its own. Only hidden ones: focus the alert.
+      if (firstShown !== undefined) focusField(firstShown);
+      else formErrorRef.current?.focus();
       return;
     }
 
@@ -308,7 +344,7 @@ export function ProfileForm({ profile, headingRef }: ProfileFormProps) {
           // PUT /api/me failed, so the password call never ran. A 401 maps to
           // nothing: SessionBridge logs out (ADR-03).
           const mapped = mapProfileError(error, visibleFields);
-          const fieldErrors = mapped.fields;
+          const fieldErrors = mapped.fields && withOrderHint(mapped.fields);
           const field = visibleFields.find((f) => fieldErrors?.[f] !== undefined);
           const fieldMessage = field === undefined ? undefined : fieldErrors?.[field];
           if (field !== undefined && fieldMessage !== undefined) {

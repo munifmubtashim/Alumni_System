@@ -12,7 +12,9 @@
    headline line on phone, where .nameRow is display: contents and `order`
    moves the badge and the links row (reading order stays name, badge, line).
    Location and LinkedIn share one row (gap 16px desktop, 14px phone); the pin
-   is decorative ink-muted, allowed only on aria-hidden marks (G27). */
+   is decorative ink-muted, allowed only on aria-hidden marks (G27). Both the
+   pin and the LinkedIn icon show from 48rem only: S3 phone draws the location
+   and LinkedIn as text (see the phone media query). */
 
 .header {
   display: flex;
@@ -96,7 +98,10 @@
   overflow-wrap: anywhere;
 }
 
-.pin {
+.locationPin {
+  flex: none;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
   color: var(--ink-muted);
 }
 
@@ -121,10 +126,11 @@
 }
 
 @media (width < 48rem) {
-  /* S3 phone shows the LinkedIn link as text only. The icon is a decorative
-     aria-hidden svg that never takes the hidden attribute, so display:none
-     is safe here (G18). */
-  .icon {
+  /* S3 phone shows the location and the LinkedIn link as text only, so the
+     pin and the icon hide here on purpose. Both are decorative aria-hidden
+     svgs that never take the hidden attribute, so display:none is safe (G18). */
+  .icon,
+  .locationPin {
     display: none;
   }
 
