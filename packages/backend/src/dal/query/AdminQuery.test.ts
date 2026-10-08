@@ -11,13 +11,17 @@ const release = vi.fn();
 const statements = () => clientQuery.mock.calls.map(([sql]) => String(sql).replace(/\s+/g, ' ').trim());
 
 // Answers each client.query by matching its SQL, so a test only states what differs.
-function answer(overrides: { affected?: number[]; deletedRows?: number; alumniRows?: number; failOn?: RegExp }) {
+function answer(overrides: { affected?: number[]; userRows?: number; alumniRows?: number; failOn?: RegExp }) {
   clientQuery.mockImplementation(async (sql: string) => {
     if (overrides.failOn?.test(sql)) throw Object.assign(new Error('boom'), { code: '23503' });
     if (/SELECT DISTINCT c\.post_id/.test(sql)) {
       return { rows: (overrides.affected ?? []).map((post_id) => ({ post_id })), rowCount: 0 };
     }
-    if (/DELETE FROM users/.test(sql)) return { rows: [], rowCount: overrides.deletedRows ?? 1 };
+    if (/FOR UPDATE/.test(sql)) {
+      const n = overrides.userRows ?? 1;
+      return { rows: n ? [{ id: 42 }] : [], rowCount: n };
+    }
+    if (/DELETE FROM users/.test(sql)) return { rows: [], rowCount: 1 };
     if (/UPDATE alumni/.test(sql)) {
       const n = overrides.alumniRows ?? 1;
       return { rows: n ? [{ user_id: 42 }] : [], rowCount: n };
@@ -49,21 +53,23 @@ describe('AdminQuery.countStats', () => {
 });
 
 describe('AdminQuery.deleteAlumniAccount', () => {
-  it('runs BEGIN → affected posts → DELETE FROM users → recount → COMMIT, then releases', async () => {
+  it('runs BEGIN → lock user → affected posts → DELETE FROM users → recount → COMMIT, then releases', async () => {
     answer({ affected: [5, 9] });
 
     expect(await new AdminQuery().deleteAlumniAccount(42)).toBe(true);
 
     const sql = statements();
-    expect(sql).toHaveLength(5);
+    expect(sql).toHaveLength(6);
     expect(sql[0]).toBe('BEGIN');
-    expect(sql[1]).toMatch(/^SELECT DISTINCT c\.post_id FROM comments c/);
-    expect(sql[2]).toBe('DELETE FROM users WHERE id = $1');
-    expect(sql[3]).toMatch(/^UPDATE posts SET comment_count = \(SELECT COUNT\(\*\) FROM comments WHERE post_id = posts\.id\) WHERE id = ANY\(\$1\)$/);
-    expect(sql[4]).toBe('COMMIT');
+    expect(sql[1]).toBe('SELECT id FROM users WHERE id = $1 FOR UPDATE');
+    expect(sql[2]).toMatch(/^SELECT DISTINCT c\.post_id FROM comments c/);
+    expect(sql[3]).toBe('DELETE FROM users WHERE id = $1');
+    expect(sql[4]).toMatch(/^UPDATE posts SET comment_count = \(SELECT COUNT\(\*\) FROM comments WHERE post_id = posts\.id\) WHERE id = ANY\(\$1\)$/);
+    expect(sql[5]).toBe('COMMIT');
     expect(clientQuery.mock.calls[1]?.[1]).toEqual([42]);
     expect(clientQuery.mock.calls[2]?.[1]).toEqual([42]);
-    expect(clientQuery.mock.calls[3]?.[1]).toEqual([[5, 9]]);
+    expect(clientQuery.mock.calls[3]?.[1]).toEqual([42]);
+    expect(clientQuery.mock.calls[4]?.[1]).toEqual([[5, 9]]);
     expect(release).toHaveBeenCalledTimes(1);
   });
 
@@ -72,7 +78,7 @@ describe('AdminQuery.deleteAlumniAccount', () => {
 
     await new AdminQuery().deleteAlumniAccount(42);
 
-    const affected = statements()[1];
+    const affected = statements()[2];
     expect(affected).toContain('c.user_id = $1');
     expect(affected).toContain('c.parent_id IN (SELECT id FROM comments WHERE user_id = $1)');
     expect(affected).toContain('c.post_id NOT IN (SELECT id FROM posts WHERE user_id = $1)');
@@ -85,19 +91,20 @@ describe('AdminQuery.deleteAlumniAccount', () => {
 
     expect(statements()).toEqual([
       'BEGIN',
+      'SELECT id FROM users WHERE id = $1 FOR UPDATE',
       expect.stringMatching(/^SELECT DISTINCT/),
       'DELETE FROM users WHERE id = $1',
       'COMMIT',
     ]);
   });
 
-  it('rolls back and returns false when no user had that id', async () => {
-    answer({ affected: [5], deletedRows: 0 });
+  it('rolls back and returns false when no user had that id, before reading or deleting anything', async () => {
+    answer({ affected: [5], userRows: 0 });
 
     expect(await new AdminQuery().deleteAlumniAccount(42)).toBe(false);
 
     const sql = statements();
-    expect(sql.at(-1)).toBe('ROLLBACK');
+    expect(sql).toEqual(['BEGIN', 'SELECT id FROM users WHERE id = $1 FOR UPDATE', 'ROLLBACK']);
     expect(sql).not.toContain('COMMIT');
     expect(sql.some((s) => s.startsWith('UPDATE posts'))).toBe(false);
     expect(release).toHaveBeenCalledTimes(1);

@@ -87,13 +87,17 @@ export class AdminQuery {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const affected = await client.query(AFFECTED_POSTS_SQL, [userId]);
-      const postIds: number[] = affected.rows.map((row: { post_id: number }) => row.post_id);
-      const deleted = await client.query("DELETE FROM users WHERE id = $1", [userId]);
-      if ((deleted.rowCount ?? 0) === 0) {
+      // Lock the user row first: comments.user_id references it, so a comment this user tries to
+      // write from now on waits for this transaction (and then fails), and the affected-posts list
+      // below can't miss it.
+      const locked = await client.query("SELECT id FROM users WHERE id = $1 FOR UPDATE", [userId]);
+      if ((locked.rowCount ?? 0) === 0) {
         await client.query("ROLLBACK");
         return false;
       }
+      const affected = await client.query(AFFECTED_POSTS_SQL, [userId]);
+      const postIds: number[] = affected.rows.map((row: { post_id: number }) => row.post_id);
+      await client.query("DELETE FROM users WHERE id = $1", [userId]);
       if (postIds.length > 0) {
         await client.query(RECOUNT_SQL, [postIds]);
       }
