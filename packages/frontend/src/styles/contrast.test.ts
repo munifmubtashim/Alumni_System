@@ -92,6 +92,12 @@ const PAIRS: Pair[] = [
   { fg: 'accent', bg: 'surface-page', min: NON_TEXT, use: 'Switch focus ring on the page' },
   { fg: 'ink-primary', bg: 'surface-raised', min: TEXT, use: 'Switch label in a Card' },
   { fg: 'ink-secondary', bg: 'surface-raised', min: TEXT, use: 'Switch help text in a Card' },
+  // REQ-015. scrim has an alpha channel, so it is never a pair here (opaque only).
+  { fg: 'error', bg: 'error-soft', min: NON_TEXT, use: 'ConfirmDialog danger icon in its circle' },
+  { fg: 'accent-ink', bg: 'error', min: TEXT, use: 'danger Button label' },
+  { fg: 'error', bg: 'surface-raised', min: TEXT, use: 'danger Button label, hover' },
+  { fg: 'ink-primary', bg: 'surface-raised', min: TEXT, use: 'Drawer and ConfirmDialog text' },
+  { fg: 'ink-secondary', bg: 'surface-raised', min: TEXT, use: 'Drawer close icon, dialog text' },
 ];
 
 // Accepted exceptions: the ratio is the floor recorded in architecture.md;
