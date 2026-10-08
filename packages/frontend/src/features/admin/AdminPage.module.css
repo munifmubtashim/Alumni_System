@@ -1,0 +1,120 @@
+/* Design: docs/design/screens/app/S6-Desktop-Light/Dark and S6-Phone-Light/Dark.
+   Nearest tokens: title heading-md at every width (design 18px phone, 22px
+   desktop; heading-md is 20px, the closest step to both); section gap
+   space-4 on phone (16px) and space-5 from 48rem (design 24px). Below 48rem the panel is no card: the search well
+   and the phone cards sit on the page, as S6-Phone draws them. From 48rem it
+   is one raised card holding the search row, the table and the footer.
+   The desktop/phone switch is CSS on wrappers that never use the hidden
+   attribute (G18). */
+
+.page {
+  /* Full width like S6 (user decision 2026-10-08, REQ-015): no 72rem cap. The
+     shell's main supplies the side padding (space-4 phone, space-6 desktop). */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-md);
+}
+
+.addIcon {
+  flex: none;
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+/* Phones: a 32px square + button named "Add alumni" (S6-Phone). Two classes
+   so the size never depends on which CSS file loads first (G27, G30). The
+   label stays in the accessible name, clipped like VisuallyHidden. */
+.headerRow .addButton {
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+  padding: 0;
+}
+
+.addLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.phoneOnly {
+  min-width: 0;
+}
+
+@media (width >= 48rem) {
+  .page {
+    gap: var(--space-5);
+  }
+
+  .headerRow .addButton {
+    inline-size: auto;
+    block-size: auto;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .addLabel {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .panel {
+    gap: 0;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .search {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  /* S6's search well is 320px wide on desktop. */
+  .search > * {
+    max-inline-size: 20rem;
+  }
+
+  .desktopOnly {
+    display: block;
+  }
+
+  .phoneOnly {
+    display: none;
+  }
+
+  .footer {
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+  }
+}

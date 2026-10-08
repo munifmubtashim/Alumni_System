@@ -1,0 +1,32 @@
+/* Design: docs/design/screens/app/S6-AddDrawer (footer: Cancel and the
+   primary button at the end edge, 10px apart, mapped to space-3 by the
+   Drawer). The discard question has no design: it replaces the buttons in
+   the same footer, the question at the start edge and its two buttons at the
+   end, wrapping onto two lines when the panel is narrow. */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.confirm {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.question {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-label);
+}
+
+.confirm .actions {
+  margin-inline-start: auto;
+}
