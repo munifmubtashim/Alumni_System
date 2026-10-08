@@ -27,10 +27,11 @@ Express 4 + Postgres API in three npm workspaces that form one pipeline: routes 
 
 ## Gotchas
 
-[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes · [[knowledge/gotchas#^g21|G21]] LIKE escaping · [[knowledge/gotchas#^g22|G22]] BaseDTO file name · [[knowledge/gotchas#^g23|G23]] NUL → 400 · [[knowledge/gotchas#^g24|G24]] TestManager sweep
+[[knowledge/gotchas#^g02|G02]] vitest hoisting · [[knowledge/gotchas#^g13|G13]] pool mock path · [[knowledge/gotchas#^g14|G14]] requireId → 404 · [[knowledge/gotchas#^g15|G15]] schema only in backups · [[knowledge/gotchas#^g16|G16]] packet excludes · [[knowledge/gotchas#^g21|G21]] LIKE escaping · [[knowledge/gotchas#^g22|G22]] BaseDTO file name · [[knowledge/gotchas#^g23|G23]] NUL → 400 · [[knowledge/gotchas#^g24|G24]] TestManager sweep · [[knowledge/gotchas#^g46|G46]] parallel dist / private API · [[knowledge/gotchas#^g47|G47]] deleted account keeps its token
 
 ## Touched by
 
 - [[REQ-003]] — auth on every non-public route, post ownership, partial post update, shared sendError, first backend test suite (ADR-05)
 - [[REQ-005]] — search, filters and paging for `GET /api/alumni`; NUL check in `optionalText`; `graduation_year` typed as a number on list types
 - [[REQ-009]] — `PUT /api/comments/:id` (owner or admin, content only, one CTE), `author_alumni_id` on posts and comments (scalar subquery), `GET /api/posts` ordered by `created_at DESC, id DESC`
+- [[REQ-015]] — `/api/admin` namespace (router-level `requireRole("admin")`; `AdminController`, `AdminManager`, `AdminQuery`: stats, create, partial edit, cascade delete with `comment_count` recount and a row lock); `UserManager.createAlumniAccount` owns hash + create + 409 (`BCRYPT_ROUNDS` private); `sort`/`order` on `GET /api/alumni` via a fixed ORDER BY lookup; named limits `JOB_TITLE_MAX`, `COMPANY_MAX`

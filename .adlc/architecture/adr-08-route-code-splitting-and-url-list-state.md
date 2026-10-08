@@ -49,6 +49,8 @@ My Profile (`/me`, REQ-010, `ME_ROUTE` in `router.tsx`) is the fourth lazy page,
 
 The About page (`/about`, REQ-014, `ABOUT_ROUTE`) is the fifth lazy page and the first one that is public: it sits in the `AppShell` branch as a sibling of the `RequireAuth` group, not inside it, and makes no API call. Its path lives in `config/aboutPath.ts` (the footer and the auth pages link to it).
 
+The Admin page (`/admin`, REQ-015, `ADMIN_ROUTE`) is the sixth lazy page and the first behind a role guard: it sits inside a pathless `RequireAdmin` route under `RequireAuth`, so a non-admin gets a 403 page and never loads the chunk. Its table keeps `q`, `sort`, `order` and `page` in the URL (`features/admin/params.ts`). Since REQ-015 the router's lazy `import()` calls are the reference list: the ESLint ban and `LAZY_FEATURES` are tested against them.
+
 ## Open questions
 
 - [ ] Prefetching a chunk on hover/focus of its nav link: not decided here.

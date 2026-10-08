@@ -57,10 +57,15 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-010-3 | Gate a leave prompt on the blocker state and on the current reason to block, because `blocker.reset()` lands a render later | frontend, react-router, forms, tests | trap | REQ-010 |
 | LESSON-REQ-010-4 | When an ADR names a "revisit at X" trigger, the REQ that reaches X records the outcome in that ADR at its architect gate | vault, adr, process, forms | guideline | REQ-010 |
 | LESSON-REQ-010-5 | A new nav entry or menu item means grepping every README for the old entry list, not only the lazy-page counts | frontend, docs, navigation, vault | guideline | REQ-010 |
-| LESSON-REQ-012-1 | A spec that names a constant must be checked against the branch it will be built on: it may exist only on an unmerged sibling branch | frontend, process | guideline | REQ-012 |
-| LESSON-REQ-012-2 | Record a deliberate departure from a design screen on a vault page when it is made, so later design-compare reviews cite it instead of re-flagging it | frontend, docs | guideline | REQ-012 |
 | LESSON-REQ-011-1 | Build the student validator from a shared part, never by spreading the alumni validator and deleting keys | backend, validation, students | guideline | REQ-011 |
 | LESSON-REQ-011-2 | A form field hidden by a CSS breakpoint needs its errors routed, a reflow decision, its own class and a browser check | frontend, forms, responsive, a11y | trap | REQ-011 |
 | LESSON-REQ-011-3 | On a full-replace endpoint, a NOT NULL boolean must be sent every time: omitted means false | api, put, boolean, defaults | guideline | REQ-011 |
+| LESSON-REQ-012-1 | A spec that names a constant must be checked against the branch it will be built on: it may exist only on an unmerged sibling branch | process, branches, merge | guideline | REQ-012 |
+| LESSON-REQ-012-2 | Record a deliberate departure from a design screen on a vault page when it is made, so later design-compare reviews cite it instead of re-flagging it | design, vault, process | guideline | REQ-012 |
 | LESSON-REQ-013-1 | When a REQ deletes the code a lesson or ADR note cites as evidence, add a dated "resolved in REQ-N" note there | vault, process, docs | guideline | REQ-013 |
 | LESSON-REQ-014-1 | The lazy-feature checklist was missed again; derive the lists from LAZY_FEATURES | frontend, lazy-routes, eslint, docs, vault | guideline | REQ-014 |
+| LESSON-REQ-015-1 | A cascade delete must recount counters on the rows it leaves, and lock the parent first | backend, sql, postgres, admin | trap | REQ-015 |
+| LESSON-REQ-015-2 | On an admin write, resolve the route id to the user id before comparing it with the token | backend, admin, auth, ids | guideline | REQ-015 |
+| LESSON-REQ-015-3 | Change an API contract, update conventions-api.md in the same REQ | api, vault, docs, conventions | guideline | REQ-015 |
+| LESSON-REQ-015-4 | An optional field in a shared type must be read null-safely everywhere | frontend, shared-types, feed, null | trap | REQ-015 |
+| LESSON-REQ-015-5 | An edit form's Save stays disabled until a value differs from what was loaded | frontend, forms, ux | guideline | REQ-015 |

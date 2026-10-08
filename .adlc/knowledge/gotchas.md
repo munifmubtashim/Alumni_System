@@ -357,7 +357,7 @@ Use both. They serve different purposes.
 | Discovered | 2026-10-06 |
 | REQ | REQ-003 |
 | Component | database |
-| Status | `STATUS: needs verification` (the cascade behaviour of `posts`/`comments` → `users` is unconfirmed) |
+| Status | confirmed — all six foreign keys (`alumni`, `students`, `posts`, `comments` → `users`; `comments` → `posts`; `comments.parent_id`) are `ON DELETE CASCADE` on the dev database (`pg_constraint.confdeltype = 'c'`, checked in [[REQ-015]], 2026-10-08) and in `db/backups/` |
 | Severity | trap |
 
 **What:** `db/migrations/` holds only changes on top of an existing schema. Constraints such as `alumni_profile_user_id_key` (`UNIQUE (user_id)`) and the foreign keys from `posts`/`comments` to `users` appear only in `db/backups/*.sql`.
@@ -927,3 +927,123 @@ Use both. They serve different purposes.
 
 **Don't:** put a public page under `RequireAuth`, or call `['me']` or any endpoint from it. The route test asserts both (a guest sees the page and the adapter is never called).
 **Related:** [[knowledge/lessons/LESSON-REQ-014-1-derive-lazy-feature-lists-from-one-source|L-REQ-014-1]] · [[knowledge/gotchas#^g19|G19]]
+
+## G43 — Base UI 1.8 Dialog / AlertDialog test traps ^g43
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | REQ-015 |
+| Component | frontend components/ui |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** Base UI sets no `aria-modal`; it marks everything outside the portal `aria-hidden` and `data-base-ui-inert`. Its focus trap uses focus-guard spans that jsdom never redirects, so `user.tab()` walks out to `<body>`. While a dialog is open, `getByRole` cannot find page content behind it.
+
+**Where:** `components/ui/Drawer/Drawer.test.tsx`, `ConfirmDialog/ConfirmDialog.test.tsx`, `features/admin/DeleteAlumniDialog.test.tsx`
+
+**Why it's surprising:** A modal normally carries `aria-modal="true"`, and Tab tests normally work in RTL.
+
+**Why it exists:** Base UI hides the background instead of relying on `aria-modal`; its focus guards need real browser focus events.
+
+**Don't:** assert `aria-modal` or test the Tab trap in jsdom. Assert the background is aria-hidden, query behind a modal with `getAllByText`, and check the Tab trap in a real browser (REQ-015 did it in headless Brave over CDP). For "return focus to the opener if it still exists", pass `finalFocus` a ref whose `current` is a getter, so the target is decided as the dialog closes.
+
+**Related:** [[knowledge/gotchas#^g25|G25]] · [[knowledge/gotchas#^g35|G35]]
+
+---
+
+## G44 — Admin page test and lint traps ^g44
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | REQ-015 |
+| Component | frontend features/admin |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** The page renders the desktop table and the phone card list together (CSS switch), so every row button exists twice in jsdom. user-event does not submit on Enter when the submit button sits outside the form (`form="id"`), though browsers do. A hook exported next to components in `guards.tsx` fails `react-refresh/only-export-components`. A disabled query still returns data seeded with `setQueryData`.
+
+**Where:** `features/admin/AdminPage.test.tsx`, `AlumniDrawer.test.tsx`, `features/auth/useIsAdmin.ts`, `guards.test.tsx`
+
+**Why it's surprising:** Tests that pass in isolation start finding two elements, Enter-submit tests silently do nothing, and typecheck plus tests pass while only lint fails.
+
+**Why it exists:** CSS Modules are not applied in Vitest (non-scoped class names, no styles); drawer footers render outside the body `<form>`.
+
+**Don't:** query rows without `within(table)` / `within(list)`; test Enter-submit with user-event (click the button; check Enter in a browser); put a new exported hook beside components. Keep a list's loading and loaded branches at the same JSX position (a shifted sibling remounts the table and loses focus); queue focus on a still-disabled button and apply it in an effect; with `keepPreviousData`, treat "no items but total > 0" as loading. Test a nested role guard's loading and error states on a route outside `RequireAuth`, where the outer guard does not show them first.
+
+**Related:** [[knowledge/gotchas#^g26|G26]] · [[knowledge/gotchas#^g29|G29]] · [[knowledge/gotchas#^g37|G37]]
+
+---
+
+## G45 — Adding a colour token touches a count test; alpha tokens stay out of the contrast pairs ^g45
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | REQ-015 |
+| Component | frontend tokens |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `scripts/generate-tokens.test.ts` asserts the exact number of colour tokens (`toHaveLength(19)` since REQ-015), and `src/styles/contrast.test.ts`'s `luminance()` reads only `#rrggbb`, so an 8-digit hex token with alpha (`scrim`) would be misjudged silently.
+
+**Where:** `packages/frontend/scripts/generate-tokens.test.ts`, `src/styles/contrast.test.ts`, `docs/design/design-system/tokens.json`
+
+**Why it's surprising:** Adding a token looks like a tokens.json-only change; the generator copies `#rrggbbaa` verbatim, so nothing else complains.
+
+**Why it exists:** The count is a guard against accidental deletions; the contrast helper predates alpha tokens.
+
+**Don't:** forget to bump the count when adding or removing a colour token, and never put an alpha token in the contrast PAIRS.
+
+**Related:** [[knowledge/gotchas#^g33|G33]] · [[concepts/design-tokens]]
+
+---
+
+## G46 — Backend work in parallel and on the user's dev server ^g46
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | REQ-015 |
+| Component | backend |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** Running `tsc` in `businessLogic` while another task edits the same package bakes that task's half-written code into `dist/`; the user's API on :3000 runs that `dist/`. A query param made real flips REQ-005's "ignores unknown keys" test, which used `sort` as its example. A new Manager gets its own route test file with a local fake factory, because `routes.test.ts` fakes only the four original Managers.
+
+**Where:** `packages/backend/src/businessLogic/dist/`, `validation.test.ts`, `api/routes/AdminRoutes.test.ts`
+
+**Why it's surprising:** Green tests say nothing about `dist/` ([[knowledge/gotchas#^g32|G32]]); a param name in a negative test looks harmless.
+
+**Why it exists:** `@alumni/businesslogic` resolves to `dist/` at runtime and to source in tests.
+
+**Don't:** rebuild `dist/` before the last parallel task finishes. Rebuild after it, and run manual DB checks on a private API instance (`PORT=3999 npx tsx server.ts` in `api/`; dotenv never overrides a set variable). Grep negative tests for a param name before making it real.
+
+**Related:** [[knowledge/gotchas#^g32|G32]] · [[knowledge/gotchas#^g41|G41]]
+
+---
+
+## G47 — A deleted or demoted account keeps its session for up to an hour ^g47
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | REQ-015 |
+| Component | backend auth |
+| Status | confirmed |
+| Severity | trap |
+
+**What:** `authMiddleware` trusts the JWT alone (1 h expiry, role inside the token) and never checks that the user still exists. After an admin deletes an account, that person can still read signed-in pages for up to an hour, and their writes fail with a 500 on the foreign key. A demoted admin keeps admin rights until expiry.
+
+**Where:** `packages/backend/src/api/Middleware/authMIddleware.ts`, `AdminManager.deleteAlumni`
+
+**Why it's surprising:** Deleting the user looks like it ends their access.
+
+**Why it exists:** No token revocation or per-request user lookup (REQ-003, ADR-05 consequences). Accepted for REQ-015 at the architect gate (ADV-003) and again at review (CORR-002, m11).
+
+**Don't:** assume delete or demotion is immediate. A fix is a follow-up REQ: a user-exists check in `authMiddleware` (401 when missing) or token revocation.
+
+**Related:** [[REQ-003]] · [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]]
+
+---

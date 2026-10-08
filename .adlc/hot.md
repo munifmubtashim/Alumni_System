@@ -2,6 +2,16 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] ship-gate-cleared | REQ-015-admin-page
+## [2026-10-08] req-ready-to-merge | REQ-015-admin-page | admin page at /admin: stats, sortable table, add/edit drawer, cascade delete; 0 critical open, 4 follow-ups
+## [2026-10-08] lesson | L-REQ-015-1..5 — cascade delete recount + lock, route vs user id spaces, contract changes update conventions-api, optional means null-safe, edit Save disabled until changed
+## [2026-10-08] gotcha | G43–G47 — Base UI dialog test traps, admin page test/lint traps, token count + alpha, parallel dist / private API, deleted account keeps its token
+## [2026-10-08] gotcha | G15 — FK cascades confirmed on the dev database
+## [2026-10-08] verify-gate-cleared | REQ-015-admin-page | findings: C0/M1/m4 open as follow-ups (12 fixed over 3 rounds)
+## [2026-10-08] implement-gate-cleared | REQ-015-admin-page
+## [2026-10-08] architect-gate-cleared | REQ-015-admin-page
+## [2026-10-07] work-path-set | REQ-015-admin-page | branch feat/REQ-015-admin-page (from redesign)
+## [2026-10-07] spec-gate-cleared | REQ-015-admin-page
 ## [2026-10-07] req-archived | REQ-013-casing-fix-start-year-all-widths
 ## [2026-10-07] req-archived | REQ-014-about-page
 ## [2026-10-07] ship-gate-cleared | REQ-014-about-page

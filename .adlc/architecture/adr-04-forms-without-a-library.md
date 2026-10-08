@@ -42,6 +42,7 @@
 | Client messages mirror the backend's; the server's 400 message is still shown | rule |
 | Re-decided at REQ-010 (My Profile, up to 12 fields): **stay with controlled state, pure validators and `useMutation`; no form library.** What held it together: `validation.ts`, `planSave` and `ProfileForm` tests. What hurt: `ProfileForm` grew to ~320 lines, and field rules are now copied three times (backend, auth, me). | decision |
 | Re-checked at REQ-011 (My Profile now ~17 controls: five more profile fields, a switch): **still controlled state and pure validators; no form library.** What it cost: a boolean field outside the string-keyed form type, and errors for a CSS-hidden field routed to the form alert (LESSON-REQ-011-2); removed in REQ-013, which shows that field at every width. Revisit trigger unchanged | rule |
+| Re-checked at REQ-015 (admin add/edit drawer, 8 flat fields): **still controlled state and pure validators; no form library.** Field rules are now copied a fourth time (backend, auth, me, admin); the shared `@alumni/shared` rule set follow-up gets more valuable. | rule |
 | Re-decide when a form needs dynamic field arrays, or when the shared field rules move into `@alumni/shared` (follow-up) | follow-up |
 
 ## Related
