@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { BRAND_NAME } from '@/config/brand';
 import { UNREACHABLE_MESSAGE } from '@/features/auth';
 import { AdminPage } from './AdminPage';
-import { GONE_TEXT } from './AlumniDrawer';
+import { GONE_TEXT } from './rowText';
 import { DELETE_CONFIRM_LABEL, DELETE_DESCRIPTION } from './DeleteAlumniDialog';
 import {
   alumni,
@@ -166,11 +166,16 @@ describe('DeleteAlumniDialog', () => {
       },
       liveList(() => rows),
     );
-    for (const key of [
-      ['alumni', 'detail', 2],
+    // The owning features' real keys (useAlumniSearch, useAlumniProfile with the
+    // URL's string id, usePostsByUser, feed POSTS_QUERY_KEY and commentsQueryKey).
+    const otherKeys = [
+      ['alumni', 'search', {}],
+      ['alumni', 'profile', '2'],
       ['posts', 'user', 102],
-      ['feed', 'list'],
-    ]) {
+      ['feed', 'posts'],
+      ['feed', 'comments', 7],
+    ];
+    for (const key of otherKeys) {
       queryClient.setQueryData(key, {});
     }
     const statsBefore = api.calls.filter((call) => call === 'GET /admin/stats').length;
@@ -183,11 +188,7 @@ describe('DeleteAlumniDialog', () => {
     // The table no longer shows the row when the dialog closes.
     expect(within(table()).queryByText('Alum 2')).not.toBeInTheDocument();
     expect(api.calls.filter((call) => call === 'GET /admin/stats').length).toBe(statsBefore + 1);
-    for (const key of [
-      ['alumni', 'detail', 2],
-      ['posts', 'user', 102],
-      ['feed', 'list'],
-    ]) {
+    for (const key of otherKeys) {
       expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
     }
     expect(await screen.findByText('Alum 2 deleted')).toBeInTheDocument();

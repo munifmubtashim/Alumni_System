@@ -1,16 +1,18 @@
 import type { AdminAlumniCreateInput, AdminAlumniUpdateInput } from '@alumni/shared';
 import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
+import { ALUMNI_QUERY_ROOT, FEED_QUERY_ROOT, POSTS_QUERY_ROOT } from '@/config/queryKeys';
 import { createAlumniAccount, deleteAlumniAccount, updateAlumniAccount } from '@/services/adminApi';
 import { adminKeys } from './queries';
 
 // Other features' query roots whose rows show what an admin write changes.
-// String literals, not imports: lazy features never import each other (ADR-08,
-// L-REQ-010-1). ['alumni', ...] is the directory and /alumni/:id; a name change
-// also shows on ['posts', ...] (recent posts on /alumni/:id) and ['feed', ...]
-// (author names in the feed). Keep in step with those features' query keys.
-const DIRECTORY_KEY = ['alumni'] as const;
-const STALE_AFTER_EDIT = [DIRECTORY_KEY, ['posts'], ['feed']] as const;
+// Shared constants from config/, not imports: lazy features never import each
+// other (ADR-08, L-REQ-010-1), and the owning features build their keys from
+// the same roots. ['alumni', ...] is the directory and /alumni/:id; a name
+// change also shows on ['posts', ...] (recent posts on /alumni/:id) and
+// ['feed', ...] (author names in the feed).
+const DIRECTORY_KEY = [ALUMNI_QUERY_ROOT] as const;
+const STALE_AFTER_EDIT = [DIRECTORY_KEY, [POSTS_QUERY_ROOT], [FEED_QUERY_ROOT]] as const;
 // A delete removes the person's posts and comments and recounts other posts'
 // comment counts, so the same three roots go stale.
 const STALE_AFTER_DELETE = STALE_AFTER_EDIT;
