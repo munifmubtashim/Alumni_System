@@ -1,6 +1,7 @@
+import type { AlumniListItem } from '@alumni/shared';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearToken } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
 import { FEED_PAGE_SIZE } from './constants';
@@ -18,7 +19,29 @@ beforeEach(() => {
 afterEach(() => {
   httpClient.defaults.adapter = originalAdapter;
   clearToken();
+  vi.restoreAllMocks();
 });
+
+/** The setup stub answers every width query false (a phone); this makes 48rem+ match. */
+function wideScreen() {
+  const original = window.matchMedia.bind(window);
+  vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => {
+    const list = original(query);
+    if (query !== '(width >= 48rem)') return list;
+    return Object.defineProperty(Object.create(list) as MediaQueryList, 'matches', {
+      value: true,
+    });
+  });
+}
+
+const SUGGESTION: AlumniListItem = {
+  id: 21,
+  user_id: 210,
+  name: 'Lena Novak',
+  job_title: 'Product designer',
+  current_company: 'Northwind',
+  mentorship_available: true,
+};
 
 function renderPage() {
   const client = testClient();
@@ -41,6 +64,21 @@ describe('FeedPage', () => {
     api.held('get /posts')?.ok([makePost(2, { caption: 'Hiring a designer' }), makePost(1)]);
     expect(await screen.findByText('Hiring a designer')).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(2);
+  });
+
+  // BUG-001: one null-caption post used to replace the whole feed with the error page.
+  it('renders the feed when one post among others has a null caption', async () => {
+    api.on('get /posts', {
+      ok: [
+        makePost(3, { caption: 'Newest' }),
+        makePost(2, { caption: null }),
+        makePost(1, { caption: 'Oldest' }),
+      ],
+    });
+    renderPage();
+    expect(await screen.findByText('Newest')).toBeInTheDocument();
+    expect(screen.getByText('Oldest')).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(3);
   });
 
   it('shows the empty state when there are no posts', async () => {
@@ -226,5 +264,47 @@ describe('FeedPage', () => {
     expect(await screen.findByText('Congrats')).toBeInTheDocument();
     await userEvent.click(toggle);
     expect(toggle).toHaveTextContent('2 comments');
+  });
+
+  describe('Suggested alumni sidebar (REQ-016)', () => {
+    it('shows the sidebar with its people from 48rem', async () => {
+      wideScreen();
+      api.on('get /posts', { ok: [makePost(1)] });
+      api.on('get /alumni/suggestions', { ok: [SUGGESTION] });
+      renderPage();
+      const aside = screen.getByRole('region', { name: 'Suggested alumni' });
+      const link = await within(aside).findByRole('link', { name: /Lena Novak/ });
+      expect(link).toHaveAttribute('href', '/alumni/21');
+      expect(within(aside).getByText('Mentor')).toBeInTheDocument();
+      expect(await screen.findByText('Post 1')).toBeInTheDocument();
+      expect(api.count('get /alumni/suggestions')).toBe(1);
+    });
+
+    it('renders no sidebar and sends no request on a phone', async () => {
+      api.on('get /posts', { ok: [makePost(1)] });
+      api.on('get /alumni/suggestions', { ok: [SUGGESTION] });
+      renderPage();
+      expect(await screen.findByText('Post 1')).toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'Suggested alumni' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Suggested alumni')).not.toBeInTheDocument();
+      expect(api.count('get /alumni/suggestions')).toBe(0);
+    });
+
+    it('a failed sidebar shows its own error and leaves the feed working', async () => {
+      wideScreen();
+      api.on('get /posts', { ok: [makePost(1)] });
+      api.on('get /alumni/suggestions', { fail: 500 });
+      api.hold('post /posts');
+      renderPage();
+      const aside = screen.getByRole('region', { name: 'Suggested alumni' });
+      expect(await within(aside).findByText("Suggestions didn't load")).toBeInTheDocument();
+      expect(within(aside).getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+      expect(await screen.findByText('Post 1')).toBeInTheDocument();
+
+      await userEvent.type(screen.getByLabelText('Write a post'), 'Still posting');
+      await userEvent.click(screen.getByRole('button', { name: 'Post' }));
+      expect(await screen.findByText('Still posting')).toBeInTheDocument();
+      expect(screen.getAllByRole('article')).toHaveLength(2);
+    });
   });
 });

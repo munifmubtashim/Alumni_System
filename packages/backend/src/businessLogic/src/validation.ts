@@ -207,6 +207,7 @@ function oneOf<T extends string>(value: unknown, param: string, allowed: readonl
 
 // Parses req.query for the alumni directory into typed filters + paging, or throws AppError(400). Unknown keys are ignored.
 // sort (name | graduationYear) and order (asc | desc) are optional; order without sort applies to name.
+// mentorship takes only "true" (mentors only); empty is absent, and there is no "false" filter (REQ-016).
 export function parseAlumniSearch(query: Record<string, unknown>): AlumniSearch {
   const filters: AlumniSearchFilters = {};
   // q is matched against name, company and job title, which all share the 100-character limit.
@@ -218,6 +219,11 @@ export function parseAlumniSearch(query: Record<string, unknown>): AlumniSearch 
   if (university) filters.university = university;
   const year = optionalYear(singleQueryValue(query.graduationYear, "graduationYear"), "graduationYear");
   if (year) filters.graduationYear = Number(year);
+  const mentorship = singleQueryValue(query.mentorship, "mentorship")?.trim();
+  if (mentorship) {
+    if (mentorship !== "true") throw new AppError(400, "mentorship must be true");
+    filters.mentorship = true;
+  }
   const sort = oneOf(query.sort, "sort", ALUMNI_SORTS, "sort");
   const order = oneOf(query.order, "order", SORT_ORDERS, "order");
   if (sort || order) {

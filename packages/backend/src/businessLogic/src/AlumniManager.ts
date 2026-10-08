@@ -2,6 +2,9 @@ import { AlumniDTO, AlumniQuery } from "@alumni/dal";
 import { AppError, isUniqueViolation } from "./errors.js";
 import { parseAlumniSearch, requireId, validateAlumniFields } from "./validation.js";
 
+// How many people GET /api/alumni/suggestions returns at most.
+export const SUGGESTION_LIMIT = 5;
+
 export class AlumniManager {
   alumniQuery: AlumniQuery;
 
@@ -52,5 +55,10 @@ export class AlumniManager {
   public async searchAlumni(query: Record<string, unknown>) {
     const { filters, page, pageSize } = parseAlumniSearch(query);
     return this.alumniQuery.searchAlumni(filters, { limit: pageSize, offset: (page - 1) * pageSize });
+  }
+
+  // GET /api/alumni/suggestions: `userId` comes from the token. Rows come back in the query's order.
+  public async suggestAlumni(userId: number) {
+    return this.alumniQuery.suggestAlumni(userId, SUGGESTION_LIMIT);
   }
 }

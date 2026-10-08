@@ -1,0 +1,17 @@
+# features/home/
+
+**Purpose:** the signed-in Home at `/` (REQ-016; the greeting is from `docs/design/screens/app/S1-*`, the sections have no design screen). Eager, not lazy: it is the first page after log-in.
+
+**What is here:**
+
+- `HomePage` — "Welcome back, <first name>" and "Here's what's happening in your alumni network.", then the completeness card, then "Latest from the feed" beside a side column with "Mentors available" and "Suggested alumni" (one column below 48rem, in that order). The page uses the shared `--page-max` column so the footer lines up. No stats, charts or counts; the old quick-link cards are gone (REQ-016).
+- `ProfileCompletenessCard` + pure `profileCompleteness.ts` — shown only while the user's own profile (`['me']`) is incomplete. Fields per account kind: **alumni** headline, job title, company, department, graduation year, bio; **student** job title, company, department, expected graduation year, bio (never a headline, so a student can reach 100%). The photo is not counted: there is no upload endpoint yet, so it would cap everyone below 100%. An account with neither row gets no card. A native `<progress>` (value in percent, named "Profile completeness"), the same number in text, and one next step (the first missing field, `NEXT_STEP_TEXT`) linking to Account settings (`ME_PATH`). The file names differ by more than case on purpose: `ProfileCompleteness.tsx` beside `profileCompleteness.ts` resolve to the same file on macOS.
+- `LatestPosts` — `GET /api/posts?limit=3`, key `['feed', 'latest']` with `refetchOnMount: 'always'` (the feed's optimistic writes touch only their exact keys, so Home refetches each visit; an admin write's invalidation of `['feed']` reaches it too). A compact preview per post: avatar, name linked to `/alumni/<author_alumni_id>` only when that is set (plain text otherwise; "Unknown member" without a joined name), relative time, caption clamped to three lines (a null caption shows none). "See all" (named "See all posts") goes to `/feed`. **Deviation from the spec's "reuse the feed's author line":** `PostCard`/`Byline` live in the lazy Feed, and importing them would pull the Feed chunk into the main bundle (ADR-08); this reuses `Avatar`, `relativeTime` and `profilePath` instead.
+- `MentorsAvailable` — `searchAlumni({ mentorship: true, page: 1, pageSize: 5 })`, key `['alumni', 'mentors']` (under the alumni root, so admin writes refresh it), drops the user's own `alumni_id` and shows up to 4 `PersonRow`s (each with the Mentor tag). "Browse directory" goes to `/directory`.
+- `SuggestedAlumni` comes from `@/features/people` (shared with the Feed sidebar; one cache entry).
+- Every section is a `SectionCard` from `@/features/people` (with its `SectionLoadingStatus`, `SectionError` and `SectionEmpty`; the Mentors list is a `PersonList`). Every section owns its query and its loading, empty and error states, so one failing never hides the others; a failed background refetch keeps what is shown.
+- `homeTestKit.tsx` — test-only helpers: re-exports the shared fake API from `src/test/fakeApi.tsx`, plus a profile builder and `renderHome` (seeds `['me']`). Imported by `*.test.tsx` here only.
+
+**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/features/auth`, `@/features/people`, and types from `@alumni/shared`. Never a lazy feature (`directory`, `profile`, `feed`, `me`, `about`, `admin`; the ESLint lazy ban and `app/lazyRoutes.test.ts` enforce it), and not `@/app/**`.
+
+**Imported by:** `app/router.tsx` (through `index.ts`).

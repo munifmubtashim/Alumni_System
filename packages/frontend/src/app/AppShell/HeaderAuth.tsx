@@ -14,8 +14,8 @@ import styles from './AppShell.module.css';
  * profile (their public /alumni/:id page, only with an alumni row, so never
  * for a student), Account settings (/me), Admin settings (/admin, admins only),
  * then Log out. While ['me'] is loading or has failed the button reads
- * "Account menu" and still offers Account settings and Log out (ADV-006). On desktop this menu and the Home card are the only
- * ways to /me (the header nav leaves it out, REQ-012).
+ * "Account menu" and still offers Account settings and Log out (ADV-006). On desktop this menu is the only
+ * way to /me (the header nav leaves it out, REQ-012; the phone has no Account tab since REQ-016).
  */
 export function HeaderAuth() {
   const hasSession = useHasSession();

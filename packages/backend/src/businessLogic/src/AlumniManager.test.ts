@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AlumniDTO, AlumniQuery } from '@alumni/dal';
-import { AlumniManager } from './AlumniManager.js';
+import { AlumniManager, SUGGESTION_LIMIT } from './AlumniManager.js';
 import { expectAppError } from '../../test/expectAppError';
 
 vi.mock('@alumni/dal', async (importOriginal) => {
@@ -12,6 +12,7 @@ vi.mock('@alumni/dal', async (importOriginal) => {
     this.findAlumniById = vi.fn();
     this.updateAlumni = vi.fn();
     this.searchAlumni = vi.fn();
+    this.suggestAlumni = vi.fn();
   }) };
 });
 
@@ -243,6 +244,12 @@ describe('AlumniManager.searchAlumni (GET /api/alumni)', () => {
     );
   });
 
+  it('passes mentorship=true through as a boolean filter (REQ-016)', async () => {
+    searchAlumni.mockResolvedValue({ items: [], total: 0 });
+    await manager.searchAlumni({ mentorship: 'true', pageSize: '5' });
+    expect(searchAlumni).toHaveBeenCalledWith({ mentorship: true }, { limit: 5, offset: 0 });
+  });
+
   it('passes sort and order through in the filters', async () => {
     searchAlumni.mockResolvedValue({ items: [], total: 0 });
     await manager.searchAlumni({ sort: 'graduationYear', order: 'desc' });
@@ -258,8 +265,42 @@ describe('AlumniManager.searchAlumni (GET /api/alumni)', () => {
     ['unknown order', { order: 'up' }],
     ['page not a number', { page: 'abc' }],
     ['q repeated', { q: ['a', 'b'] }],
+    ['mentorship false', { mentorship: 'false' }],
+    ['mentorship repeated', { mentorship: ['true', 'true'] }],
   ])('%s → 400 without calling the query', async (_label, query) => {
     await expectAppError(manager.searchAlumni(query), 400);
     expect(searchAlumni).not.toHaveBeenCalled();
+  });
+});
+
+describe('AlumniManager.suggestAlumni (GET /api/alumni/suggestions)', () => {
+  let manager: AlumniManager;
+  let suggestAlumni: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    manager = new AlumniManager();
+    suggestAlumni = (manager.alumniQuery as unknown as { suggestAlumni: ReturnType<typeof vi.fn> }).suggestAlumni;
+  });
+
+  it('asks the query for the caller\'s suggestions, capped at 5', async () => {
+    suggestAlumni.mockResolvedValue([]);
+    await manager.suggestAlumni(42);
+    expect(SUGGESTION_LIMIT).toBe(5);
+    expect(suggestAlumni).toHaveBeenCalledWith(42, 5);
+  });
+
+  it('passes the rows through in the query\'s order, rows with a null department untouched and last (ADV-001)', async () => {
+    const rows = [
+      { id: 3, user_id: 9, department: 'CSE', university: 'BUET', name: 'Ana' },
+      { id: 4, user_id: 10, department: 'EEE', university: 'BUET', name: 'Bo' },
+      { id: 5, user_id: 11, department: null, university: null, name: 'Cy' },
+    ];
+    suggestAlumni.mockResolvedValue(rows);
+    await expect(manager.suggestAlumni(42)).resolves.toEqual(rows);
+  });
+
+  it('an empty result is []', async () => {
+    suggestAlumni.mockResolvedValue([]);
+    await expect(manager.suggestAlumni(42)).resolves.toEqual([]);
   });
 });

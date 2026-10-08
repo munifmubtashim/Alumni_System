@@ -217,7 +217,7 @@ describe('AppShell', () => {
   });
 
   // REQ-004 AC7 kept S1's nav links out until their pages exist. REQ-006 AC2
-  // adds Directory, REQ-009 Feed (REQ-012 keeps /me out of it): a guest's banner has only the
+  // adds Directory, REQ-009 Feed, REQ-016 Home (REQ-012 keeps /me out of it): a guest's banner has only the
   // "Account" nav from HeaderAuth; a signed-in user's has only the "Main" nav.
   it('shows the guest only the Account nav, and a signed-in user only the Main nav', async () => {
     renderAt('/does-not-exist');
@@ -248,7 +248,7 @@ describe('AppShell', () => {
       within(banner)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Alma', 'Directory', 'Feed']);
+    ).toEqual(['Alma', 'Home', 'Directory', 'Feed']);
   });
 
   it('shows the route error without the shell when the shell itself throws', () => {
@@ -269,6 +269,10 @@ describe('AppShell', () => {
 
 // These tests pass their own stand-in pages to createRoutes, so the nav is
 // checked without the real (lazy) directory page; that page is covered below.
+function HomeStub() {
+  return <h1>Home stub</h1>;
+}
+
 function DirectoryStub() {
   return <h1>Directory stub</h1>;
 }
@@ -294,6 +298,7 @@ function AdminStub() {
 }
 
 const NAV_TEST_ROUTES: RouteObject[] = [
+  { index: true, element: <HomeStub /> },
   { path: 'directory/*', element: <DirectoryStub /> },
   { path: 'feed', element: <FeedStub /> },
   { path: 'me', element: <MeStub /> },
@@ -353,6 +358,36 @@ describe('Header main nav', () => {
     },
   );
 
+  // REQ-016: Home leads the nav and, with `end`, is current on `/` only.
+  it('lists Home, Directory, Feed in order, with Home linking to / and current there only', async () => {
+    renderNavAt('/');
+    await screen.findByRole('heading', { name: 'Home stub' });
+
+    const links = within(mainNav()).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['Home', 'Directory', 'Feed']);
+    const home = within(mainNav()).getByRole('link', { name: 'Home' });
+    expect(home).toHaveAttribute('href', '/');
+    expect(home).toHaveAttribute('aria-current', 'page');
+    for (const link of links.slice(1)) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
+  });
+
+  it.each([
+    ['/directory', 'Directory stub'],
+    ['/feed', 'Feed stub'],
+    ['/alumni/1', 'Profile stub'],
+    ['/me', 'Me stub'],
+    ['/other', 'Other stub'],
+  ])('does not mark Home current at %s', async (path, heading) => {
+    renderNavAt(path);
+    await screen.findByRole('heading', { name: heading });
+
+    expect(within(mainNav()).getByRole('link', { name: 'Home' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+
   it('links to /feed and marks only Feed current there', async () => {
     renderNavAt('/feed');
     await screen.findByRole('heading', { name: 'Feed stub' });
@@ -371,7 +406,7 @@ describe('Header main nav', () => {
     await screen.findByRole('heading', { name: 'Me stub' });
 
     const links = within(mainNav()).getAllByRole('link');
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/directory', '/feed']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/directory', '/feed']);
     for (const link of links) {
       expect(link).not.toHaveAttribute('aria-current');
     }
@@ -390,7 +425,7 @@ describe('Header main nav', () => {
       within(mainNav())
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Directory', 'Feed', 'Admin']);
+    ).toEqual(['Home', 'Directory', 'Feed', 'Admin']);
   });
 
   it.each([
@@ -408,7 +443,7 @@ describe('Header main nav', () => {
       within(mainNav())
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Directory', 'Feed']);
+    ).toEqual(['Home', 'Directory', 'Feed']);
   });
 
   it('goes to the directory on click and becomes current', async () => {
@@ -434,7 +469,7 @@ describe('Header main nav', () => {
     within(screen.getByRole('banner')).getByRole('link', { name: 'Alma' }).focus();
     await user.tab();
 
-    expect(within(mainNav()).getByRole('link', { name: 'Directory' })).toHaveFocus();
+    expect(within(mainNav()).getByRole('link', { name: 'Home' })).toHaveFocus();
   });
 
   it('disappears when the session ends', async () => {
@@ -458,20 +493,29 @@ describe('Bottom tab bar (phone)', () => {
     return screen.getByRole('navigation', { name: 'Main tabs' });
   }
 
+  /** Waits for ['me'], which the Profile tab's link depends on. */
+  async function waitForProfile() {
+    await within(screen.getByRole('banner')).findByRole('button', {
+      name: 'Account menu for Amina',
+    });
+  }
+
   it('is hidden from a guest', () => {
     renderAt('/directory', createRoutes(NAV_TEST_ROUTES));
 
     expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
   });
 
-  it("lists the header nav's pages plus Account, and only pages that exist", async () => {
+  // REQ-016: Profile (the user's own public profile) replaced the Account tab.
+  it("lists the header nav's pages plus Profile, and no Account tab", async () => {
     renderNavAt('/other');
     await screen.findByRole('heading', { name: 'Other stub' });
+    await waitForProfile();
 
     const labels = within(tabs())
       .getAllByRole('link')
       .map((link) => link.textContent);
-    expect(labels).toEqual(['Directory', 'Feed', 'Account']);
+    expect(labels).toEqual(['Home', 'Directory', 'Feed', 'Profile']);
     expect(labels.slice(0, -1)).toEqual(
       within(mainNav())
         .getAllByRole('link')
@@ -481,8 +525,76 @@ describe('Bottom tab bar (phone)', () => {
       'href',
       '/directory',
     );
+    expect(within(tabs()).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(within(tabs()).getByRole('link', { name: 'Feed' })).toHaveAttribute('href', '/feed');
-    expect(within(tabs()).getByRole('link', { name: 'Account' })).toHaveAttribute('href', '/me');
+    expect(within(tabs()).getByRole('link', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/alumni/1',
+    );
+    expect(within(tabs()).queryByRole('link', { name: 'Account' })).not.toBeInTheDocument();
+  });
+
+  it('gives every tab a decorative icon above its label', async () => {
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+
+    for (const link of within(tabs()).getAllByRole('link')) {
+      expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
+  it('marks Home current at / only', async () => {
+    renderNavAt('/');
+    await screen.findByRole('heading', { name: 'Home stub' });
+
+    expect(within(tabs()).getByRole('link', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    cleanup();
+
+    renderNavAt('/feed');
+    await screen.findByRole('heading', { name: 'Feed stub' });
+    expect(within(tabs()).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
+  });
+
+  it("marks the Profile tab current on the user's own profile only", async () => {
+    mockApi({ 'GET /me': ok({ ...AMINA, alumni_id: 42 }) });
+    renderNavAt('/alumni/42');
+    await screen.findByRole('heading', { name: 'Profile stub' });
+
+    const profile = await within(tabs()).findByRole('link', { name: 'Profile' });
+    await waitFor(() => {
+      expect(profile).toHaveAttribute('href', '/alumni/42');
+    });
+    expect(profile).toHaveAttribute('aria-current', 'page');
+    cleanup();
+
+    renderNavAt('/alumni/7');
+    await screen.findByRole('heading', { name: 'Profile stub' });
+    await waitForProfile();
+    expect(within(tabs()).getByRole('link', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/alumni/42',
+    );
+    expect(within(tabs()).getByRole('link', { name: 'Profile' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  });
+
+  // REQ-016 A1: with no alumni profile there is no public page, so Profile opens /me.
+  it.each([
+    ['a student', AMINA_STUDENT],
+    ['an admin with no alumni profile', AMINA_ADMIN],
+  ])('sends the Profile tab to /me for %s, current there', async (_who, me) => {
+    mockApi({ 'GET /me': ok(me) });
+    renderNavAt('/me');
+    await screen.findByRole('heading', { name: 'Me stub' });
+    await waitForProfile();
+
+    const profile = within(tabs()).getByRole('link', { name: 'Profile' });
+    expect(profile).toHaveAttribute('href', '/me');
+    expect(profile).toHaveAttribute('aria-current', 'page');
   });
 
   it('sits outside the header, after the page', async () => {
@@ -518,14 +630,14 @@ describe('Bottom tab bar (phone)', () => {
     );
   });
 
-  it('marks the Account tab current at /me, with its own decorative icon', async () => {
+  it('marks no tab current at /me for an alumni user (Profile is their public page)', async () => {
     renderNavAt('/me');
     await screen.findByRole('heading', { name: 'Me stub' });
+    await waitForProfile();
 
-    const link = within(tabs()).getByRole('link', { name: 'Account' });
-    expect(link).toHaveAttribute('aria-current', 'page');
-    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
-    expect(within(tabs()).getByRole('link', { name: 'Feed' })).not.toHaveAttribute('aria-current');
+    for (const link of within(tabs()).getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
   });
 
   it('adds an Admin tab last for an admin, current at /admin with its own icon', async () => {
@@ -541,7 +653,7 @@ describe('Bottom tab bar (phone)', () => {
       within(tabs())
         .getAllByRole('link')
         .map((tab) => tab.textContent),
-    ).toEqual(['Directory', 'Feed', 'Account', 'Admin']);
+    ).toEqual(['Home', 'Directory', 'Feed', 'Profile', 'Admin']);
   });
 
   it('has no Admin tab for a student', async () => {
@@ -556,7 +668,7 @@ describe('Bottom tab bar (phone)', () => {
       within(tabs())
         .getAllByRole('link')
         .map((tab) => tab.textContent),
-    ).toEqual(['Directory', 'Feed', 'Account']);
+    ).toEqual(['Home', 'Directory', 'Feed', 'Profile']);
   });
 
   it('is not marked current on another page', async () => {
@@ -693,7 +805,7 @@ describe('Header auth area', () => {
     expect(getToken()).not.toBeNull();
   });
 
-  it('Account settings opens /me and marks the Account tab current', async () => {
+  it('Account settings opens /me, which no nav item marks current for an alumni user', async () => {
     const user = userEvent.setup();
     const { router } = renderNavAt('/other');
 
@@ -702,12 +814,10 @@ describe('Header auth area', () => {
 
     expect(await screen.findByRole('heading', { name: 'Me stub' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/me');
-    expect(
-      within(screen.getByRole('navigation', { name: 'Main tabs' })).getByRole('link', {
-        name: 'Account',
-      }),
-    ).toHaveAttribute('aria-current', 'page');
-    for (const link of within(mainNav()).getAllByRole('link')) {
+    const tabLinks = within(screen.getByRole('navigation', { name: 'Main tabs' })).getAllByRole(
+      'link',
+    );
+    for (const link of [...tabLinks, ...within(mainNav()).getAllByRole('link')]) {
       expect(link).not.toHaveAttribute('aria-current');
     }
   });

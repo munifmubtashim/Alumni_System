@@ -223,6 +223,7 @@ describe('routes any signed-in user may call', () => {
   const ANY_USER: Route[] = [
     { method: 'get', path: '/api/users/1' },
     { method: 'get', path: '/api/alumni' },
+    { method: 'get', path: '/api/alumni/suggestions' },
     { method: 'get', path: '/api/alumni/1' },
     { method: 'get', path: '/api/posts' },
     { method: 'post', path: '/api/posts' },
@@ -238,6 +239,7 @@ describe('routes any signed-in user may call', () => {
     vi.mocked(UserManager.prototype.findUserById).mockResolvedValue(PUBLIC_USER as never);
     vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue({ items: [], total: 0 } as never);
     vi.mocked(AlumniManager.prototype.findAlumniById).mockResolvedValue({ id: 1 } as never);
+    vi.mocked(AlumniManager.prototype.suggestAlumni).mockResolvedValue([] as never);
     vi.mocked(PostManager.prototype.getAllPosts).mockResolvedValue([] as never);
     vi.mocked(PostManager.prototype.createNewPost).mockResolvedValue({ id: 1 } as never);
     vi.mocked(PostManager.prototype.getPostsByUserId).mockResolvedValue([] as never);
@@ -259,6 +261,7 @@ describe('routes any signed-in user may call', () => {
   const IDENTITY: Array<[string, Route, () => ReturnType<typeof vi.fn>, unknown[]]> = [
     ['POST /api/posts', { method: 'post', path: '/api/posts' }, () => vi.mocked(PostManager.prototype.createNewPost), [STUDENT.sub, BODY]],
     ['POST /api/posts/1/comments', { method: 'post', path: '/api/posts/1/comments' }, () => vi.mocked(CommentManager.prototype.addComment), [STUDENT.sub, '1', BODY]],
+    ['GET /api/alumni/suggestions', { method: 'get', path: '/api/alumni/suggestions' }, () => vi.mocked(AlumniManager.prototype.suggestAlumni), [STUDENT.sub]],
     ['GET /api/me', { method: 'get', path: '/api/me' }, () => vi.mocked(UserManager.prototype.getMe), [STUDENT.sub]],
     ['PUT /api/me', { method: 'put', path: '/api/me' }, () => vi.mocked(UserManager.prototype.updateMe), [STUDENT.sub, BODY]],
     ['PUT /api/me/password', { method: 'put', path: '/api/me/password' }, () => vi.mocked(UserManager.prototype.changeMyPassword), [STUDENT.sub, BODY]],
@@ -300,6 +303,19 @@ describe('GET /api/alumni: search, filters and paging', () => {
     expect(AlumniManager.prototype.searchAlumni).toHaveBeenCalledWith({ sort: 'graduationYear', order: 'desc' });
   });
 
+  it('hands mentorship to the manager as it came (REQ-016)', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue({ items: [], total: 0 } as never);
+    await call({ method: 'get', path: '/api/alumni?mentorship=true&pageSize=5' }, tokenFor(STUDENT));
+    expect(AlumniManager.prototype.searchAlumni).toHaveBeenCalledWith({ mentorship: 'true', pageSize: '5' });
+  });
+
+  it('a bad mentorship value → 400 { message }', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockRejectedValue(new AppError(400, 'mentorship must be true'));
+    const res = await call({ method: 'get', path: '/api/alumni?mentorship=false' }, tokenFor(STUDENT));
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'mentorship must be true' });
+  });
+
   it('an invalid sort → 400 { message: "Invalid sort" }', async () => {
     vi.mocked(AlumniManager.prototype.searchAlumni).mockRejectedValue(new AppError(400, 'Invalid sort'));
     const res = await call({ method: 'get', path: '/api/alumni?sort=email' }, tokenFor(STUDENT));
@@ -320,6 +336,40 @@ describe('GET /api/alumni: search, filters and paging', () => {
     const res = await call(route);
     expect(res.status).toBe(401);
     expect(AlumniManager.prototype.searchAlumni).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/alumni/suggestions (REQ-016)', () => {
+  const route: Route = { method: 'get', path: '/api/alumni/suggestions' };
+
+  it('200 with the manager’s array as the body, for any role', async () => {
+    const rows = [{ id: 2, name: 'Ana' }, { id: 1, name: 'Bo' }];
+    vi.mocked(AlumniManager.prototype.suggestAlumni).mockResolvedValue(rows as never);
+    for (const user of [STUDENT, ALUMNI, ADMIN]) {
+      const res = await call(route, tokenFor(user));
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(rows);
+    }
+  });
+
+  it('an empty result is 200 []', async () => {
+    vi.mocked(AlumniManager.prototype.suggestAlumni).mockResolvedValue([] as never);
+    const res = await call(route, tokenFor(STUDENT));
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('is not read as an alumni id (registered before /:id)', async () => {
+    vi.mocked(AlumniManager.prototype.suggestAlumni).mockResolvedValue([] as never);
+    await call(route, tokenFor(STUDENT));
+    expect(AlumniManager.prototype.suggestAlumni).toHaveBeenCalledWith(STUDENT.sub);
+    expect(AlumniManager.prototype.findAlumniById).not.toHaveBeenCalled();
+  });
+
+  it('no token → 401 without calling the manager', async () => {
+    const res = await call(route);
+    expect(res.status).toBe(401);
+    expect(AlumniManager.prototype.suggestAlumni).not.toHaveBeenCalled();
   });
 });
 
@@ -691,5 +741,42 @@ describe('REQ-011: headline, location, degree, start year and mentorship through
     const [, , alumniFields, , student] = vi.mocked(userQuery.updateMyProfile).mock.calls[0];
     expect(alumniFields).toBeUndefined();
     for (const key of Object.keys(FIELDS)) expect(student).not.toHaveProperty(key);
+  });
+});
+
+describe('BUG-001: POST /api/posts refuses a post without a caption', () => {
+  let postQuery: InstanceType<typeof PostManager>['postQuery'];
+
+  beforeEach(async () => {
+    const actual = await vi.importActual<typeof import('@alumni/businesslogic')>('@alumni/businesslogic');
+    const posts = new actual.PostManager();
+    postQuery = posts.postQuery;
+    vi.spyOn(postQuery, 'createPost').mockResolvedValue({ id: 1 } as never);
+    // The controller holds the fake manager; send the call on to the real one.
+    vi.mocked(PostManager.prototype.createNewPost).mockImplementation(
+      (...args) => posts.createNewPost(...args),
+    );
+  });
+
+  it.each([{}, { caption: '   ' }, { caption: null, media_url: '' }, { media_url: 'https://x.test/a.png' }])('%j → 400 and nothing is stored', async (body) => {
+    const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), body);
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'A post needs a caption' });
+    expect(postQuery.createPost).not.toHaveBeenCalled();
+  });
+
+  it('a caption alone → 201', async () => {
+    const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), { caption: 'hi' });
+    expect(res.status).toBe(201);
+    expect(postQuery.createPost).toHaveBeenCalledTimes(1);
+  });
+
+  it('a caption with media → 201', async () => {
+    const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), {
+      caption: 'hi',
+      media_url: 'https://x.test/a.png',
+    });
+    expect(res.status).toBe(201);
+    expect(postQuery.createPost).toHaveBeenCalledTimes(1);
   });
 });

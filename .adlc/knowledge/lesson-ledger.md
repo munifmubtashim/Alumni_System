@@ -12,6 +12,8 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 
 | ID | Title | Tags | Severity | REQ |
 |---|---|---|---|---|
+| LESSON-BUG-001-1 | A nullable DB column is `T | null` in the shared type, not `T?` | shared-types, null, postgres, frontend | trap | BUG-001 |
+| LESSON-BUG-001-2 | Create and update validate a field with one shared helper, and are tightened together | backend, validation, api, posts | guideline | BUG-001 |
 | LESSON-REQ-001-1 | Pick toolchain majors by plugin peer ranges, not by "latest" | toolchain, typescript, eslint, vitest | guideline | REQ-001 |
 | LESSON-REQ-001-2 | After a major React bump in a workspace, prove there is one React copy | npm-workspaces, react, dependencies | trap | REQ-001 |
 | LESSON-REQ-001-3 | Vitest 5 Node-side tests: per-file environment comment, DOM-safe setup, and live in scripts/ | vitest, testing, typescript | guideline | REQ-001 |
@@ -69,3 +71,8 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 | LESSON-REQ-015-3 | Change an API contract, update conventions-api.md in the same REQ | api, vault, docs, conventions | guideline | REQ-015 |
 | LESSON-REQ-015-4 | An optional field in a shared type must be read null-safely everywhere | frontend, shared-types, feed, null | trap | REQ-015 |
 | LESSON-REQ-015-5 | An edit form's Save stays disabled until a value differs from what was loaded | frontend, forms, ux | guideline | REQ-015 |
+| LESSON-REQ-016-1 | A boolean used to rank with ORDER BY DESC must be wrapped in COALESCE(..., false) | backend, sql, postgres, ranking | trap | REQ-016 |
+| LESSON-REQ-016-2 | A profile-completeness measure may only count fields the app lets the user edit | frontend, home, profile, ux | guideline | REQ-016 |
+| LESSON-REQ-016-3 | A layout value that several pages and shared chrome must agree on goes in `:root`, with the pages that stay off it written down | frontend, css, layout, footer | guideline | REQ-016 |
+| LESSON-REQ-016-4 | When a new feature needs a card or test helper another feature already has, move it to a shared eager home first; do not copy it | frontend, duplication, shared-components, tests | guideline | REQ-016 |
+| LESSON-REQ-016-5 | `invalidateQueries` matches by key prefix: check what an existing root-key call already covers | frontend, tanstack-query, cache | guideline | REQ-016 |

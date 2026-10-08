@@ -1,6 +1,6 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed, Account settings (edit your own profile) and, for admins, the Admin page (stats and alumni management), on top of the design system.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page (profile prompt, latest posts, mentors and suggested alumni), the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed, Account settings (edit your own profile) and, for admins, the Admin page (stats and alumni management), on top of the design system.
 
 ## Stack
 
@@ -59,9 +59,10 @@ packages/frontend/
                       MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants and small pure contracts: brand.ts (BRAND_NAME, SUPPORT_EMAIL,
                       supportMailto), directoryReturn.ts (DIRECTORY_PATH, profilePath, the directory-to-profile
-                      router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), aboutPath.ts (ABOUT_PATH),
-                      adminPath.ts (ADMIN_PATH), relativeTime.ts
+                      router-state handover), homePath.ts (HOME_PATH), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH),
+                      aboutPath.ts (ABOUT_PATH), adminPath.ts (ADMIN_PATH), queryKeys.ts, relativeTime.ts
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
+                      people/ (eager "Suggested alumni" card and person row, shared by Home and Feed),
                       directory/, profile/, feed/, me/, about/ and admin/ (lazy-loaded directory, alumni
                       profile, post feed, Account settings, public About and admin-only Admin pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
@@ -121,7 +122,7 @@ REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists a
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1.
 - **Mentor tag:** a card closes with a "Mentor" tag when the alumnus has `mentorship_available` on (REQ-011). The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
-- **Header:** after S1. `MainNav` (desktop) shows the Directory and Feed links (`HEADER_NAV_ITEMS`) to signed-in users only, plus Admin for admins (REQ-015), each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`, `TAB_NAV_ITEMS`) replaces it and adds an Account tab for `/me`, then Admin for admins (four tabs, as S6 draws). The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, Account settings, Admin settings for admins only, Log out) sit on the right. Unlike S1, `/me` is not in the header nav (REQ-012; see `src/app/README.md`).
+- **Header:** after S1. `MainNav` (desktop) shows the Home, Directory and Feed links (`HEADER_NAV_ITEMS`) to signed-in users only, plus Admin for admins (REQ-015), each marked current on its path and below with an accent underline (Home on `/` only, REQ-016). On phones a sticky bottom tab bar (`BottomTabs`, `TAB_NAV_ITEMS`) replaces it and adds a Profile tab for the user's own `/alumni/<id>` (`/me` without an alumni profile; REQ-016), then Admin for admins. The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, Account settings, Admin settings for admins only, Log out) sit on the right. Unlike S1, `/me` is not in the header nav (REQ-012; see `src/app/README.md`).
 
 ## Profile page
 
@@ -135,16 +136,21 @@ REQ-008. `/alumni/:id` (signed in; every directory card links to it) shows one a
 
 ## Feed
 
-REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on phones and Home's "Catch up on the feed" card) shows posts from `GET /api/posts`, newest first, 20 per page with Load more, after the S4 designs.
+REQ-009, ADR-09. `/feed` (signed in; the header's "Feed" link, the Feed tab on phones and Home's "Latest from the feed" "See all" link) shows posts from `GET /api/posts`, newest first, 20 per page with Load more, after the S4 designs.
 
 - **Writing:** the composer posts trimmed text (Post stays disabled while blank). Comments and one level of replies live in a thread under each card, fetched only when it is opened. The author or an admin sees Edit and Delete (posts in the "Post actions" menu, comments in the "Reply · Edit · Delete" row); the API still decides, and a refused write shows its message. A post with comments asks inline before deletion ("Delete this post and its N comments?").
 - **Optimistic writes (ADR-09):** new posts and comments, edits and deletes show at once and are undone if the API refuses. `onMutate` edits the cache with a pure function from `cacheEdits.ts`, `onError` applies the inverse edit (no whole-cache snapshot), `onSettled` invalidates only when it is the last mutation on that key. Keys are `['feed','posts']` and `['feed','comments',postId]`. A pending item (negative id) has no menu, Reply or thread toggle.
 - **Author link:** the name links to `/alumni/<author_alumni_id>` (the alumni id, not the user id) and is plain text when the author has no alumni profile.
+- **Sidebar (REQ-016):** from 48rem a sticky "Suggested alumni" card (`features/people`, `GET /api/alumni/suggestions`) sits beside the posts, inside the shared `--page-max` column. Below 48rem it is not rendered at all, so phones send no request. It has its own loading, empty and Retry states and never breaks the feed.
 - More: `src/features/feed/README.md`.
+
+## Home
+
+REQ-016. `/` (signed in; the header's "Home" link and the Home tab) greets "Welcome back, <first name>" with "Here's what's happening in your alumni network.", then: a profile-completeness card with a progress bar and one next step to `/me` (only while the profile is incomplete; the photo is not counted), "Latest from the feed" (3 newest posts, "See all" to `/feed`), "Mentors available" (up to 4, never the user, "Browse directory") and "Suggested alumni" (the same card as the Feed sidebar). Each section has its own loading, empty and Retry states. No quick-link cards, stats or counts. Eager (not a lazy chunk). More: `src/features/home/README.md`.
 
 ## Account settings
 
-REQ-010, renamed from My Profile in REQ-012. `/me` (signed in; the avatar menu's "Account settings", the Home card and, on phones, the Account tab) lets the signed-in user edit their own details and change their password, after the S5 designs.
+REQ-010, renamed from My Profile in REQ-012. `/me` (signed in; the avatar menu's "Account settings", Home's completeness card while the profile is incomplete and, on phones, the Profile tab for a user with no alumni profile) lets the signed-in user edit their own details and change their password, after the S5 designs.
 
 - **Saving:** one Save sends `PUT /api/me` when a profile field changed, then `PUT /api/me/password` when a password was typed. A save bar shows while there are unsaved changes, a prompt asks before leaving with them, and a toast confirms a save. Not optimistic.
 - **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (at every width since REQ-013) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).

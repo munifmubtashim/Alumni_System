@@ -1,11 +1,20 @@
-/* Design: S4 page column, max 640px (40rem, a layout size), centred. Title
-   18px phone / 22px desktop: text-heading-sm / text-heading-md (as the
-   directory). Gaps 16px / 20px: space-4 / space-5 (nearest). Posts 16px apart.
-   The shell gives the page padding (REQ-007). */
+/* Design: S4 page column, centred. Since REQ-016 the page takes the shared
+   --page-max (from global.css) so its edges line up with the footer, and from
+   48rem it is a grid: the post column (flexible; S4's fixed 640px column no
+   longer applies once a sidebar exists) and a "Suggested alumni" sidebar
+   (no design screen): 16rem from 48rem, so the posts keep about 27rem at a
+   48rem window, and 20rem from 64rem; sticky so it stays in view while the posts
+   scroll. Title 18px phone / 22px desktop: text-heading-sm / text-heading-md
+   (as the directory). Gaps 16px / 20px: space-4 / space-5 (nearest). Posts
+   16px apart. The shell gives the page padding (REQ-007). */
 
 .page {
-  width: min(100%, 40rem);
+  width: min(100%, var(--page-max));
   margin-inline: auto;
+  min-width: 0;
+}
+
+.main {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -29,10 +38,31 @@
 
 @media (width >= 48rem) {
   .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  .main {
     gap: var(--space-5);
   }
 
   .title {
     font: var(--text-heading-md);
+  }
+
+  /* The header does not stick, so the sidebar sticks just below the top. */
+  .aside {
+    position: sticky;
+    top: var(--space-5);
+    min-width: 0;
+  }
+}
+
+@media (width >= 64rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: var(--space-6);
   }
 }

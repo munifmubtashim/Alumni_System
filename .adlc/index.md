@@ -30,7 +30,8 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-012 | Rename My Profile to Account settings; /me out of the header nav; phone tab "Account" (kind: task) | merged 2026-10-07 (PR #27) | specs/_archive/2026-10/m/REQ-012-account-settings-nav-labels |
 | REQ-013 | Fix BaseDTO casing (typecheck:backend passes); Start year shown at every width (kind: task) | merged 2026-10-07 (PR #29) | specs/_archive/2026-10/m/REQ-013-casing-fix-start-year-all-widths |
 | REQ-014 | Public About page at /about (lazy, S7 designs), site footer, About link on log-in and sign-up (kind: task) | merged 2026-10-07 (PR #30) | specs/_archive/2026-10/m/REQ-014-about-page |
-| REQ-015 | Admin page at /admin: stats, sortable/searchable alumni table, add/edit drawer, cascade delete (S6 designs) | ready to merge 2026-10-08 | specs/2026-10/m/REQ-015-admin-page |
+| REQ-015 | Admin page at /admin: stats, sortable/searchable alumni table, add/edit drawer, cascade delete (S6 designs) | merged 2026-10-08 (PR #32) | specs/_archive/2026-10/m/REQ-015-admin-page |
+| REQ-016 | Navigation (Home, Profile tab), social Home, Feed 'Suggested alumni' sidebar, shared page width, suggestions API + mentorship filter | ready to merge 2026-10-08 | specs/2026-10/m/REQ-016-nav-home-feed-sidebar |
 
 ## ADRs
 
@@ -81,3 +82,9 @@ Cross-cutting reference docs that don't fit elsewhere.
 | Page | What it covers |
 |---|---|
 | _(empty)_ | |
+
+## Bugs
+
+| Bug | Title | Status | Path |
+|---|---|---|---|
+| BUG-001 | /feed crashed for everyone on a null-caption post; caption now required | merged 2026-10-08 (PR #35) | bugs/_archive/2026-10/m/BUG-001-feed-null-caption-crash |

@@ -47,6 +47,66 @@ describe('PostManager', () => {
       expect(stored.media_url).toBe('https://x.test/a.png');
       expect(stored.comment_count).toBe(0);
     });
+
+    // BUG-001: create validates like update, then trims; blank becomes null.
+    it('trims caption and media, and stores a blank one as null', async () => {
+      query.createPost.mockImplementation(async (post) => post);
+
+      await manager.createNewPost(7, { caption: '  hello  ', media_url: '   ' });
+
+      const stored = query.createPost.mock.calls[0]![0];
+      expect(stored.caption).toBe('hello');
+      expect(stored.media_url).toBeNull();
+    });
+
+    it('stores a caption with media, both trimmed', async () => {
+      query.createPost.mockImplementation(async (post) => post);
+
+      await manager.createNewPost(7, { caption: ' hi ', media_url: ' https://x.test/a.png ' });
+
+      const stored = query.createPost.mock.calls[0]![0];
+      expect(stored.caption).toBe('hi');
+      expect(stored.media_url).toBe('https://x.test/a.png');
+    });
+
+    it('stores a caption alone, media as null', async () => {
+      query.createPost.mockImplementation(async (post) => post);
+
+      await manager.createNewPost(7, { caption: 'hi' });
+
+      const stored = query.createPost.mock.calls[0]![0];
+      expect(stored.media_url).toBeNull();
+    });
+
+    it.each([
+      ['caption', 5, 'Caption must be text or null'],
+      ['caption', { a: 1 }, 'Caption must be text or null'],
+      ['caption', true, 'Caption must be text or null'],
+      ['media_url', 0, 'Media URL must be text or null'],
+      ['media_url', ['x'], 'Media URL must be text or null'],
+    ])('returns 400 when %s is %j', async (key, value, message) => {
+      const error = await expectAppError(manager.createNewPost(7, { caption: 'ok', [key]: value }), 400);
+      expect(error.message).toBe(message);
+      expect(query.createPost).not.toHaveBeenCalled();
+    });
+
+    // BUG-001 review: no screen shows media yet, so every post needs a caption.
+    it.each([
+      {},
+      { caption: null },
+      { caption: '' },
+      { caption: '   ', media_url: ' ' },
+      { caption: null, media_url: null },
+      { media_url: 'x' },
+      { caption: '  ', media_url: 'https://x.test/a.png' },
+    ])(
+      'returns 400 "A post needs a caption" for %j',
+      async (body) => {
+        const error = await expectAppError(manager.createNewPost(7, body), 400);
+        expect(error.message).toBe('A post needs a caption');
+        expect(query.createPost).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('updatePost', () => {
@@ -71,13 +131,32 @@ describe('PostManager', () => {
     });
 
     it('clears a field sent as null', async () => {
-      await manager.updatePost(AUTHOR, 42, { caption: null });
-      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: null });
+      query.findPostById.mockResolvedValue({ ...STORED_POST, media_url: 'https://x.test/a.png' });
+      await manager.updatePost(AUTHOR, 42, { media_url: null });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { media_url: null });
     });
 
-    it('stores text as sent, like create (no trimming)', async () => {
-      await manager.updatePost(AUTHOR, 42, { caption: '  hi  ', media_url: '' });
-      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: '  hi  ', media_url: '' });
+    // BUG-001: the patch merged onto the stored row must keep a caption, media or not.
+    it.each([{ caption: null }, { caption: '  ' }, { caption: '', media_url: null }, { caption: null, media_url: 'x' }])(
+      'returns 400 "A post needs a caption" when %j leaves none',
+      async (body) => {
+        query.findPostById.mockResolvedValue({ ...STORED_POST, media_url: 'https://x.test/a.png' });
+        const error = await expectAppError(manager.updatePost(AUTHOR, 42, body), 400);
+        expect(error.message).toBe('A post needs a caption');
+        expect(query.updatePost).not.toHaveBeenCalled();
+      },
+    );
+
+    it('refuses a media-only edit of an old post that has no caption', async () => {
+      query.findPostById.mockResolvedValue({ ...STORED_POST, caption: null });
+      const error = await expectAppError(manager.updatePost(AUTHOR, 42, { media_url: 'x' }), 400);
+      expect(error.message).toBe('A post needs a caption');
+    });
+
+    // BUG-001 review (m1): update normalizes text exactly like create.
+    it('trims text and stores a blank one as null, like create', async () => {
+      await manager.updatePost(AUTHOR, 42, { caption: '  hi  ', media_url: '   ' });
+      expect(query.updatePost).toHaveBeenCalledWith(42, { caption: 'hi', media_url: null });
     });
 
     it.each([

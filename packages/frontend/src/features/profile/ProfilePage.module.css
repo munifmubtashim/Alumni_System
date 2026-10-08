@@ -1,10 +1,11 @@
-/* Design: docs/design/screens/app/S3-Desktop-Light and S3-Phone-Light. The
-   page caps at 860px (53.75rem, so it scales with zoom); the shell's <main>
+/* Design: docs/design/screens/app/S3-Desktop-Light and S3-Phone-Light. S3
+   caps the page at 860px; since REQ-016 it uses the shared --page-max (72rem)
+   so its edges match the footer (user-approved at the architect gate). <main>
    already gives S3's outer padding. Gaps between blocks: 24px on phone
    (space-5), 28px from 48rem (space-5 + space-1, off the scale). */
 
 .page {
-  width: min(100%, 53.75rem);
+  width: min(100%, var(--page-max));
   margin-inline: auto;
   display: flex;
   flex-direction: column;

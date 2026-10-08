@@ -2,6 +2,28 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] ship-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] req-ready-to-merge | REQ-016-nav-home-feed-sidebar | social Home, Feed suggestions sidebar, Home/Profile nav, shared page width, suggestions + mentorship API
+## [2026-10-08] lesson | L-REQ-016-1..5 — COALESCE in rank ORDER BY; count only editable fields; shared layout var in :root; extract shared shell first; check prefix invalidation
+## [2026-10-08] gotcha | G50..G54 — case-clash files, matchMedia stub, businessLogic dist, nav Home end + Profile fallback, react-refresh arrays
+## [2026-10-08] verify-gate-cleared | REQ-016-nav-home-feed-sidebar | findings: C0/M0/m7
+## [2026-10-08] implement-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] architect-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] work-path-set | REQ-016-nav-home-feed-sidebar | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-08] spec-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] bug-archived | BUG-001-feed-null-caption-crash
+## [2026-10-08] bug-merged | BUG-001-feed-null-caption-crash | PR #35 into redesign (a4f0e63f)
+## [2026-10-08] ship-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] bug-ready-to-merge | BUG-001-feed-null-caption-crash | null-caption feed crash fixed; caption required on create/update
+## [2026-10-08] lesson | L-BUG-001-1..2 — nullable column is `T | null` in shared types; create and update share one validator
+## [2026-10-08] gotcha | G48–G49 — feed card test traps; caption rule has no DB constraint
+## [2026-10-08] review-gate-cleared | BUG-001-feed-null-caption-crash | findings: C0/M0/m2 open (m3 follow-up, m4 wrapup)
+## [2026-10-08] fix-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] investigate-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] work-path-set | BUG-001-feed-null-caption-crash | branch bugfix/BUG-001-feed-null-caption-crash
+## [2026-10-08] report-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] req-archived | REQ-015-admin-page
+## [2026-10-08] req-merged | REQ-015-admin-page | PR #32 into redesign (8c211e8a)
 ## [2026-10-08] ship-gate-cleared | REQ-015-admin-page
 ## [2026-10-08] req-ready-to-merge | REQ-015-admin-page | admin page at /admin: stats, sortable table, add/edit drawer, cascade delete; 0 critical open, 4 follow-ups
 ## [2026-10-08] lesson | L-REQ-015-1..5 — cascade delete recount + lock, route vs user id spaces, contract changes update conventions-api, optional means null-safe, edit Save disabled until changed
@@ -192,3 +214,4 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 ## [2026-10-04] init-import | README.md → context/architecture.md
 ## [2026-10-04] init-import | tsconfig.json → context/conventions.md
 ## [2026-10-04] init-import | packages/frontend/eslint.config.js → context/conventions.md
+
