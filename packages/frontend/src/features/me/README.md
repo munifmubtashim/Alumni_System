@@ -13,6 +13,6 @@
 
 **Phone layout:** the save bar sits at `bottom: var(--tab-bar-height)`, a custom property `AppShell` sets on the shell (0 from 48rem) and `BottomTabs` uses as its min height, so the bar never covers the tab bar (ADV-001). An in-flow spacer of `--save-bar-height` and matching scroll margins on the controls keep the last field clear of the bar (LESSON-REQ-007-1).
 
-**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/styles/**`, `@/features/auth` (its public `index.ts`), and types from `@alumni/shared`. Not `@/app/**` (tests may import its providers). Not another lazy feature (`directory`, `profile`, `feed`).
+**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/styles/**`, `@/features/auth` (its public `index.ts`), and types from `@alumni/shared`. Not `@/app/**` (tests may import its providers). Not another lazy feature (`directory`, `profile`, `feed`, `about`, `admin`).
 
 **Imported by:** only the lazy route's dynamic `import()` in `app/router.tsx` (ADR-08). There is no `index.ts`; nothing else may import this folder statically.

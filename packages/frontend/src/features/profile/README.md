@@ -11,6 +11,6 @@
 - Pure helpers: `format.ts` (`present`, `headline`, `degreeLine` ("B.Sc. Product Design · 2013–2017"), `educationLine` (the degree line when there is a degree or start year, else "Department · Class of YYYY"), `employmentTitle`, `safeLinkedInUrl`, `commentCountText`). `PostCard` takes its time text from `config/relativeTime` (shared with the feed).
 - Hooks: `useAlumniProfile` (`['alumni','profile',id]`, no `placeholderData`), `usePostsByUser` (`['posts','user',userId]`, idle until the profile gives the `user_id`).
 
-**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/styles/**`, and types from `@alumni/shared`. Not `@/app/**` (tests may import its providers). Not another lazy feature (`@/features/directory/**`, `@/features/feed/**`, `@/features/me/**`): lazy features meet only through `config/` (the directory through `config/directoryReturn`; ADR-06, ADR-08).
+**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/store/**`, `@/styles/**`, and types from `@alumni/shared`. Not `@/app/**` (tests may import its providers). Not another lazy feature (`@/features/directory/**`, `@/features/feed/**`, `@/features/me/**`, `@/features/about/**`, `@/features/admin/**`): lazy features meet only through `config/` (the directory through `config/directoryReturn`; ADR-06, ADR-08).
 
 **Imported by:** only the lazy route's dynamic `import()` in `app/router.tsx` (ADR-08). There is no `index.ts`; nothing else may import this folder statically.

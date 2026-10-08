@@ -14,6 +14,6 @@
 - Pure helpers: `feedFormat.ts` (labels, "edited", thread grouping, author link).
 - `testKit.ts`: test-only helpers (fake API at the axios adapter, a live token, fixtures). Only `*.test.tsx` here import it.
 
-**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/features/auth` (current user, error texts), and types from `@alumni/shared`. Not `@/app/**`. Not `@/features/directory/**`, `@/features/profile/**` or `@/features/me/**` (lazy features meet only through `config/`).
+**May import:** `@/components/ui/**`, `@/config/**`, `@/services/**`, `@/features/auth` (current user, error texts), and types from `@alumni/shared`. Not `@/app/**`. Not `@/features/directory/**`, `@/features/profile/**`, `@/features/me/**`, `@/features/about/**` or `@/features/admin/**` (lazy features meet only through `config/`).
 
 **Imported by:** only the lazy route's dynamic `import()` in `app/router.tsx` (ADR-08, added in TASK-006). There is no `index.ts`; nothing else may import this folder statically.
