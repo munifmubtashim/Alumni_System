@@ -31,6 +31,7 @@ _(REQ pages by id, with a one-line summary)_
 | REQ-013 | Fix BaseDTO casing (typecheck:backend passes); Start year shown at every width (kind: task) | merged 2026-10-07 (PR #29) | specs/_archive/2026-10/m/REQ-013-casing-fix-start-year-all-widths |
 | REQ-014 | Public About page at /about (lazy, S7 designs), site footer, About link on log-in and sign-up (kind: task) | merged 2026-10-07 (PR #30) | specs/_archive/2026-10/m/REQ-014-about-page |
 | REQ-015 | Admin page at /admin: stats, sortable/searchable alumni table, add/edit drawer, cascade delete (S6 designs) | merged 2026-10-08 (PR #32) | specs/_archive/2026-10/m/REQ-015-admin-page |
+| REQ-016 | Navigation (Home, Profile tab), social Home, Feed 'Suggested alumni' sidebar, shared page width, suggestions API + mentorship filter | ready to merge 2026-10-08 | specs/2026-10/m/REQ-016-nav-home-feed-sidebar |
 
 ## ADRs
 

@@ -1,7 +1,7 @@
-import type { Alumni, AlumniListResponse, Post } from '@alumni/shared';
+import type { Alumni, AlumniListItem, AlumniListResponse, Post } from '@alumni/shared';
 import { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig } from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
-import { getAlumniProfile, getPostsByUser, searchAlumni } from './alumniApi';
+import { getAlumniProfile, getPostsByUser, getSuggestedAlumni, searchAlumni } from './alumniApi';
 import { httpClient } from './httpClient';
 
 const originalAdapter = httpClient.defaults.adapter;
@@ -109,6 +109,20 @@ describe('searchAlumni', () => {
     });
   });
 
+  it('sends mentorship=true only when set', async () => {
+    const sent = respondWith(reply);
+
+    await searchAlumni({ mentorship: true, page: 1, pageSize: 5 });
+    expect(Object.fromEntries(queryOf(sent()))).toEqual({
+      mentorship: 'true',
+      page: '1',
+      pageSize: '5',
+    });
+
+    await searchAlumni({ page: 1, pageSize: 5 });
+    expect(queryOf(sent()).has('mentorship')).toBe(false);
+  });
+
   it('sends either half of the sort on its own', async () => {
     const sent = respondWith(reply);
 
@@ -195,5 +209,34 @@ describe('getPostsByUser', () => {
 
     expect(error).toBeInstanceOf(AxiosError);
     expect((error as AxiosError).response?.status).toBe(500);
+  });
+});
+
+describe('getSuggestedAlumni', () => {
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+  });
+
+  it('gets /alumni/suggestions with no query string and returns the array', async () => {
+    const people: AlumniListItem[] = [
+      { id: 2, user_id: 8, name: 'Grace Hopper', mentorship_available: true },
+    ];
+    const sent = respondWith(people);
+
+    await expect(getSuggestedAlumni()).resolves.toEqual(people);
+
+    const config = sent();
+    expect(config.method).toBe('get');
+    expect(config.url).toBe('/alumni/suggestions');
+    expect([...queryOf(config).keys()]).toEqual([]);
+  });
+
+  it('rejects with the axios error on a non-2xx answer', async () => {
+    failWith(401, { message: 'Unauthorized' });
+
+    const error: unknown = await getSuggestedAlumni().catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect((error as AxiosError).response?.status).toBe(401);
   });
 });

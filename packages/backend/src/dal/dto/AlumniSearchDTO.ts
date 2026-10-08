@@ -12,6 +12,8 @@ export interface AlumniSearchFilters {
   department?: string;
   university?: string;
   graduationYear?: number;
+  // Only alumni with mentorship_available = true. There is no "false" filter.
+  mentorship?: true;
   sort?: AlumniSort;
   order?: SortOrder;
 }

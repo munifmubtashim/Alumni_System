@@ -2,6 +2,15 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] ship-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] req-ready-to-merge | REQ-016-nav-home-feed-sidebar | social Home, Feed suggestions sidebar, Home/Profile nav, shared page width, suggestions + mentorship API
+## [2026-10-08] lesson | L-REQ-016-1..5 — COALESCE in rank ORDER BY; count only editable fields; shared layout var in :root; extract shared shell first; check prefix invalidation
+## [2026-10-08] gotcha | G50..G54 — case-clash files, matchMedia stub, businessLogic dist, nav Home end + Profile fallback, react-refresh arrays
+## [2026-10-08] verify-gate-cleared | REQ-016-nav-home-feed-sidebar | findings: C0/M0/m7
+## [2026-10-08] implement-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] architect-gate-cleared | REQ-016-nav-home-feed-sidebar
+## [2026-10-08] work-path-set | REQ-016-nav-home-feed-sidebar | branch at /Users/munifmubtashim/Alumni_System
+## [2026-10-08] spec-gate-cleared | REQ-016-nav-home-feed-sidebar
 ## [2026-10-08] bug-archived | BUG-001-feed-null-caption-crash
 ## [2026-10-08] bug-merged | BUG-001-feed-null-caption-crash | PR #35 into redesign (a4f0e63f)
 ## [2026-10-08] ship-gate-cleared | BUG-001-feed-null-caption-crash
@@ -205,3 +214,4 @@ Grep-friendly format: `## [YYYY-MM-DD] kind | description` with optional metadat
 ## [2026-10-04] init-import | README.md → context/architecture.md
 ## [2026-10-04] init-import | tsconfig.json → context/conventions.md
 ## [2026-10-04] init-import | packages/frontend/eslint.config.js → context/conventions.md
+

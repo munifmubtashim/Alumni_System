@@ -159,8 +159,23 @@ describe('parseAlumniSearch (GET /api/alumni query)', () => {
     });
   });
 
+  describe('mentorship (REQ-016)', () => {
+    it.each(['true', ' true '])('%j turns the mentors-only filter on', (mentorship) => {
+      expect(parseAlumniSearch({ mentorship, q: 'x' }).filters).toEqual({ q: 'x', mentorship: true });
+    });
+
+    it.each(['', '   '])('treats an empty value (%j) as absent', (blank) => {
+      expect(parseAlumniSearch({ mentorship: blank }).filters).toEqual({});
+    });
+
+    it.each(['false', 'TRUE', '1', 'yes', 'true\u0000'])('rejects %j', async (mentorship) => {
+      const error = await expectAppError(() => parseAlumniSearch({ mentorship }), 400);
+      expect(error.message).toBe('mentorship must be true');
+    });
+  });
+
   describe('repeated or nested parameters', () => {
-    it.each(['q', 'department', 'university', 'graduationYear', 'sort', 'order', 'page', 'pageSize'])(
+    it.each(['q', 'department', 'university', 'graduationYear', 'mentorship', 'sort', 'order', 'page', 'pageSize'])(
       'rejects an array or object for %s',
       async (param) => {
         const asArray = await expectAppError(() => parseAlumniSearch({ [param]: ['a', 'b'] }), 400);

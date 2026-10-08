@@ -12,7 +12,9 @@
    REQ-010). The sum mirrors BottomTabs.module.css: hairline, bar padding
    (space-1 top, space-2 + space-1 / 2 bottom), tab padding (space-2 twice),
    the 1.25rem icon, the space-1 gap and one caption line. BottomTabs uses it
-   as its min height, so the two never disagree by more than a wrapped label. */
+   as its min height, so the two never disagree by more than a wrapped label.
+   --page-max (the page column width, REQ-016) is declared in
+   styles/global.css :root. */
 .shell {
   --tab-bar-height: calc(
     1px + var(--space-1) + var(--space-2) * 2 + 1.25rem + var(--space-1) +

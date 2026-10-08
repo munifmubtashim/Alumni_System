@@ -1095,3 +1095,73 @@ Use both. They serve different purposes.
 **Related:** [[knowledge/lessons/LESSON-BUG-001-1-nullable-column-means-null-in-shared-type|L-BUG-001-1]] · [[knowledge/gotchas#^g39|G39]]
 
 ---
+
+---
+
+## G50 — A component file and a helper file whose names differ only by case clash on macOS ^g50
+
+**Where:** `features/home/ProfileCompletenessCard.tsx` beside `profileCompleteness.ts` (REQ-016)
+
+**Why it's surprising:** `./ProfileCompleteness` resolves to `profileCompleteness.ts`, so the component import is `undefined` ("Element type is invalid").
+
+**Why it exists:** macOS filesystems are case-insensitive by default; Linux CI would not show it.
+
+**Don't:** name `Foo.tsx` and `foo.ts` side by side; give the component a different word (`...Card`).
+
+**Related:** [[knowledge/gotchas#^g27|G27]]
+
+---
+
+## G51 — The test setup's matchMedia stub answers every width query as a phone ^g51
+
+**Where:** `packages/frontend/src/test/setup.ts`, `features/feed/FeedPage.test.tsx` (`wideScreen`)
+
+**Why it's surprising:** Existing feed tests silently ran the phone layout, so a "wide" assertion passes or fails for the wrong reason. `useWideScreen` treats a missing matchMedia as wide, the stub does not.
+
+**Why it exists:** The stub exists so components using matchMedia don't crash in jsdom.
+
+**Don't:** assert a wide-only element without spying `window.matchMedia` for that one query first.
+
+**Related:** [[knowledge/gotchas#^g50|G50]]
+
+---
+
+## G52 — `typecheck:backend` fails until businessLogic is rebuilt ^g52
+
+**Where:** `packages/backend/src/api/controllers/*.ts`, `packages/backend/src/businessLogic/dist`
+
+**Why it's surprising:** After adding a Manager method, `tsc -p src/api` reads the stale `dist/*.d.ts` and reports "Property does not exist", while the tests (which alias to source) pass.
+
+**Why it exists:** `@alumni/businesslogic`'s `main` points at `dist/`; CLAUDE.md only mentions that the running API needs the rebuild.
+
+**Don't:** trust a green `test:backend` as proof the type-check will pass; run `tsc` in `src/businessLogic` first.
+
+**Related:** [[knowledge/gotchas#^g32|G32]]
+
+---
+
+## G53 — The nav's Home link needs NavLink `end`, and the Profile tab depends on `['me']` ^g53
+
+**Where:** `app/AppShell/navItems.tsx` (`HOME_NAV_ITEM`, `navItemPath`), `AppShell.test.tsx`
+
+**Why it's surprising:** Every app route is a child of `/`, so a plain NavLink to `/` is current on every page. The Profile tab points at `/me` until `alumni_id` loads, then at `/alumni/<id>`; a test that asserts the href too early reads the fallback.
+
+**Why it exists:** One list feeds both bars; `end` and `own` mark the two special items.
+
+**Don't:** drop `end` from Home, or assert the Profile href before `['me']` has resolved.
+
+**Related:** [[REQ-016]]
+
+---
+
+## G54 — `react-refresh/only-export-components` allows exported primitive constants but not exported arrays ^g54
+
+**Where:** `features/home/LatestPosts.tsx` (`LATEST_POSTS_KEY`)
+
+**Why it's surprising:** G27 says constants pass, but an `as const` tuple exported next to a component fails lint.
+
+**Why it exists:** The rule only exempts values it can prove are primitives.
+
+**Don't:** export a query-key tuple from a component file; keep it private or put it in a `.ts` file.
+
+**Related:** [[knowledge/gotchas#^g27|G27]]

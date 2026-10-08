@@ -23,6 +23,15 @@ export const searchAlumni = async (req: Request, res: Response) => {
   }
 };
 
+// Up to 5 other alumni for the signed-in user (any role): 200 with a bare array, [] when none.
+export const suggestAlumni = async (req: Request, res: Response) => {
+  try {
+    res.status(200).json(await alumniManager.suggestAlumni(Number(req.user.sub)));
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
 export const findAlumniById = async (req: Request, res: Response) => {
   try {
     res.status(200).json(await alumniManager.findAlumniById(req.params.id));

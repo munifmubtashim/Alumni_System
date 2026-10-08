@@ -1,0 +1,58 @@
+/* The completeness card (REQ-016, no design screen): title, a one-line
+   summary, a thin accent bar on a sunken track, and the next step as a
+   secondary button-link, start-aligned. The bar is a native <progress>
+   (role progressbar with its value for free); appearance: none plus the
+   engine pseudo-elements draw it with tokens in every browser. The summary
+   text carries the same number, so the bar is never the only cue. */
+
+.card {
+  min-width: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.heading {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-sm);
+}
+
+.summary {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+}
+
+.bar {
+  appearance: none;
+  display: block;
+  inline-size: 100%;
+  block-size: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.bar::-webkit-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.bar::-webkit-progress-value {
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.bar::-moz-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.step {
+  align-self: flex-start;
+}

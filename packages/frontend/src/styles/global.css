@@ -7,6 +7,15 @@
   box-sizing: border-box;
 }
 
+/* --page-max: the widest a page's content column gets (REQ-016). Home,
+   Directory, Profile, Feed and SiteFooter's inner box all use
+   min(100%, var(--page-max)), centred, so the footer lines up with the page
+   above it. Declared once here, not on the shell, so a page rendered outside
+   AppShell (a test page, an error element) still gets the cap. */
+:root {
+  --page-max: 72rem;
+}
+
 body {
   margin: 0;
   background: var(--surface-page);

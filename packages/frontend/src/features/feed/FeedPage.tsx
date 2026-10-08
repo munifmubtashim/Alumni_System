@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Alert } from '@/components/ui/Alert';
 import { BRAND_NAME } from '@/config/brand';
 import { useCurrentUser } from '@/features/auth';
+import { SuggestedAlumni } from '@/features/people';
 import type { FeedPost } from './cacheEdits';
 import { Composer } from './Composer';
 import { itemKey } from './feedFormat';
@@ -9,6 +10,7 @@ import { EmptyFeed, FeedLoadError, FeedSkeleton, LoadMore } from './FeedStates';
 import { PostCard } from './PostCard';
 import { useDeletePost } from './useFeedMutations';
 import { usePosts } from './usePosts';
+import { useWideScreen } from './useWideScreen';
 import styles from './FeedPage.module.css';
 
 /**
@@ -18,6 +20,9 @@ import styles from './FeedPage.module.css';
  * before a failure puts it back: a post with comments asks first, inline in
  * its card ("Delete this post and its N comments?"); one without is removed at
  * once. After a delete, focus moves to the page heading (the card is gone).
+ * From 48rem a "Suggested alumni" sidebar sits to the right (REQ-016). It is
+ * rendered only on a wide screen, so a phone never requests it, and it owns
+ * its states, so its failure never touches the feed.
  */
 export function FeedPage() {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -25,6 +30,7 @@ export function FeedPage() {
   const posts = usePosts();
   const remove = useDeletePost();
   const [confirmId, setConfirmId] = useState<number | null>(null);
+  const wide = useWideScreen();
 
   function deleteNow(post: FeedPost) {
     setConfirmId(null);
@@ -88,16 +94,25 @@ export function FeedPage() {
   return (
     <div className={styles.page}>
       <title>{`Feed · ${BRAND_NAME}`}</title>
-      <h1 ref={headingRef} className={styles.title} tabIndex={-1}>
-        Feed
-      </h1>
-      <Composer me={me} />
-      {remove.errorMessage !== null && (
-        <Alert tone="error" title="The post wasn't deleted">
-          {remove.errorMessage}
-        </Alert>
+      <div className={styles.main}>
+        <h1 ref={headingRef} className={styles.title} tabIndex={-1}>
+          Feed
+        </h1>
+        <Composer me={me} />
+        {remove.errorMessage !== null && (
+          <Alert tone="error" title="The post wasn't deleted">
+            {remove.errorMessage}
+          </Alert>
+        )}
+        {body}
+      </div>
+      {wide && (
+        // A plain div, not a named <aside>: the card is already a region named
+        // "Suggested alumni", so a second landmark would read the name twice.
+        <div className={styles.aside}>
+          <SuggestedAlumni headingLevel={2} />
+        </div>
       )}
-      {body}
     </div>
   );
 }

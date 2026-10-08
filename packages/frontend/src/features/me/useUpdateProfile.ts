@@ -1,5 +1,6 @@
 import type { ChangePasswordInput, MyProfile, UpdateMyProfileInput } from '@alumni/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ALUMNI_QUERY_ROOT, FEED_QUERY_ROOT, POSTS_QUERY_ROOT } from '@/config/queryKeys';
 import { CURRENT_USER_QUERY_KEY } from '@/features/auth';
 import { changePassword, updateMyProfile } from '@/services/authApi';
 import { getLiveToken } from '@/services/authToken';
@@ -21,13 +22,19 @@ export interface SaveResult {
   passwordError: unknown;
 }
 
-// Query keys whose rows carry the user's name, photo or profile fields:
-// ['alumni', ...] (the directory and /alumni/:id), ['posts', ...] (recent posts
-// on /alumni/:id) and ['feed', ...] (the feed's ['feed','posts'] and
-// ['feed','comments',id] show the author's name and photo). 'feed' is a string
-// literal, not features/feed's POSTS_QUERY_KEY: lazy features never import
-// each other (ADR-08), so keep it in step with features/feed/constants.ts.
-const STALE_AFTER_PROFILE_SAVE = [['alumni'], ['posts'], ['feed']] as const;
+// Query-key roots whose rows carry the user's name, photo or profile fields,
+// or depend on them. ['alumni', ...]: the directory, /alumni/:id, Home's
+// mentors list (the mentorship switch) and the suggested alumni, which are
+// ranked by the user's own department and university (REQ-016, CORR-001);
+// invalidation matches by prefix, so the root reaches every one. ['posts', ...]:
+// recent posts on /alumni/:id. ['feed', ...]: the feed's posts and comments and
+// Home's latest posts show the author's name and photo. The roots come from
+// config/queryKeys: lazy features never import each other (ADR-08).
+const STALE_AFTER_PROFILE_SAVE = [
+  [ALUMNI_QUERY_ROOT],
+  [POSTS_QUERY_ROOT],
+  [FEED_QUERY_ROOT],
+] as const;
 
 /**
  * Save for /me: one mutation, two calls (LESSON-REQ-002-3). PUT /api/me runs
