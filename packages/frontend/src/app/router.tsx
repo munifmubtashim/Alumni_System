@@ -1,5 +1,5 @@
 import { createBrowserRouter, type DOMRouterOpts, type RouteObject } from 'react-router';
-import { GuestOnly, LoginPage, RegisterPage, RequireAuth } from '@/features/auth';
+import { GuestOnly, LoginPage, RegisterPage, RequireAdmin, RequireAuth } from '@/features/auth';
 import { HomePage } from '@/features/home';
 import { AppShell } from './AppShell';
 import { AuthShell } from './AuthShell';
@@ -95,10 +95,26 @@ export const ABOUT_ROUTE: RouteObject = {
 };
 
 /**
+ * The admin page, the sixth lazy page (ADR-08, REQ-015), built the same way as
+ * `DIRECTORY_ROUTE`: only this dynamic import may reference `features/admin`,
+ * and `HydrateFallback` sits on this route object. It sits under
+ * `RequireAdmin`, so a non-admin sees the 403 page and this chunk never loads.
+ */
+export const ADMIN_ROUTE: RouteObject = {
+  path: 'admin',
+  HydrateFallback,
+  lazy: async () => {
+    const { AdminPage } = await import('@/features/admin/AdminPage');
+    return { Component: AdminPage };
+  },
+};
+
+/**
  * Pages inside AppShell (header). Home is the first signed-in page; the
  * directory, the profile, the feed and Account settings (/me) are lazy and need
- * a session; About (public, lazy) is the one page outside `RequireAuth`. Any
- * unknown path shows the empty shell.
+ * a session; Admin (lazy) also needs the admin role (`RequireAdmin`); About
+ * (public, lazy) is the one page outside `RequireAuth`. Any unknown path shows
+ * the empty shell.
  */
 const DEFAULT_PAGE_ROUTES: RouteObject[] = [
   {
@@ -109,6 +125,7 @@ const DEFAULT_PAGE_ROUTES: RouteObject[] = [
       PROFILE_ROUTE,
       FEED_ROUTE,
       ME_ROUTE,
+      { element: <RequireAdmin />, children: [ADMIN_ROUTE] },
     ],
   },
   ABOUT_ROUTE,

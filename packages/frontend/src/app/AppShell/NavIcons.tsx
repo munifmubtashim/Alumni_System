@@ -1,4 +1,4 @@
-// Line icons from docs/design/screens/app/S1-Phone-* and S4-Phone-*; stroke follows the text colour.
+// Line icons from docs/design/screens/app/S1-Phone-*, S4-Phone-* and S6-Phone-*; stroke follows the text colour.
 const ICON_PROPS = {
   viewBox: '0 0 24 24',
   fill: 'none',
@@ -34,6 +34,14 @@ export function PersonIcon() {
     <svg {...ICON_PROPS}>
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" />
+    </svg>
+  );
+}
+
+export function ShieldIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
     </svg>
   );
 }

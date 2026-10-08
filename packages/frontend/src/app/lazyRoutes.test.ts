@@ -6,6 +6,7 @@ import type { RouteObject } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import {
   ABOUT_ROUTE,
+  ADMIN_ROUTE,
   DIRECTORY_ROUTE,
   FEED_ROUTE,
   ME_ROUTE,
@@ -53,6 +54,12 @@ const LAZY_FEATURES = [
     route: ABOUT_ROUTE,
     path: 'about',
     dynamicImport: "import('@/features/about/AboutPage')",
+  },
+  {
+    name: 'admin',
+    route: ADMIN_ROUTE,
+    path: 'admin',
+    dynamicImport: "import('@/features/admin/AdminPage')",
   },
 ] as const;
 
@@ -197,6 +204,10 @@ describe('the static-import check', () => {
     ['about', "import { AboutPage } from '@/features/about/AboutPage';", '/src/app/x.tsx'],
     ['about', "import { x } from '../about/AboutPage';", '/src/features/auth/x.tsx'],
     ['feed', "import { x } from '../feed/feedFormat';", '/src/features/about/x.tsx'],
+    ['admin', "import { AdminPage } from '@/features/admin/AdminPage';", '/src/app/x.tsx'],
+    ['admin', "import { x } from '../../features/admin/params';", '/src/app/AppShell/x.tsx'],
+    ['admin', "import { x } from '../admin/params';", '/src/features/directory/x.tsx'],
+    ['directory', "import { x } from '../directory/params';", '/src/features/admin/x.tsx'],
   ])('flags, for features/%s, the static import in %j', (feature, source, file) => {
     expect(staticImportsOf(feature, source, file)).toHaveLength(1);
   });
@@ -219,6 +230,9 @@ describe('the static-import check', () => {
     ['me', "import { x } from '@/features/media';", '/src/app/x.tsx'],
     ['me', "import { x } from '../meHelpers';", '/src/features/home/x.tsx'],
     ['me', "import { SaveBar } from './SaveBar';", '/src/features/me/x.tsx'],
+    ['admin', "const page = import('@/features/admin/AdminPage');", '/src/app/x.tsx'],
+    ['admin', "import { x } from '@/features/administration';", '/src/app/x.tsx'],
+    ['admin', "import { x } from './params';", '/src/features/admin/x.tsx'],
   ])('lets, for features/%s, %j through', (feature, source, file) => {
     expect(staticImportsOf(feature, source, file)).toEqual([]);
   });

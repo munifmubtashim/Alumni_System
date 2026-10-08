@@ -2,19 +2,20 @@ import { useNavigate } from 'react-router';
 import { ButtonLink } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from '@/components/ui/Menu';
+import { ADMIN_PATH } from '@/config/adminPath';
 import { profilePath } from '@/config/directoryReturn';
 import { ME_PATH } from '@/config/mePath';
-import { useCurrentUser, useHasSession, useLogout } from '@/features/auth';
+import { useCurrentUser, useHasSession, useIsAdmin, useLogout } from '@/features/auth';
 import styles from './AppShell.module.css';
 
 /**
  * The header's auth area. Guests get Log in and Sign up links. A signed-in
  * user gets an avatar menu (initials, chevron): their name and email, View
  * profile (their public /alumni/:id page, only with an alumni row, so never
- * for a student), Account settings (/me), then Log out. While ['me'] is loading or
- * has failed the button reads "Account menu" and still offers Account settings
- * and Log out (ADV-006). On desktop this menu and the Home card are the only
- * ways to /me (the header nav leaves it out, REQ-012). Admin settings join it when that page exists.
+ * for a student), Account settings (/me), Admin settings (/admin, admins only),
+ * then Log out. While ['me'] is loading or has failed the button reads
+ * "Account menu" and still offers Account settings and Log out (ADV-006). On desktop this menu and the Home card are the only
+ * ways to /me (the header nav leaves it out, REQ-012).
  */
 export function HeaderAuth() {
   const hasSession = useHasSession();
@@ -36,6 +37,7 @@ export function HeaderAuth() {
 
 function UserMenu() {
   const { data: user } = useCurrentUser();
+  const isAdmin = useIsAdmin();
   const logout = useLogout();
   const navigate = useNavigate();
   const alumniId = user?.alumni_id ?? null;
@@ -67,6 +69,7 @@ function UserMenu() {
         </>
       )}
       <MenuItem onSelect={() => void navigate(ME_PATH)}>Account settings</MenuItem>
+      {isAdmin && <MenuItem onSelect={() => void navigate(ADMIN_PATH)}>Admin settings</MenuItem>}
       <MenuSeparator />
       <MenuItem onSelect={logout}>Log out</MenuItem>
     </Menu>

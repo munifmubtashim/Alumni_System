@@ -13,13 +13,14 @@ import { createMemoryRouter, type RouteObject } from 'react-router';
 // session redirects rely on it for a single navigation.
 import { RouterProvider } from 'react-router/dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RequireAuth, SESSION_EXPIRED_MESSAGE } from '@/features/auth';
+import { RequireAdmin, RequireAuth, SESSION_EXPIRED_MESSAGE } from '@/features/auth';
 import { clearToken, getToken, setToken, TOKEN_STORAGE_KEY } from '@/services/authToken';
 import { httpClient, setUnauthorizedHandler } from '@/services/httpClient';
 import { setPrefersDark } from '@/test/setup';
 import { AppProviders } from '../providers';
 import { createQueryClient } from '../queryClient';
 import {
+  ADMIN_ROUTE,
   createRoutes,
   DIRECTORY_ROUTE,
   FEED_ROUTE,
@@ -53,6 +54,23 @@ const AMINA: MyProfile = {
   has_alumni_profile: true,
   student_id: null,
   has_student_profile: false,
+};
+
+// Same name, so the avatar button reads the same; only the role changes.
+const AMINA_ADMIN: MyProfile = {
+  ...AMINA,
+  role: 'admin',
+  alumni_id: null,
+  has_alumni_profile: false,
+};
+
+const AMINA_STUDENT: MyProfile = {
+  ...AMINA,
+  role: 'student',
+  alumni_id: null,
+  has_alumni_profile: false,
+  student_id: 7,
+  has_student_profile: true,
 };
 
 type Responder = (config: InternalAxiosRequestConfig) => Promise<AxiosResponse>;
@@ -271,12 +289,17 @@ function OtherStub() {
   return <h1>Other stub</h1>;
 }
 
+function AdminStub() {
+  return <h1>Admin stub</h1>;
+}
+
 const NAV_TEST_ROUTES: RouteObject[] = [
   { path: 'directory/*', element: <DirectoryStub /> },
   { path: 'feed', element: <FeedStub /> },
   { path: 'me', element: <MeStub /> },
   { path: 'alumni/:id', element: <ProfileStub /> },
   { path: 'other', element: <OtherStub /> },
+  { path: 'admin', element: <AdminStub /> },
 ];
 
 function renderNavAt(path: string) {
@@ -352,6 +375,40 @@ describe('Header main nav', () => {
     for (const link of links) {
       expect(link).not.toHaveAttribute('aria-current');
     }
+  });
+
+  // REQ-015: Admin shows to admins only, last, and is marked current on /admin.
+  it('adds Admin for an admin, marked current at /admin', async () => {
+    mockApi({ 'GET /me': ok(AMINA_ADMIN) });
+    renderNavAt('/admin');
+    await screen.findByRole('heading', { name: 'Admin stub' });
+
+    const admin = await within(mainNav()).findByRole('link', { name: 'Admin' });
+    expect(admin).toHaveAttribute('href', '/admin');
+    expect(admin).toHaveAttribute('aria-current', 'page');
+    expect(
+      within(mainNav())
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Directory', 'Feed', 'Admin']);
+  });
+
+  it.each([
+    ['an alumni user', AMINA],
+    ['a student', AMINA_STUDENT],
+  ])('has no Admin link for %s', async (_who, me) => {
+    mockApi({ 'GET /me': ok(me) });
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+    await within(screen.getByRole('banner')).findByRole('button', {
+      name: 'Account menu for Amina',
+    });
+
+    expect(
+      within(mainNav())
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Directory', 'Feed']);
   });
 
   it('goes to the directory on click and becomes current', async () => {
@@ -471,6 +528,37 @@ describe('Bottom tab bar (phone)', () => {
     expect(within(tabs()).getByRole('link', { name: 'Feed' })).not.toHaveAttribute('aria-current');
   });
 
+  it('adds an Admin tab last for an admin, current at /admin with its own icon', async () => {
+    mockApi({ 'GET /me': ok(AMINA_ADMIN) });
+    renderNavAt('/admin');
+    await screen.findByRole('heading', { name: 'Admin stub' });
+
+    const link = await within(tabs()).findByRole('link', { name: 'Admin' });
+    expect(link).toHaveAttribute('href', '/admin');
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(
+      within(tabs())
+        .getAllByRole('link')
+        .map((tab) => tab.textContent),
+    ).toEqual(['Directory', 'Feed', 'Account', 'Admin']);
+  });
+
+  it('has no Admin tab for a student', async () => {
+    mockApi({ 'GET /me': ok(AMINA_STUDENT) });
+    renderNavAt('/other');
+    await screen.findByRole('heading', { name: 'Other stub' });
+    await within(screen.getByRole('banner')).findByRole('button', {
+      name: 'Account menu for Amina',
+    });
+
+    expect(
+      within(tabs())
+        .getAllByRole('link')
+        .map((tab) => tab.textContent),
+    ).toEqual(['Directory', 'Feed', 'Account']);
+  });
+
   it('is not marked current on another page', async () => {
     renderNavAt('/other');
     await screen.findByRole('heading', { name: 'Other stub' });
@@ -570,6 +658,26 @@ describe('Header auth area', () => {
 
     const items = within(await screen.findByRole('menu')).getAllByRole('menuitem');
     expect(items.map((item) => item.textContent)).toEqual(['Account settings', 'Log out']);
+  });
+
+  it('offers Admin settings after Account settings to an admin, which opens /admin', async () => {
+    mockApi({ 'GET /me': ok(AMINA_ADMIN) });
+    const user = userEvent.setup();
+    const { router } = await renderSignedIn();
+
+    await user.click(screen.getByRole('button', { name: 'Account menu for Amina' }));
+
+    const menu = await screen.findByRole('menu');
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Account settings', 'Admin settings', 'Log out']);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Admin settings' }));
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/admin');
+    });
   });
 
   it('View profile opens the public profile for the alumni id', async () => {
@@ -1070,5 +1178,86 @@ describe('Account settings route', () => {
     expect(
       await screen.findByRole('heading', { name: 'Account settings loaded' }),
     ).toBeInTheDocument();
+  });
+});
+
+function adminRoutesWith(lazy: RouteObject['lazy']): RouteObject[] {
+  return createRoutes([
+    {
+      element: <RequireAuth />,
+      children: [{ element: <RequireAdmin />, children: [{ ...ADMIN_ROUTE, lazy }] }],
+    },
+  ]);
+}
+
+describe('Admin route', () => {
+  it('renders the admin page for an admin, with Admin current', async () => {
+    mockApi({ 'GET /me': ok(AMINA_ADMIN) });
+    setToken(makeToken());
+    renderAt('/admin');
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { level: 1, name: 'Admin' }),
+    ).toBeInTheDocument();
+    expect(within(mainNav()).getByRole('link', { name: 'Admin' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it.each([
+    ['an alumni user', AMINA],
+    ['a student', AMINA_STUDENT],
+  ])('shows %s the 403 page inside the shell, with no admin request', async (_who, me) => {
+    mockApi({ 'GET /me': ok(me) });
+    setToken(makeToken());
+    renderAt('/admin');
+
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', {
+        level: 1,
+        name: "You don't have access to this page",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toHaveTextContent('Alma');
+    expect(apiCalls.filter((call) => call.includes(' /admin'))).toEqual([]);
+    expect(getToken()).not.toBeNull();
+  });
+
+  it('sends a guest to /login without any request', async () => {
+    const { router } = renderAt('/admin');
+
+    expect(await screen.findByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/login');
+    expect(apiCalls).toEqual([]);
+  });
+
+  it('keeps the shell and shows Loading… in main while the page code loads', async () => {
+    mockApi({ 'GET /me': ok(AMINA_ADMIN) });
+    const chunk = gate();
+    setToken(makeToken());
+    renderAt(
+      '/admin',
+      adminRoutesWith(async () => {
+        await chunk.opened;
+        return { Component: () => <h1>Admin loaded</h1> };
+      }),
+    );
+
+    const banner = screen.getByRole('banner');
+    expect(
+      await within(banner).findByRole('button', { name: 'Account menu for Amina' }),
+    ).toBeInTheDocument();
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('status')).toHaveTextContent('Loading…');
+
+    await act(async () => {
+      chunk.open();
+      await chunk.opened;
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Admin loaded' })).toBeInTheDocument();
   });
 });

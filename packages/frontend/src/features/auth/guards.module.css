@@ -1,7 +1,29 @@
-/* RequireAuth's error box: Retry and Log out side by side, wrapping when narrow. */
+/* The guards' error box: Retry and Log out side by side, wrapping when narrow. */
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+
+/* ForbiddenPage (403): heading, one line of text, a home button. */
+
+.forbidden {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.title {
+  font: var(--text-heading-md);
+}
+
+.text {
+  color: var(--ink-secondary);
+  font: var(--text-body);
+}
+
+.home {
+  margin-top: var(--space-2);
 }
