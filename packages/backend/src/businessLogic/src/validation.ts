@@ -18,6 +18,8 @@ export const UNIVERSITY_MAX = 150;
 export const HEADLINE_MAX = 120;
 export const LOCATION_MAX = 100;
 export const DEGREE_MAX = 100;
+export const JOB_TITLE_MAX = 100;
+export const COMPANY_MAX = 100;
 
 export function optionalText(value: unknown, field: string, max: number): string | undefined {
   if (value === undefined || value === null) return undefined;
@@ -114,8 +116,8 @@ type SharedDetails = Pick<AlumniEditableFields, "current_company" | "job_title" 
 // Details alumni and students both have.
 function validateSharedDetails(body: Record<string, unknown>): SharedDetails {
   return {
-    current_company: optionalText(body.current_company, "Company", 100),
-    job_title: optionalText(body.job_title, "Job title", 100),
+    current_company: optionalText(body.current_company, "Company", COMPANY_MAX),
+    job_title: optionalText(body.job_title, "Job title", JOB_TITLE_MAX),
     experience: optionalText(body.experience, "Experience", 5000),
     bio: optionalText(body.bio, "Bio", 2000),
     linkedin_url: optionalWebUrl(body.linkedin_url, "LinkedIn URL"),
@@ -149,8 +151,8 @@ export function validateAdminAlumniFields(body: Record<string, unknown>): AdminA
     university: optionalText(body.university, "University", UNIVERSITY_MAX),
     graduation_year: optionalYear(body.graduation_year, "Graduation year"),
     department: optionalText(body.department, "Department", DEPARTMENT_MAX),
-    job_title: optionalText(body.job_title, "Job title", 100),
-    current_company: optionalText(body.current_company, "Company", 100),
+    job_title: optionalText(body.job_title, "Job title", JOB_TITLE_MAX),
+    current_company: optionalText(body.current_company, "Company", COMPANY_MAX),
   };
 }
 

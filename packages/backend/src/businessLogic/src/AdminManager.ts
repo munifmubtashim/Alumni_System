@@ -1,8 +1,7 @@
-import bcrypt from "bcrypt";
-import { AdminQuery, AlumniQuery, UserQuery } from "@alumni/dal";
-import type { AdminStatsRow, AlumniDTO, RegisterUserFields } from "@alumni/dal";
-import { AppError, isForeignKeyViolation, isUniqueViolation } from "./errors.js";
-import { BCRYPT_ROUNDS } from "./UserManager.js";
+import { AdminQuery, AlumniQuery } from "@alumni/dal";
+import type { AdminStatsRow, AlumniDTO } from "@alumni/dal";
+import { AppError, isForeignKeyViolation } from "./errors.js";
+import { UserManager } from "./UserManager.js";
 import { requiredEmail, requireId, validateAdminAlumniFields, validateNewPassword } from "./validation.js";
 
 // Admin-only alumni management (/api/admin/*). The router already requires an admin token;
@@ -10,12 +9,12 @@ import { requiredEmail, requireId, validateAdminAlumniFields, validateNewPasswor
 export class AdminManager {
   adminQuery: AdminQuery;
   alumniQuery: AlumniQuery;
-  userQuery: UserQuery;
+  userManager: UserManager;
 
   constructor() {
     this.adminQuery = new AdminQuery();
     this.alumniQuery = new AlumniQuery();
-    this.userQuery = new UserQuery();
+    this.userManager = new UserManager();
   }
 
   // GET /api/admin/stats: alumni rows, student rows, posts, alumni available for mentorship.
@@ -29,25 +28,19 @@ export class AdminManager {
     const fields = validateAdminAlumniFields(body);
     const email = requiredEmail(body.email);
     const password = validateNewPassword(body.password, "Temporary password");
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    // University is optional here (sign-up requires it); pg stores an undefined parameter as NULL.
-    const user = { name: fields.name, email, password: passwordHash, university: fields.university } as RegisterUserFields;
-
-    let userId: number;
-    try {
-      const created = await this.userQuery.createAlumniUser(user, {
+    // Hashing and the taken-email 409 are UserManager's (one owner for password storage).
+    const created = await this.userManager.createAlumniAccount(
+      { name: fields.name, email, password, university: fields.university },
+      {
         department: fields.department,
         graduation_year: fields.graduation_year,
         job_title: fields.job_title,
         current_company: fields.current_company,
-      });
-      userId = created.id;
-    } catch (error) {
-      if (isUniqueViolation(error)) throw new AppError(409, "An account with this email already exists");
-      throw error;
-    }
+      },
+    );
+    const userId = created.id;
 
-    // createAlumniUser returns the users row; the table needs the alumni row, found by user id.
+    // createAlumniAccount returns the users row; the table needs the alumni row, found by user id.
     const alumni = await this.alumniQuery.findAlumniByUserId(userId);
     const row = alumni && (await this.alumniQuery.findAlumniById(alumni.id));
     if (!row) throw new Error(`Alumni row missing after creating user ${userId}`);

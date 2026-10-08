@@ -57,6 +57,43 @@ describe('UserManager.createUser', () => {
   });
 });
 
+describe('UserManager.createAlumniAccount (POST /api/admin/alumni)', () => {
+  const createAlumniUser = () => vi.mocked(UserQuery.prototype.createAlumniUser);
+  const profile = { department: 'CS', graduation_year: '2015' };
+
+  it('hashes the password with 10 bcrypt rounds and passes the profile through', async () => {
+    createAlumniUser().mockResolvedValue({ id: 2, name: 'Al', email: 'al@x.io', role: 'alumni', created_at: new Date() });
+
+    const created = await new UserManager().createAlumniAccount({ name: 'Al', email: 'al@x.io', password: 'longenough' }, profile);
+
+    const [stored, storedProfile] = createAlumniUser().mock.calls[0];
+    expect(stored).toMatchObject({ name: 'Al', email: 'al@x.io' });
+    expect(stored.password).not.toBe('longenough');
+    expect(await bcrypt.compare('longenough', stored.password)).toBe(true);
+    expect(bcrypt.getRounds(stored.password)).toBe(10);
+    expect(storedProfile).toEqual(profile);
+    expect(created.id).toBe(2);
+  });
+
+  it('turns a taken email into 409', async () => {
+    createAlumniUser().mockRejectedValue(Object.assign(new Error('dup'), { code: '23505' }));
+
+    const error = await expectAppError(
+      new UserManager().createAlumniAccount({ name: 'Al', email: 'al@x.io', password: 'longenough' }, profile),
+      409,
+    );
+    expect(error.message).toBe('An account with this email already exists');
+  });
+
+  it('passes other database errors through', async () => {
+    createAlumniUser().mockRejectedValue(new Error('down'));
+
+    await expect(
+      new UserManager().createAlumniAccount({ name: 'Al', email: 'al@x.io', password: 'longenough' }, profile),
+    ).rejects.toThrow('down');
+  });
+});
+
 describe('UserManager.register', () => {
   it('hashes the password before creating the account', async () => {
     const createAlumniUser = vi.mocked(UserQuery.prototype.createAlumniUser);

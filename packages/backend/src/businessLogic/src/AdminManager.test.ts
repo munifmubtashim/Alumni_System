@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminQuery, AlumniQuery, UserQuery } from '@alumni/dal';
 import type { AlumniDTO } from '@alumni/dal';
 import { AdminManager } from './AdminManager.js';
-import { BCRYPT_ROUNDS } from './UserManager.js';
+import { UserManager } from './UserManager.js';
 import { expectAppError } from '../../test/expectAppError';
 
 vi.mock('@alumni/dal');
@@ -50,14 +50,25 @@ describe('AdminManager.createAlumni', () => {
     findAlumniById().mockResolvedValue(ROW);
   });
 
-  it('hashes the temporary password with BCRYPT_ROUNDS and never stores the plain text', async () => {
+  it('creates the account through UserManager.createAlumniAccount with the plain temporary password', async () => {
+    const createAlumniAccount = vi.spyOn(UserManager.prototype, 'createAlumniAccount');
+
+    await manager.createAlumni(validCreate);
+
+    expect(createAlumniAccount).toHaveBeenCalledWith(
+      { name: 'Al Alumnus', email: 'al@example.com', password: 'temporary1', university: 'MIT' },
+      { department: 'CS', graduation_year: '2015', job_title: 'Engineer', current_company: 'Acme' },
+    );
+    createAlumniAccount.mockRestore();
+  });
+
+  it('stores a hash of the temporary password, never the plain text', async () => {
     await manager.createAlumni(validCreate);
 
     const [user, profile] = createAlumniUser().mock.calls[0];
     expect(user).toMatchObject({ name: 'Al Alumnus', email: 'al@example.com', university: 'MIT' });
     expect(user.password).not.toBe('temporary1');
     expect(await bcrypt.compare('temporary1', user.password)).toBe(true);
-    expect(bcrypt.getRounds(user.password)).toBe(BCRYPT_ROUNDS);
     expect(profile).toEqual({ department: 'CS', graduation_year: '2015', job_title: 'Engineer', current_company: 'Acme' });
   });
 
