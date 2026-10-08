@@ -1,12 +1,19 @@
 // Shapes for the alumni directory search (GET /api/alumni).
 import type { AlumniDTO } from "./AlumniDTO";
 
+// Sort keys and directions GET /api/alumni accepts. Keep in sync with AlumniSort / SortOrder in @alumni/shared.
+export type AlumniSort = "name" | "graduationYear";
+export type SortOrder = "asc" | "desc";
+
 // Validated filters for the directory search. Every field is optional; absent means "no filter".
+// sort/order only change the ORDER BY, never the WHERE or the total; absent sort keeps the default order (name, id).
 export interface AlumniSearchFilters {
   q?: string;
   department?: string;
   university?: string;
   graduationYear?: number;
+  sort?: AlumniSort;
+  order?: SortOrder;
 }
 
 export interface AlumniPaging {

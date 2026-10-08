@@ -1,12 +1,28 @@
 import pool from "../config/db";
 import { AlumniDTO } from "../dto/AlumniDTO.js";
 import type { AlumniEditableFields } from "../dto/RegisterDTO.js";
-import type { AlumniListPage, AlumniPaging, AlumniSearchFilters } from "../dto/AlumniSearchDTO.js";
+import type { AlumniListPage, AlumniPaging, AlumniSearchFilters, AlumniSort, SortOrder } from "../dto/AlumniSearchDTO.js";
 
 // Public user columns joined onto alumni rows. Email is only exposed on single-profile reads.
 const LIST_COLUMNS = "a.*, u.name, u.photo_url, u.university";
 const PROFILE_COLUMNS = "a.*, u.name, u.email, u.photo_url, u.university";
 const LIST_FROM = "FROM alumni a JOIN users u ON a.user_id = u.id";
+
+// The only ORDER BY texts the directory list can send: a fixed lookup, so no request text reaches the SQL.
+// Each ends in a.id, a unique tie-break, so offset pages never overlap. No sort keeps the original order.
+const DEFAULT_ORDER_BY = "u.name, a.id";
+const ORDER_BY: Record<AlumniSort, Record<SortOrder, string>> = {
+  name: { asc: "u.name ASC, a.id ASC", desc: "u.name DESC, a.id DESC" },
+  graduationYear: {
+    asc: "a.graduation_year ASC NULLS LAST, u.name, a.id",
+    desc: "a.graduation_year DESC NULLS LAST, u.name, a.id",
+  },
+};
+
+function orderByFor(sort: AlumniSort | undefined, order: SortOrder | undefined): string {
+  if (sort === undefined) return DEFAULT_ORDER_BY;
+  return ORDER_BY[sort][order ?? "asc"];
+}
 
 // Makes %, _ and \ match literally in a LIKE/ILIKE pattern. Backslash is Postgres's default
 // LIKE escape character, so the SQL carries no ESCAPE clause (ESCAPE '\' inside a JS template
@@ -111,10 +127,11 @@ export class AlumniQuery {
     const countParams = [...params];
     const limit = next(paging.limit);
     const offset = next(paging.offset);
+    const orderBy = orderByFor(filters.sort, filters.order);
 
     const [itemsResult, countResult] = await Promise.all([
       pool.query(
-        `SELECT ${LIST_COLUMNS} ${LIST_FROM} ${where} ORDER BY u.name, a.id LIMIT ${limit} OFFSET ${offset}`,
+        `SELECT ${LIST_COLUMNS} ${LIST_FROM} ${where} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         params,
       ),
       pool.query(`SELECT COUNT(*)::int AS total ${LIST_FROM} ${where}`, countParams),

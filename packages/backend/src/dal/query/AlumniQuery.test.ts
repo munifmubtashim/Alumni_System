@@ -166,6 +166,39 @@ describe('AlumniQuery.searchAlumni (GET /api/alumni)', () => {
     expect(items().params[0]).toBe(`%${q}%`);
   });
 
+  describe('sort and order (REQ-015)', () => {
+    it.each([
+      [{ sort: 'name', order: 'asc' }, 'u.name ASC, a.id ASC'],
+      [{ sort: 'name', order: 'desc' }, 'u.name DESC, a.id DESC'],
+      [{ sort: 'graduationYear', order: 'asc' }, 'a.graduation_year ASC NULLS LAST, u.name, a.id'],
+      [{ sort: 'graduationYear', order: 'desc' }, 'a.graduation_year DESC NULLS LAST, u.name, a.id'],
+      [{ sort: 'graduationYear' }, 'a.graduation_year ASC NULLS LAST, u.name, a.id'],
+    ] as const)('%j orders by %s', async (sortBy, orderBy) => {
+      await alumniQuery.searchAlumni({ ...sortBy }, paging);
+
+      expect(items().sql.endsWith(`ORDER BY ${orderBy} LIMIT $1 OFFSET $2`)).toBe(true);
+      expect(items().params).toEqual([20, 40]);
+    });
+
+    it('order alone does not change the default order', async () => {
+      await alumniQuery.searchAlumni({ order: 'desc' }, paging);
+
+      expect(items().sql).toMatch(/ORDER BY u\.name, a\.id LIMIT \$1 OFFSET \$2$/);
+    });
+
+    it('sorting leaves the WHERE, its params and the count query unchanged', async () => {
+      const filters = { q: 'dev', department: 'CSE', university: 'BUET', graduationYear: 2019 };
+      await alumniQuery.searchAlumni(filters, paging);
+      const before = { items: items(), count: count() };
+
+      await alumniQuery.searchAlumni({ ...filters, sort: 'graduationYear', order: 'desc' }, paging);
+
+      expect(count()).toEqual(before.count);
+      expect(items().params).toEqual(before.items.params);
+      expect(items().sql.replace(/ORDER BY .* LIMIT/, 'LIMIT')).toBe(before.items.sql.replace(/ORDER BY .* LIMIT/, 'LIMIT'));
+    });
+  });
+
   it('returns the item rows and the total from the two results', async () => {
     const rows = [{ id: 1, name: 'Ann' }, { id: 2, name: 'Bo' }];
     query.mockImplementation(((sql: string) =>

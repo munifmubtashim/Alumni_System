@@ -1,4 +1,12 @@
-import type { AlumniEditableFields, AlumniSearchFilters, StudentEditableFields, UserBasicsFields } from "@alumni/dal";
+import type {
+  AdminAlumniFields,
+  AlumniEditableFields,
+  AlumniSearchFilters,
+  AlumniSort,
+  SortOrder,
+  StudentEditableFields,
+  UserBasicsFields,
+} from "@alumni/dal";
 import { AppError } from "./errors.js";
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -132,6 +140,20 @@ export function validateAlumniFields(body: Record<string, unknown>): AlumniEdita
   return { department, graduation_year, ...details, headline, location, degree, start_year, mentorship_available };
 }
 
+// The six fields an admin sets on an alumni account (POST and PUT /api/admin/alumni). Name is required;
+// the rest are optional and an omitted one is cleared on edit. Same limits and messages as the profile
+// validators. Email, password, role, user_id and every other key in the body are ignored here.
+export function validateAdminAlumniFields(body: Record<string, unknown>): AdminAlumniFields {
+  return {
+    name: requiredText(body.name, "Name", NAME_MAX),
+    university: optionalText(body.university, "University", UNIVERSITY_MAX),
+    graduation_year: optionalYear(body.graduation_year, "Graduation year"),
+    department: optionalText(body.department, "Department", DEPARTMENT_MAX),
+    job_title: optionalText(body.job_title, "Job title", 100),
+    current_company: optionalText(body.current_company, "Company", 100),
+  };
+}
+
 // Largest Postgres `integer` (int4); a bigger id can't match a row and would make the query error.
 export const MAX_DB_ID = 2147483647;
 
@@ -170,7 +192,19 @@ function pagingNumber(value: unknown, param: string, fallback: number, max: numb
   return n;
 }
 
+const ALUMNI_SORTS: readonly AlumniSort[] = ["name", "graduationYear"];
+const SORT_ORDERS: readonly SortOrder[] = ["asc", "desc"];
+
+// One of a fixed list of words (exact, case-sensitive); empty or whitespace-only counts as absent.
+function oneOf<T extends string>(value: unknown, param: string, allowed: readonly T[], label: string): T | undefined {
+  const text = singleQueryValue(value, param)?.trim();
+  if (!text) return undefined;
+  if (!(allowed as readonly string[]).includes(text)) throw new AppError(400, `Invalid ${label}`);
+  return text as T;
+}
+
 // Parses req.query for the alumni directory into typed filters + paging, or throws AppError(400). Unknown keys are ignored.
+// sort (name | graduationYear) and order (asc | desc) are optional; order without sort applies to name.
 export function parseAlumniSearch(query: Record<string, unknown>): AlumniSearch {
   const filters: AlumniSearchFilters = {};
   // q is matched against name, company and job title, which all share the 100-character limit.
@@ -182,6 +216,12 @@ export function parseAlumniSearch(query: Record<string, unknown>): AlumniSearch 
   if (university) filters.university = university;
   const year = optionalYear(singleQueryValue(query.graduationYear, "graduationYear"), "graduationYear");
   if (year) filters.graduationYear = Number(year);
+  const sort = oneOf(query.sort, "sort", ALUMNI_SORTS, "sort");
+  const order = oneOf(query.order, "order", SORT_ORDERS, "order");
+  if (sort || order) {
+    filters.sort = sort ?? "name";
+    filters.order = order ?? "asc";
+  }
   return {
     filters,
     page: pagingNumber(query.page, "page", 1, MAX_PAGE),

@@ -294,6 +294,19 @@ describe('GET /api/alumni: search, filters and paging', () => {
     });
   });
 
+  it('hands sort and order to the manager as they came', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockResolvedValue({ items: [], total: 0 } as never);
+    await call({ method: 'get', path: '/api/alumni?sort=graduationYear&order=desc' }, tokenFor(STUDENT));
+    expect(AlumniManager.prototype.searchAlumni).toHaveBeenCalledWith({ sort: 'graduationYear', order: 'desc' });
+  });
+
+  it('an invalid sort → 400 { message: "Invalid sort" }', async () => {
+    vi.mocked(AlumniManager.prototype.searchAlumni).mockRejectedValue(new AppError(400, 'Invalid sort'));
+    const res = await call({ method: 'get', path: '/api/alumni?sort=email' }, tokenFor(STUDENT));
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ message: 'Invalid sort' });
+  });
+
   it('manager AppError(400) → 400 { message }', async () => {
     vi.mocked(AlumniManager.prototype.searchAlumni).mockRejectedValue(
       new AppError(400, 'pageSize must be a whole number from 1 to 100'),
