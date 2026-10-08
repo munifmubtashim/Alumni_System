@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { describe, expect, it } from 'vitest';
-import { isNotFoundError } from './httpErrors';
+import { isNotFoundError, serverMessage } from './httpErrors';
 
 const config: InternalAxiosRequestConfig = { headers: new AxiosHeaders() };
 
@@ -35,5 +35,24 @@ describe('isNotFoundError', () => {
     expect(isNotFoundError({ response: { status: 404 } })).toBe(false);
     expect(isNotFoundError(null)).toBe(false);
     expect(isNotFoundError(undefined)).toBe(false);
+  });
+});
+
+describe('serverMessage', () => {
+  it('returns the body message as sent', () => {
+    expect(serverMessage({ message: 'Post not found' })).toBe('Post not found');
+    expect(serverMessage({ message: ' Spaced ' })).toBe(' Spaced ');
+  });
+
+  it.each([
+    ['a blank message', { message: '   ' }],
+    ['an empty message', { message: '' }],
+    ['a non-string message', { message: 404 }],
+    ['no message key', { error: 'x' }],
+    ['null', null],
+    ['undefined', undefined],
+    ['a string body', 'Not found'],
+  ])('is undefined for %s', (_label, data) => {
+    expect(serverMessage(data)).toBeUndefined();
   });
 });

@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import { serverMessage } from '@/services/httpErrors';
 import { EMAIL_TAKEN_MESSAGE, UNEXPECTED_MESSAGE, UNREACHABLE_MESSAGE } from '@/features/auth';
 import type { AlumniField, AlumniFormErrors, DrawerMode } from './validation';
 
@@ -26,12 +27,6 @@ const FIELD_PREFIXES: readonly (readonly [string, AlumniField])[] = [
   ['Email', 'email'],
   ['Name', 'name'],
 ];
-
-function serverMessage(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null || !('message' in data)) return undefined;
-  const { message } = data;
-  return typeof message === 'string' && message.trim() !== '' ? message : undefined;
-}
 
 function fieldFor(message: string): AlumniField | undefined {
   return FIELD_PREFIXES.find(([prefix]) => message.startsWith(`${prefix} `))?.[1];

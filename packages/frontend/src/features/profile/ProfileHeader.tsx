@@ -3,7 +3,8 @@ import type { Ref } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { BRAND_NAME } from '@/config/brand';
-import { headline, present, safeLinkedInUrl } from './format';
+import { present } from '@/config/text';
+import { headline, safeLinkedInUrl } from './format';
 import styles from './ProfileHeader.module.css';
 
 /** The h1 when a profile has no name (the API allows a blank one). */

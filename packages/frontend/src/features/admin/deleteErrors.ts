@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import { serverMessage } from '@/services/httpErrors';
 import { UNEXPECTED_MESSAGE, UNREACHABLE_MESSAGE } from '@/features/auth';
 
 /** What a failed delete in the dialog does. */
@@ -7,12 +8,6 @@ export interface DeleteError {
   message?: string;
   /** The alumni was already deleted (404): close, toast, refetch. */
   gone?: boolean;
-}
-
-function serverMessage(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null || !('message' in data)) return undefined;
-  const { message } = data;
-  return typeof message === 'string' && message.trim() !== '' ? message : undefined;
 }
 
 /**

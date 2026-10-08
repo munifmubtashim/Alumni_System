@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import { serverMessage } from '@/services/httpErrors';
 
 export const INVALID_CREDENTIALS_MESSAGE = 'Email or password is incorrect';
 export const EMAIL_TAKEN_MESSAGE = 'An account with this email already exists';
@@ -28,12 +29,6 @@ export interface AuthFormError {
 }
 
 type AuthForm = 'login' | 'register';
-
-function serverMessage(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null || !('message' in data)) return undefined;
-  const { message } = data;
-  return typeof message === 'string' && message.trim() !== '' ? message : undefined;
-}
 
 function mapAuthError(error: unknown, form: AuthForm): AuthFormError {
   if (error instanceof TokenNotSavedError) {

@@ -1,10 +1,5 @@
 import type { Alumni } from '@alumni/shared';
-
-/** The trimmed text, or undefined when the value is missing or blank. */
-export function present(value: string | null | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed === undefined || trimmed === '' ? undefined : trimmed;
-}
+import { present } from '@/config/text';
 
 function classOf(year: number | null | undefined): string | undefined {
   return typeof year === 'number' && Number.isFinite(year) ? `Class of ${String(year)}` : undefined;

@@ -4,7 +4,8 @@ import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { cx } from '@/components/ui/cx';
 import { ADMIN_PAGE_SIZE } from './queries';
 import { RowActions, type RowAction } from './RowActions';
-import { alumniName, present } from './rowText';
+import { present } from '@/config/text';
+import { alumniName } from './rowText';
 import styles from './AlumniTable.module.css';
 
 export interface AlumniTableProps {

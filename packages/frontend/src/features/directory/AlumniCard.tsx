@@ -4,16 +4,11 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tag } from '@/components/ui/Tag';
 import { directoryReturnState, profilePath } from '@/config/directoryReturn';
+import { present } from '@/config/text';
 import styles from './AlumniCard.module.css';
 
 export interface AlumniCardProps {
   alumnus: AlumniListItem;
-}
-
-/** Trimmed text, or undefined when it is missing or blank. */
-function present(value: string | null | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed === undefined || trimmed === '' ? undefined : trimmed;
 }
 
 /** "Job title, Company", leaving out whichever part is missing (no stray comma). */
