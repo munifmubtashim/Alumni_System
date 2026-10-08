@@ -3,8 +3,8 @@ import type { BaseDTO } from "./BaseDTO";
 export class PostDTO implements BaseDTO {
   id!: number;
   user_id: number;
-  caption?: string;
-  media_url?: string;
+  caption?: string | null;
+  media_url?: string | null;
   comment_count: number;
   created_at?: Date;
   updated_at?: Date;
@@ -13,8 +13,8 @@ export class PostDTO implements BaseDTO {
     
     user_id: number,
     comment_count: number,
-    caption?: string,
-    media_url?: string,
+    caption?: string | null,
+    media_url?: string | null,
   ) {
     this.user_id = user_id;
     this.caption = caption;

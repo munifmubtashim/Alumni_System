@@ -8,6 +8,7 @@ import type { FeedPost, PostsData } from './cacheEdits';
 import { POSTS_QUERY_KEY } from './constants';
 import { itemKey } from './feedFormat';
 import { PostCard } from './PostCard';
+import styles from './PostCard.module.css';
 import { usePosts } from './usePosts';
 import {
   ADMIN,
@@ -22,6 +23,9 @@ import {
 } from './testKit';
 
 let api: ReturnType<typeof fakeApi>;
+
+/** The caption paragraph ("renders a caption in its text paragraph" proves it matches). */
+const CAPTION = `p.${String(styles.text)}`;
 
 beforeEach(() => {
   signIn();
@@ -55,6 +59,25 @@ function renderCards(posts: FeedPost[], me: MyProfile | null = ME) {
 }
 
 describe('PostCard', () => {
+  // BUG-001: the API sends a missing caption as null; null used to crash the card.
+  it.each([
+    ['null', null],
+    ['missing', undefined],
+    ['empty', ''],
+    ['blank', '   '],
+  ])('renders a post whose caption is %s with no text paragraph', (_name, caption) => {
+    renderCards([makePost(1, { caption, media_url: 'https://x.test/a.png' })]);
+    const article = screen.getByRole('article');
+    expect(within(article).getByText('Amira Mendes')).toBeInTheDocument();
+    expect(article.querySelector(CAPTION)).toBeNull();
+  });
+
+  it('renders a caption in its text paragraph, trimmed', () => {
+    renderCards([makePost(1, { caption: '  Hello alumni  ' })]);
+    const text = screen.getByRole('article').querySelector(CAPTION);
+    expect(text?.textContent).toBe('Hello alumni');
+  });
+
   it('links the author name and avatar to the alumni profile, not the user id', () => {
     renderCards([makePost(1, { user_id: 70, author_alumni_id: 7 })]);
     const link = screen.getByRole('link', { name: 'Amira Mendes' });

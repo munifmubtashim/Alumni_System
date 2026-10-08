@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { cx } from '@/components/ui/cx';
 import { Menu, MenuItem } from '@/components/ui/Menu';
+import { present } from '@/config/text';
 import { AuthorAvatar, AuthorName, Timestamp } from './Byline';
 import type { FeedPost } from './cacheEdits';
 import { CommentThread } from './CommentThread';
@@ -70,6 +71,8 @@ export function PostCard({
   const pending = post.id < 0;
   const mayModify = !pending && canModify(me, post.user_id);
   const count = post.comment_count ?? 0;
+  // Null-safe: the API sends a missing caption as null (BUG-001).
+  const caption = present(post.caption);
 
   function focusMenu() {
     requestAnimationFrame(() => {
@@ -151,8 +154,7 @@ export function PostCard({
           }}
         />
       ) : (
-        post.caption !== undefined &&
-        post.caption.trim() !== '' && <p className={styles.text}>{post.caption}</p>
+        caption !== undefined && <p className={styles.text}>{caption}</p>
       )}
 
       {update.errorMessage !== null && (
