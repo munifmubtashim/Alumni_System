@@ -1,14 +1,8 @@
 import { Request, Response } from "express";
-import { AppError, CommentManager } from "@alumni/businesslogic";
+import { CommentManager } from "@alumni/businesslogic";
+import { sendError } from "./sendError";
 
 const commentManager = new CommentManager();
-
-function sendError(res: Response, error: unknown) {
-  if (error instanceof AppError) {
-    return res.status(error.status).json({ message: error.message });
-  }
-  res.status(500).json({ message: "Something went wrong" });
-}
 
 // GET /api/posts/:id/comments
 export const getPostComments = async (req: Request, res: Response) => {
@@ -24,6 +18,20 @@ export const addComment = async (req: Request, res: Response) => {
   try {
     const comment = await commentManager.addComment(Number(req.user.sub), req.params.id, req.body ?? {});
     res.status(201).json(comment);
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
+// PUT /api/comments/:id (requires authMiddleware)
+export const updateComment = async (req: Request, res: Response) => {
+  try {
+    const comment = await commentManager.updateComment(
+      { id: Number(req.user.sub), role: req.user.role },
+      req.params.id,
+      req.body ?? {},
+    );
+    res.status(200).json(comment);
   } catch (error) {
     sendError(res, error);
   }

@@ -1,0 +1,104 @@
+/* Design: docs/design/screens/app/S5-* (the Mentorship card). Label and help
+   text on the left, a 40x22px pill on the right with a 16px thumb inset 3px
+   (in rem here so it scales with zoom). On: accent track, accent-ink thumb at
+   the end (the design's colours, through tokens). The design shows no off
+   state; off is an ink-muted track with a surface-raised thumb at the start,
+   which keeps 3:1 against the card in both themes (contrast.test.ts). The
+   thumb's position, not only the colour, tells on from off. */
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  font: var(--text-body-sm);
+  font-weight: var(--text-label-weight);
+  color: var(--ink-primary);
+  cursor: pointer;
+}
+
+.description {
+  margin: 0;
+  font: var(--text-caption);
+  font-weight: var(--text-body-sm-weight);
+  color: var(--ink-secondary);
+}
+
+.track {
+  position: relative;
+  flex-shrink: 0;
+  inline-size: 2.5rem;
+  block-size: 1.375rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink-muted);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.track[data-checked] {
+  background: var(--accent);
+}
+
+.track:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.thumb {
+  position: absolute;
+  inset-block-start: 0.1875rem;
+  inset-inline-start: 0.1875rem;
+  inline-size: 1rem;
+  block-size: 1rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  transition:
+    transform var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* Track width - thumb width - both insets. */
+.thumb[data-checked] {
+  background: var(--accent-ink);
+  transform: translateX(1.125rem);
+}
+
+/* Right-to-left: the thumb starts on the right and moves left. */
+.thumb[data-checked]:dir(rtl) {
+  transform: translateX(-1.125rem);
+}
+
+/* Disabled controls are exempt from contrast minimums (WCAG 1.4.3/1.4.11). */
+.field[data-disabled] .label,
+.field[data-disabled] .description {
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}
+
+.track[data-disabled] {
+  background: var(--border-strong);
+  cursor: not-allowed;
+}
+
+.thumb[data-disabled] {
+  background: var(--surface-raised);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  .thumb {
+    transition: none;
+  }
+}

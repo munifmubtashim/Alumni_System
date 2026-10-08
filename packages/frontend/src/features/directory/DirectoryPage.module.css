@@ -1,0 +1,65 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light and S2-Phone-Light.
+   Nearest tokens: heading text-heading-sm on phone (design 18px) and
+   text-heading-md from 48rem (design 22px); count caption size on phone
+   (12px) and label size from 48rem (13px), regular weight, ink-secondary;
+   column gap space-4 on phone (16px) and space-5 from 48rem (design 20px).
+   The count spans swap by CSS class, not the hidden attribute (G18). */
+
+.page {
+  /* The shell no longer caps page width (REQ-007), so the page does. */
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.headingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-sm);
+}
+
+.count {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: var(--text-caption-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-caption-line);
+}
+
+.countLong {
+  display: none;
+}
+
+@media (width >= 48rem) {
+  .page {
+    gap: var(--space-5);
+  }
+
+  .title {
+    font: var(--text-heading-md);
+  }
+
+  .count {
+    font-size: var(--text-label-size);
+    line-height: var(--text-label-line);
+  }
+
+  .countLong {
+    display: inline;
+  }
+
+  .countShort {
+    display: none;
+  }
+}

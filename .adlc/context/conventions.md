@@ -2,18 +2,14 @@
 
 Project-specific rules. The reviewer agents (`quality-reviewer`, `architecture-reviewer`) check code against this file. If a convention isn't documented here, it isn't enforced — write it down or accept that the code will drift.
 
-> The TypeScript and Linting sections below were partly synthesized from:
-> - `tsconfig.json` (root; every package's tsconfig extends it)
-> - `packages/frontend/eslint.config.js`
->
-> STATUS: needs verification — review each entry; the source configs may have rules I didn't translate.
-
 ## Naming
 
-- **Files:** _(e.g., kebab-case for .ts, PascalCase for .tsx components)_
-- **Variables:** _(e.g., camelCase, no single-letter except for loop indices)_
-- **Constants:** _(e.g., SCREAMING_SNAKE_CASE)_
-- **Types/interfaces:** _(e.g., PascalCase, no `I` prefix)_
+> **STATUS: needs verification** — read from the frontend as built in REQ-001 (2026-10-05); confirm these are the rules you want enforced.
+
+- **Files (frontend):** one folder per UI component in PascalCase (`components/ui/Button/`) with `Button.tsx`, `Button.module.css`, `Button.test.tsx`, `index.ts`; other modules camelCase (`httpClient.ts`, `themeAtom.ts`, `useApplyTheme.ts`); tests co-located as `*.test.ts(x)`.
+- **Variables / functions:** camelCase; hooks start with `use`; Jotai atoms end with `Atom`.
+- **Constants:** SCREAMING_SNAKE_CASE for module-level constants (`THEME_STORAGE_KEY`, `TOKEN_STORAGE_KEY`).
+- **Types/interfaces:** PascalCase, no `I` prefix (`ThemePreference`, `ButtonProps`).
 
 ## Logging
 
@@ -34,19 +30,13 @@ Project-specific rules. The reviewer agents (`quality-reviewer`, `architecture-r
 - **Access pattern:** _(centralized config module, direct env reads?)_
 - **No magic strings or numbers** — named constants or config values.
 
-## API conventions
+## Area conventions (read the one for your area)
 
-- **Response format:** _(e.g., `{ data, error }`, `{ success, payload }`)_
-- **Pagination:** _(cursor vs offset, page size limits)_
-- **Versioning:** _(URL path vs header vs none)_
-- **Auth:** _(bearer token, session cookie, API key)_
+The rules for these areas moved to their own files (same wording) so this core file stays under budget. They are in force exactly as before.
 
-## Testing
-
-- **Frameworks:** _(jest, vitest, xunit, pytest)_
-- **Coverage expectations:** _(per-module minimums, what's exempt)_
-- **Mock policy:** _(when to mock, when to integration-test for real)_
-- **Test file location:** _(co-located, parallel `tests/` tree)_
+- `context/conventions-api.md` — API conventions: response format, ids, pagination (`{ items, total }`), auth and status codes, the `GET /api/alumni` contract.
+- `context/conventions-frontend.md` — Frontend: structure, import boundaries, HTTP, session and 401s, state, UI, routing, lazy routes and URL list state (ADR-08), the directory feature.
+- `context/conventions-testing.md` — Testing: frontend (Vitest, RTL, guard tests) and backend (Vitest, supertest).
 
 ## Comments
 
@@ -55,25 +45,40 @@ Project-specific rules. The reviewer agents (`quality-reviewer`, `architecture-r
 
 ## Git
 
-- **Commit message format:** _(e.g., conventional commits: `feat(scope): description`)_
-- **Branch naming:** _(e.g., `feat/REQ-xxx-slug`, `bugfix/BUG-xx`)_
-- **PR title format:** _(typically matches the commit format)_
+> **STATUS: needs verification** — the pattern used in REQ-001 (2026-10-05).
+
+- **Commit message format:** Conventional Commits with the REQ tag: `feat(frontend): … [REQ-001]`, `fix(…)`, `docs(adlc): …`.
+- **Branch naming:** `feat/REQ-NNN-<slug>` (bugs: `bugfix/BUG-NNN-<slug>`).
+- **PR title format:** same as the commit format.
 
 ## TypeScript
 
-> **STATUS: needs verification** — synthesized from `tsconfig.json` on 2026-10-04. Review and edit; remove this banner when confirmed.
+Verified against the tsconfig files on 2026-10-05.
 
-- **Strict mode is on** (`"strict": true`) for every package — the root `tsconfig.json` is extended by backend, api, businessLogic, dal, shared, and frontend. This implies `noImplicitAny` and `strictNullChecks`.
+**Backend and shared** — `packages/backend`, `packages/backend/src/{api,businessLogic,dal}` and `packages/shared` extend the root `tsconfig.json` (TypeScript 5.9):
+
+- `strict: true` (implies `noImplicitAny`, `strictNullChecks`); `esModuleInterop`, `skipLibCheck`.
+- Target/module `ESNext`, `moduleResolution: bundler`; declarations, declaration maps and source maps are emitted.
 - `noUncheckedIndexedAccess` is not enabled.
-- Target/module: `ESNext`, `moduleResolution: bundler`; declarations and source maps are emitted.
+
+**Frontend** — `packages/frontend` does **not** extend the root (the root's emit settings left stray `vite.config.js/.d.ts/.map` files beside source). TypeScript **6.0** (not 7: `typescript-eslint` 8.71 supports TS < 6.1). `tsconfig.json` only references the two configs below; `npm run typecheck` runs both.
+
+- `tsconfig.app.json` (`src/`): `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax` (use `import type`), `erasableSyntaxOnly` (no enums, namespaces or parameter properties), `moduleDetection: force`, `noEmit`, `allowImportingTsExtensions`, `jsx: react-jsx`, `types: ["vite/client"]`, target `ES2022`, lib `ES2023 + DOM + DOM.Iterable`, `skipLibCheck`. Path alias `@/*` → `./src/*` via `paths` only — no `baseUrl` (TS 6 rejects it, TS5101).
+- `tsconfig.node.json` (`vite.config.ts`, `scripts/**/*.ts`): same strictness flags, `types: ["node"]`, target/lib `ES2023`, `noEmit`. The `.js` lint configs are not type-checked.
+- `exactOptionalPropertyTypes` is deliberately off (poor fit with third-party prop types).
 
 ## Linting
 
-> **STATUS: needs verification** — synthesized from `packages/frontend/eslint.config.js` on 2026-10-04. Review and edit; remove this banner when confirmed.
+Verified against `packages/frontend/eslint.config.js`, `stylelint.config.js` and `.prettierrc.json` on 2026-10-06. Frontend only: the backend and shared packages have no lint or format config.
 
-- Frontend only: no ESLint config exists for the backend or shared packages.
-- Frontend `.ts`/`.tsx` files follow the stock presets: `@eslint/js` recommended, `typescript-eslint` recommended, `react-hooks` recommended, `react-refresh` (Vite). No custom rules are set.
-- `dist/` is ignored.
+- **ESLint 9.39** (flat config; not 10, because `eslint-plugin-jsx-a11y` supports ESLint ≤ 9). `npm run lint` runs ESLint, then Stylelint.
+  - `.ts`/`.tsx`: `@eslint/js` recommended, `typescript-eslint` **strictTypeChecked + stylisticTypeChecked** (type-aware via `projectService`), `react-hooks` recommended, `react-refresh` (Vite), `jsx-a11y` recommended. `.js` files get `@eslint/js` recommended without type info.
+  - **Tokens-only rule** (`src/**/*.{ts,tsx}` except `src/styles/**`): no string/template literal matching a raw color (`#rgb…`, `rgb(`, `rgba(`, `hsl(`, `hsla(`), and no `boxShadow` in a JSX `style` prop.
+  - **Import boundaries** (`no-restricted-imports`, alias and relative forms both blocked): `src/components/ui/**` may not import `services`, `store`, `features`, `config`, `app`, `axios`, `@tanstack/react-query`; `src/services/**` may not import `react`, `components`, `store`, `features` or `app`; `src/store/**` may not import `services`, `features` or `app`; `src/config/**` may not import `features`, `components`, `store`, `services` or `app` (a leaf); `src/features/**` and the rest of `src/components/**` may not import `app`. So nothing in `features/`, `store/`, `services/` or `components/` may import `app/`. Test files (`*.test.{ts,tsx}`) keep every ban except the `app/` one, so tests may import `app/` providers to render a component. Each layer has one `no-restricted-imports` block for source files and one for its tests, with non-overlapping globs, because flat config does not merge a rule's options across blocks (the last match wins).
+  - `eslint-config-prettier` comes last (formatting rules off). `dist/` and `coverage/` are ignored.
+- **Stylelint 17** on `src/**/*.css` (`stylelint-config-standard` + `stylelint-declaration-strict-value`): `color-no-hex`, `color-named: never`, no `rgb/rgba/hsl/hsla/hwb/lab/lch/oklch/color()` functions, no `box-shadow`/`text-shadow`. Color, `fill`, `stroke`, `background`, `font`, `font-size`, `line-height`, `font-weight`, `padding*`, `margin*`, `*gap`, `border-radius` must use `var(--…)` or a keyword (`0`, `inherit`, `initial`, `unset`, `currentcolor`, `transparent`, `none`, `auto`, `100%`). 1px hairline border widths are allowed. CSS Module class names must be camelCase. `src/styles/tokens.css` (generated) is exempt.
+- **Prettier 3**: single quotes, semicolons, trailing commas everywhere, print width 100. Ignores `dist`, `coverage`, `package-lock.json`, `src/styles/tokens.css`. `npm run format:check` must pass.
+- `scripts/enforcement.test.ts` lints bad fixtures through the ESLint and Stylelint Node APIs to prove these rules still fire. Change a rule → update that test.
 
 ## Anything else specific to this codebase
 

@@ -8,13 +8,17 @@ export class UserQuery {
 
     }
 
-    public async createUser(data: UserDTO): Promise<UserDTO> {
-        const info = await pool.query('INSERT INTO users (name , email , password, role) VALUES ($1,$2,$3,$4) RETURNING *',
+    // Admin-created account. Returns public columns only; the password never leaves the DAL.
+    public async createUser(data: Pick<UserDTO, "name" | "email" | "password" | "role">): Promise<PublicUserRow> {
+        const info = await pool.query(
+            `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)
+             RETURNING ${UserQuery.PUBLIC_USER_COLUMNS}`,
             [data.name, data.email, data.password, data.role]
         );
-        return info.rows[0]
-
+        return info.rows[0];
     }
+
+    // Selects the password hash: only for login. Never send this row to a client.
     public async findUserByEmail(email: string): Promise<UserDTO | undefined> {
         const info = await pool.query('SELECT * FROM users WHERE email = $1',
             [email]
@@ -22,33 +26,20 @@ export class UserQuery {
         return info.rows[0];
     }
 
-    public async findUserById(id: number): Promise<UserDTO> {
-        const info = await pool.query('SELECT * FROM users WHERE id = $1',
-            [id]
-        );
+    public async findUserById(id: number): Promise<PublicUserRow | undefined> {
+        const info = await pool.query(`SELECT ${UserQuery.PUBLIC_USER_COLUMNS} FROM users WHERE id = $1`, [id]);
         return info.rows[0];
-
     }
 
-
-    public async getAllUsers(): Promise<UserDTO[]> {
-        const info = await pool.query('SELECT * FROM users');
-        const users: UserDTO[] = [];
-        for (const user of info.rows) {
-            console.log(user);
-            users.push(user);
-        }
-
+    public async getAllUsers(): Promise<PublicUserRow[]> {
+        const info = await pool.query(`SELECT ${UserQuery.PUBLIC_USER_COLUMNS} FROM users`);
         return info.rows;
     }
-    public async deleteUser(id: number): Promise<void> {
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
-    }
-    public async updateLoginTime(id: number): Promise<void> {
-        await pool.query('UPDATE users SET login_at=NOW() WHERE id=$1', [id]);
-    }
-    public async updateLogoutTime(id: number): Promise<void> {
-        await pool.query('UPDATE users SET logout_at=NOW() WHERE id=$1', [id]);
+
+    // Returns false if no user had that id.
+    public async deleteUser(id: number): Promise<boolean> {
+        const info = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        return (info.rowCount ?? 0) > 0;
     }
 
     // Creates the user (role always 'alumni') and their alumni row atomically.
@@ -112,6 +103,8 @@ export class UserQuery {
     private static readonly PUBLIC_USER_COLUMNS = 'id, name, email, role, photo_url, university, created_at';
 
     // users row + their first alumni row and their students row (if any). Never selects the password.
+    // headline, location, degree and start_year are alumni-only (null for students); mentorship_available
+    // is COALESCEd so it is false, never null, for an account without an alumni row.
     private static readonly MY_PROFILE_SQL = `
         SELECT u.id AS user_id, u.name, u.email, u.photo_url, u.role, u.university,
                u.created_at, u.login_at,
@@ -124,6 +117,8 @@ export class UserQuery {
                COALESCE(a.experience, s.experience) AS experience,
                COALESCE(a.bio, s.bio) AS bio,
                COALESCE(a.linkedin_url, s.linkedin_url) AS linkedin_url,
+               a.headline, a.location, a.degree, a.start_year,
+               COALESCE(a.mentorship_available, false) AS mentorship_available,
                GREATEST(u.updated_at, a.updated_at, s.updated_at) AS updated_at
         FROM users u
         LEFT JOIN alumni a ON a.id = (SELECT id FROM alumni WHERE user_id = u.id ORDER BY id LIMIT 1)
@@ -174,8 +169,9 @@ export class UserQuery {
             if (alumni) {
                 await client.query(
                     `UPDATE alumni SET department=$1, graduation_year=$2, current_company=$3, job_title=$4,
-                        experience=$5, bio=$6, linkedin_url=$7, updated_at=NOW()
-                     WHERE id = (SELECT id FROM alumni WHERE user_id = $8 ORDER BY id LIMIT 1)`,
+                        experience=$5, bio=$6, linkedin_url=$7, headline=$8, location=$9, degree=$10,
+                        start_year=$11, mentorship_available=$12, updated_at=NOW()
+                     WHERE id = (SELECT id FROM alumni WHERE user_id = $13 ORDER BY id LIMIT 1)`,
                     [
                         alumni.department ?? null,
                         alumni.graduation_year ?? null,
@@ -184,6 +180,11 @@ export class UserQuery {
                         alumni.experience ?? null,
                         alumni.bio ?? null,
                         alumni.linkedin_url ?? null,
+                        alumni.headline ?? null,
+                        alumni.location ?? null,
+                        alumni.degree ?? null,
+                        alumni.start_year ?? null,
+                        alumni.mentorship_available,
                         userId
                     ]
                 );

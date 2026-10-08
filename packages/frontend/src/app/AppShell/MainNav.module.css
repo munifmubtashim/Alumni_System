@@ -1,0 +1,38 @@
+/* Header nav links, after docs/design/screens/app/S1-Desktop-* (.nav-link):
+   14px / 500 in ink-secondary; the current page is ink-primary with a 2px
+   accent underline. The link fills the header's height, so the underline sits
+   on the header's bottom hairline; it is a bottom border (transparent when
+   inactive) so the label does not shift. The design's 24px gap is space-5.
+   Focus uses the global :focus-visible ring. Hidden below 48rem, where
+   BottomTabs is the nav. */
+
+.nav {
+  display: none;
+  align-self: stretch;
+  gap: var(--space-5);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+  font-weight: var(--text-label-weight);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.link:hover {
+  color: var(--ink-primary);
+}
+
+.active {
+  color: var(--ink-primary);
+  border-bottom-color: var(--accent);
+}
+
+@media (width >= 48rem) {
+  .nav {
+    display: flex;
+  }
+}

@@ -1,8 +1,13 @@
 import bcrypt from "bcrypt";
-import { UserDTO, UserQuery } from "@alumni/dal";
-import type { MyProfileRow, PublicUserRow } from "@alumni/dal";
-import { AppError } from "./errors.js";
+import { UserQuery } from "@alumni/dal";
+import type { AlumniProfileFields, MyProfileRow, PublicUserRow, RegisterUserFields, UserDTO } from "@alumni/dal";
+import { AppError, isForeignKeyViolation, isUniqueViolation } from "./errors.js";
 import {
+  COMPANY_MAX,
+  DEPARTMENT_MAX,
+  JOB_TITLE_MAX,
+  NAME_MAX,
+  UNIVERSITY_MAX,
   optionalText,
   optionalWebUrl,
   optionalYear,
@@ -16,10 +21,31 @@ import {
   validateUserBasics,
 } from "./validation.js";
 
+const BCRYPT_ROUNDS = 10;
+const EMAIL_TAKEN_MESSAGE = "An account with this email already exists";
+
 export const SIGNUP_ROLES = ["alumni", "student"] as const;
 export type SignupRole = (typeof SIGNUP_ROLES)[number];
 
-const isUniqueViolation = (error: unknown) => (error as { code?: string }).code === "23505";
+// Roles an admin may give an account through POST /api/users.
+export const ADMIN_CREATE_ROLES = ["admin", "alumni", "student"] as const;
+export type AdminCreateRole = (typeof ADMIN_CREATE_ROLES)[number];
+
+export interface NewUserInput {
+  role: AdminCreateRole;
+  name: string;
+  email: string;
+  password: string;
+}
+
+// A new alumni account's user columns. `password` is plain text here (hashed by createAlumniAccount);
+// university is optional (an admin may leave it out; sign-up requires it).
+export interface NewAlumniAccount {
+  name: string;
+  email: string;
+  password: string;
+  university?: string;
+}
 
 export interface RegistrationInput {
   role: SignupRole;
@@ -42,9 +68,47 @@ export class UserManager {
     this.userQuery = new UserQuery();
   }
 
-  public async createUser(user: UserDTO) {
-    const newUser = await this.userQuery.createUser(user);
-    return newUser;
+  // Validates an admin's POST /api/users body with the same rules as sign-up, plus admin as a role.
+  public validateNewUser(body: Record<string, unknown>): NewUserInput {
+    const role = body.role;
+    if (!ADMIN_CREATE_ROLES.includes(role as AdminCreateRole)) {
+      throw new AppError(400, 'Role must be "admin", "alumni" or "student"');
+    }
+    return {
+      role: role as AdminCreateRole,
+      name: requiredText(body.name, "Name", NAME_MAX),
+      email: requiredEmail(body.email),
+      password: validateNewPassword(body.password),
+    };
+  }
+
+  // Hashes `input.password` (from validateNewUser) before storing it. Returns the public columns only.
+  public async createUser(input: NewUserInput): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+    try {
+      return await this.userQuery.createUser({ ...input, password: passwordHash });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
+      }
+      throw error;
+    }
+  }
+
+  // Creates a user + alumni row in one transaction (POST /api/admin/alumni). Hashes `user.password`
+  // before storing it; a taken email is 409. Returns the public users columns only.
+  public async createAlumniAccount(user: NewAlumniAccount, profile: AlumniProfileFields): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(user.password, BCRYPT_ROUNDS);
+    // pg stores an undefined university parameter as NULL.
+    const fields: RegisterUserFields = { ...user, password: passwordHash };
+    try {
+      return await this.userQuery.createAlumniUser(fields, profile);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
+      }
+      throw error;
+    }
   }
 
   public async findUserByEmail(email: string) {
@@ -52,28 +116,37 @@ export class UserManager {
     return user;
   }
 
-  public async findUserById(id: number) {
-    const user = await this.userQuery.findUserById(id);
+  // POST /api/auth/login: the user (without the password hash) if email and password match, else null.
+  public async verifyLogin(email: string, password: string): Promise<Omit<UserDTO, "password"> | null> {
+    const user = await this.userQuery.findUserByEmail(email);
+    if (!user) return null;
+    if (!(await bcrypt.compare(password, user.password))) return null;
+    const { password: _hash, ...rest } = user;
+    return rest;
+  }
+
+  // GET /api/users/:id. A malformed or unknown id is 404.
+  public async findUserById(id: unknown): Promise<PublicUserRow> {
+    const user = await this.userQuery.findUserById(requireId(id, "User"));
+    if (!user) throw new AppError(404, "User not found");
     return user;
   }
 
-
-  public async getAllUsers() {
+  public async getAllUsers(): Promise<PublicUserRow[]> {
     const allUsers = await this.userQuery.getAllUsers();
     return allUsers;
   }
 
-  public async deleteUser(id: number) {
-    const deletedUser = await this.userQuery.deleteUser(id);
-    return deletedUser;
-  }
-
-  public async updateLoginTime(id: number) {
-    await this.userQuery.updateLoginTime(id);
-  }
-
-  public async updateLogoutTime(id: number) {
-    await this.userQuery.updateLogoutTime(id);
+  // DELETE /api/users/:id (admin). A malformed or unknown id is 404; a user other rows still point at is 409.
+  public async deleteUser(id: unknown): Promise<void> {
+    let deleted: boolean;
+    try {
+      deleted = await this.userQuery.deleteUser(requireId(id, "User"));
+    } catch (error) {
+      if (isForeignKeyViolation(error)) throw new AppError(409, "This user still has posts or comments");
+      throw error;
+    }
+    if (!deleted) throw new AppError(404, "User not found");
   }
 
   // Validates a public sign-up body. `role` must be "student" or "alumni" (never admin).
@@ -82,10 +155,10 @@ export class UserManager {
     if (!SIGNUP_ROLES.includes(role as SignupRole)) {
       throw new AppError(400, 'Role must be "student" or "alumni"');
     }
-    const name = requiredText(body.name, "Name", 100);
+    const name = requiredText(body.name, "Name", NAME_MAX);
     const email = requiredEmail(body.email);
     const password = validateNewPassword(body.password);
-    const university = requiredText(body.university, "University", 150);
+    const university = requiredText(body.university, "University", UNIVERSITY_MAX);
 
     if (role === "student") {
       return {
@@ -94,7 +167,7 @@ export class UserManager {
         email,
         password,
         university,
-        department: requiredText(body.department, "Department", 100),
+        department: requiredText(body.department, "Department", DEPARTMENT_MAX),
         expected_graduation_year: requiredExpectedYear(body.expected_graduation_year),
       };
     }
@@ -104,16 +177,18 @@ export class UserManager {
       email,
       password,
       university,
-      department: optionalText(body.department, "Department", 100),
+      department: optionalText(body.department, "Department", DEPARTMENT_MAX),
       graduation_year: optionalYear(body.graduation_year, "Graduation year"),
-      current_company: optionalText(body.current_company, "Company", 100),
-      job_title: optionalText(body.job_title, "Job title", 100),
+      current_company: optionalText(body.current_company, "Company", COMPANY_MAX),
+      job_title: optionalText(body.job_title, "Job title", JOB_TITLE_MAX),
       linkedin_url: optionalWebUrl(body.linkedin_url, "LinkedIn URL"),
     };
   }
 
   // Creates a student (user + students row) or alumni (user + alumni row) account in one transaction.
-  public async register(input: RegistrationInput, passwordHash: string): Promise<PublicUserRow> {
+  // Hashes `input.password` (from validateRegistration) before storing it.
+  public async register(input: RegistrationInput): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     const user = { name: input.name, email: input.email, password: passwordHash, university: input.university };
     try {
       if (input.role === "student") {
@@ -132,7 +207,7 @@ export class UserManager {
     } catch (error) {
       // users_email_key unique violation
       if (isUniqueViolation(error)) {
-        throw new AppError(409, "An account with this email already exists");
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
       }
       throw error;
     }
@@ -181,7 +256,7 @@ export class UserManager {
     if (newPassword === currentPassword) {
       throw new AppError(400, "New password must be different from the current one");
     }
-    const changed = await this.userQuery.updatePassword(userId, await bcrypt.hash(newPassword, 10));
+    const changed = await this.userQuery.updatePassword(userId, await bcrypt.hash(newPassword, BCRYPT_ROUNDS));
     if (!changed) throw new AppError(404, "Account not found");
   }
 

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign up — Phone, Light</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; }
+  a { color: #ad6a4d; text-decoration: none; }
+  a:hover { color: #8f5540; }
+  input::placeholder { color: #948c84; }
+  .seg-btn { font-family: 'Inter', sans-serif; }
+  .field-input { font-family: inherit; }
+</style>
+</helmet>
+<div style="width: 100%; min-height: 940px; background: #faf7f2; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; box-sizing: border-box; display: flex; flex-direction: column;">
+
+  <!-- Compact top bar (brand panel hidden on phone) -->
+  <div style="display: flex; align-items: center; gap: 10px; padding: 16px; background: #ffffff; border-bottom: 1px solid #e4dcd0;">
+    <div style="width: 28px; height: 28px; border-radius: 7px; background: #ad6a4d; color: #fdf8f3; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">A</div>
+    <span style="font-size: 15px; font-weight: 600; color: #2b2724;">Alumni Network</span>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; align-items: flex-start; justify-content: center; padding: 20px 16px 40px;">
+    <div style="width: 100%; max-width: 440px; background: #ffffff; border: 1px solid #e4dcd0; border-radius: 14px; padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+      <div>
+        <h2 style="margin: 0 0 6px; font-size: 20px; font-weight: 600; color: #2b2724;">Create your account</h2>
+        <p style="margin: 0; font-size: 13px; color: #6b6560;">Join classmates and colleagues already on the network.</p>
+      </div>
+
+      <div style="display: inline-flex; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 999px; padding: 3px; gap: 2px;" role="radiogroup" aria-label="I am a">
+        <button class="seg-btn" onClick="{{selectStudent}}" aria-pressed="{{isStudent}}" style="flex: 1; appearance: none; cursor: pointer; font-size: 13px; font-weight: 500; border-radius: 999px; padding: 9px 0; {{studentBtnStyle}}">Student</button>
+        <button class="seg-btn" onClick="{{selectAlumni}}" aria-pressed="{{isAlumni}}" style="flex: 1; appearance: none; cursor: pointer; font-size: 13px; font-weight: 500; border-radius: 999px; padding: 9px 0; {{alumniBtnStyle}}">Alumni</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="name" style="font-size: 13px; font-weight: 500; color: #6b6560;">Full name</label>
+        <input id="name" class="field-input" value="Sophia Martins" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="email" style="font-size: 13px; font-weight: 500; color: #6b6560;">Email</label>
+        <input id="email" class="field-input" value="sophia.martins@proton.me" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <label for="password" style="font-size: 13px; font-weight: 500; color: #6b6560;">Password</label>
+          <a href="#" style="font-size: 12px;">Forgot password?</a>
+        </div>
+        <div style="position: relative; display: flex; align-items: center;">
+          <input id="password" class="field-input" type="{{pwType}}" value="{{pwValue}}" style="flex-grow: 1; font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 44px 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          <button onClick="{{togglePw}}" aria-label="{{pwAriaLabel}}" style="position: absolute; right: 10px; appearance: none; border: none; background: transparent; cursor: pointer; padding: 4px; display: flex; color: #6b6560;">
+            <sc-if value="{{pwVisible}}" hint-placeholder-val="{{false}}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a18.6 18.6 0 0 1 4.22-5.19M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </sc-if>
+          </button>
+        </div>
+      </div>
+
+      <sc-if value="{{isAlumni}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="univ" style="font-size: 13px; font-weight: 500; color: #6b6560;">University</label>
+            <input id="univ" class="field-input" value="University of Toronto" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="gradyear" style="font-size: 13px; font-weight: 500; color: #6b6560;">Graduation year</label>
+            <input id="gradyear" class="field-input" value="2016" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="jobtitle" style="font-size: 13px; font-weight: 500; color: #6b6560;">Current job title</label>
+            <input id="jobtitle" class="field-input" value="Senior Product Manager" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="company" style="font-size: 13px; font-weight: 500; color: #6b6560;">Company</label>
+            <input id="company" class="field-input" value="Meridian Health" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isStudent}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="s-univ" style="font-size: 13px; font-weight: 500; color: #6b6560;">University</label>
+            <input id="s-univ" class="field-input" value="Boston University" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="s-year" style="font-size: 13px; font-weight: 500; color: #6b6560;">Expected graduation year</label>
+            <input id="s-year" class="field-input" value="2027" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="s-field" style="font-size: 13px; font-weight: 500; color: #6b6560;">Field of study</label>
+            <input id="s-field" class="field-input" value="Computer Science" style="font-size: 16px; color: #2b2724; background: #f0ebe3; border: 1px solid #e4dcd0; border-radius: 8px; padding: 11px 14px; outline: none; box-sizing: border-box; width: 100%;">
+          </div>
+        </div>
+      </sc-if>
+
+      <button style="appearance: none; cursor: pointer; border: 1px solid #ad6a4d; background: #ad6a4d; color: #fdf8f3; border-radius: 8px; padding: 13px 0; font-size: 14px; font-weight: 600; font-family: inherit;">Create account</button>
+
+      <p style="margin: 0; text-align: center; font-size: 13px; color: #6b6560;">Already have an account? <a href="#">Log in</a></p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":940}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { role: 'alumni', pwVisible: false };
+  }
+  renderVals() {
+    const isAlumni = this.state.role === 'alumni';
+    const isStudent = this.state.role === 'student';
+    const selected = { background: '#ffffff', color: '#2b2724', border: '1px solid #e4dcd0' };
+    const unselected = { background: 'transparent', color: '#6b6560', border: '1px solid transparent' };
+    const toCss = (s) => 'background:' + s.background + ';color:' + s.color + ';border:' + s.border + ';';
+    return {
+      isAlumni: isAlumni,
+      isStudent: isStudent,
+      selectAlumni: () => this.setState({ role: 'alumni' }),
+      selectStudent: () => this.setState({ role: 'student' }),
+      alumniBtnStyle: toCss(isAlumni ? selected : unselected),
+      studentBtnStyle: toCss(isStudent ? selected : unselected),
+      pwVisible: this.state.pwVisible,
+      pwType: this.state.pwVisible ? 'text' : 'password',
+      pwValue: 'HarborTrail42',
+      pwAriaLabel: this.state.pwVisible ? 'Hide password' : 'Show password',
+      togglePw: () => this.setState({ pwVisible: !this.state.pwVisible })
+    };
+  }
+}
+</script>
+</body>
+</html>

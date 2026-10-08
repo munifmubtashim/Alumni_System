@@ -1,0 +1,113 @@
+/* Design: docs/design/screens/app/S6-DeleteConfirm. A centred card over a
+   scrim. Expected differences from S6, each because there is no token or a
+   lint rule forbids it: no box-shadow (banned; a border-subtle hairline
+   instead), radius-lg (14px) for 16px, 28px padding maps to space-6 (32px)
+   from 48rem (space-5 is as far off; 32px keeps the content near S6's
+   400px inside the 456px card) and space-5 (24px) on phones, so the text
+   keeps its width at 360px, the 18px gap to space-4, 13px body text to body-sm (14px), and the scale-in
+   runs for duration-fast (150ms) instead of 200ms. z 10, as in Drawer. */
+
+.backdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  background: var(--scrim);
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.backdrop[data-starting-style],
+.backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.dialog {
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 10;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  inline-size: 28.5rem; /* S6's 400px content + 2 × 28px padding, in rem so it scales with zoom */
+  max-inline-size: calc(100vw - 2 * var(--space-4));
+  max-block-size: calc(100dvh - 2 * var(--space-4));
+  padding: var(--space-5);
+  overflow-y: auto;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--ink-primary);
+  outline: none;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity var(--duration-fast) var(--easing-standard),
+    transform var(--duration-fast) var(--easing-standard);
+}
+
+.dialog[data-starting-style],
+.dialog[data-ending-style] {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* 40px circle with an 18px icon, in rem so both scale with zoom. */
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dialog[data-tone='danger'] .icon {
+  background: var(--error-soft);
+  color: var(--error);
+}
+
+.icon > svg {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+
+.title {
+  margin: 0;
+  font: var(--text-heading-sm);
+  overflow-wrap: anywhere;
+}
+
+.description {
+  margin: 0;
+  font: var(--text-body-sm);
+  color: var(--ink-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (width >= 48rem) {
+  .dialog {
+    padding: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog {
+    transition: none;
+  }
+}

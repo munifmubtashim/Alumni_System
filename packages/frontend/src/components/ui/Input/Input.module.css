@@ -1,0 +1,96 @@
+/* Design: docs/design/design-system/components/Input. Two deliberate
+   departures from the README, both for contrast (architecture.md -> Contrast):
+   - helper text and placeholder use ink-secondary, not ink-muted (4.5:1);
+     the value stays ink-primary, so a placeholder still reads as a hint;
+   - the resting border is border-strong, not border-subtle, so the field's
+     edge is easier to find. The hover-to-border-strong step is therefore gone;
+     focus still switches to the accent border and the raised fill.
+   An invalid field (aria-invalid) gets an error border and error text below;
+   focus still wins, so the accent border shows while the user fixes it. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+/* Holds the input and an optional end adornment. Full width with min-width 0,
+   so a field with an adornment is exactly as wide as one without. */
+.control {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ~40px tall: 16px text (no iOS zoom on focus) on the 22px body-sm line,
+   space-2 padding and a 1px border (architecture.md -> Revision 2; the
+   design's 41px has no token). */
+.input {
+  font: var(--text-body);
+  line-height: var(--text-body-sm-line);
+  color: var(--ink-primary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-4);
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* Room for the adornment (up to 2.5rem plus its inset), so text never runs under it. */
+.withAdornment {
+  padding-inline-end: var(--space-7);
+}
+
+/* Sits over the input's end edge, vertically centred. */
+.adornment {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--space-1);
+  display: flex;
+  align-items: center;
+}
+
+.input::placeholder {
+  color: var(--ink-secondary);
+}
+
+/* :where() keeps this at single-class weight, so the focus rule below wins (G04). */
+.input:where([aria-invalid='true']) {
+  border-color: var(--error);
+}
+
+/* The accent border is the only focus signal (no ring), so it overrides the
+   global :focus-visible outline. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.helper {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--ink-secondary);
+}
+
+.error {
+  margin: 0;
+  font: var(--text-caption);
+  color: var(--error);
+}

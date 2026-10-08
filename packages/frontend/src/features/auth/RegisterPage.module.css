@@ -1,0 +1,42 @@
+/* Sign-up form: role choice, then fields on the space-5 rhythm, full-width
+   submit. The role label copies Input's label style so every field reads the same. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.role {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.roleLabel {
+  font: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+.link {
+  color: var(--accent);
+  font: var(--text-label);
+}
+
+.submit {
+  align-self: stretch;
+}
+
+/* Student fields side by side, as in the design; each needs 12rem, so they
+   stack on phones and at 200% zoom. */
+.pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5) var(--space-4);
+}
+
+.pair > * {
+  flex: 1 1 12rem;
+  min-width: 0;
+}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App shell — Desktop, Dark</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#d08a66;text-decoration:none} a:hover{color:#e4a07c}
+  .nav-link{font-size:14px;font-weight:500;color:#b7afa5;padding:22px 0}
+  .nav-link.active{color:#f1ece4;border-bottom:2px solid #d08a66}
+</style></helmet>
+<div style="width:100%;min-height:800px;background:#1d1a17;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f1ece4;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 32px;height:64px;background:#272320;border-bottom:1px solid #3a352f;">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#d08a66;color:#1d1a17;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">A</div>
+        <span style="font-size:15px;font-weight:600;">Alumni Network</span>
+      </div>
+      <nav style="display:flex;gap:24px;">
+        <a href="S2-Desktop-Dark.dc.html" class="nav-link active">Directory</a>
+        <a href="S4-Desktop-Dark.dc.html" class="nav-link">Feed</a>
+        <a href="S5-Desktop-Dark.dc.html" class="nav-link">My Profile</a>
+        <a href="S6-Desktop-Dark.dc.html" class="nav-link">Admin</a>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="display:inline-flex;background:#171412;border:1px solid #3a352f;border-radius:999px;padding:2px;gap:2px;">
+        <button aria-pressed="false" style="appearance:none;border:none;cursor:pointer;background:transparent;color:#b7afa5;font-size:11px;font-weight:500;border-radius:999px;padding:5px 9px;font-family:inherit;">Light</button>
+        <button aria-pressed="true" style="appearance:none;border:1px solid #3a352f;cursor:pointer;background:#272320;color:#f1ece4;font-size:11px;font-weight:500;border-radius:999px;padding:5px 9px;font-family:inherit;">Dark</button>
+        <button aria-pressed="false" style="appearance:none;border:none;cursor:pointer;background:transparent;color:#b7afa5;font-size:11px;font-weight:500;border-radius:999px;padding:5px 9px;font-family:inherit;">Sys</button>
+      </div>
+      <button style="appearance:none;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px;">
+        <div style="width:32px;height:32px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">SM</div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b7afa5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+    </div>
+  </header>
+
+  <div style="padding:40px 32px;display:flex;flex-direction:column;gap:24px;max-width:1040px;">
+    <div>
+      <h1 style="margin:0 0 6px;font-size:24px;font-weight:600;">Welcome back, Sophia</h1>
+      <p style="margin:0;font-size:14px;color:#b7afa5;">This shell — header, nav, theme toggle and account menu — carries across every page below.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+      <a href="S2-Desktop-Dark.dc.html" style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:15px;font-weight:600;color:#f1ece4;">Browse the directory</span>
+        <span style="font-size:13px;color:#b7afa5;">Find classmates by year, department or field</span>
+      </a>
+      <a href="S4-Desktop-Dark.dc.html" style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:15px;font-weight:600;color:#f1ece4;">Catch up on the feed</span>
+        <span style="font-size:13px;color:#b7afa5;">See what classmates have posted recently</span>
+      </a>
+      <a href="S5-Desktop-Dark.dc.html" style="background:#272320;border:1px solid #3a352f;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-size:15px;font-weight:600;color:#f1ece4;">Update your profile</span>
+        <span style="font-size:13px;color:#b7afa5;">Keep your role and mentorship status current</span>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":800}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

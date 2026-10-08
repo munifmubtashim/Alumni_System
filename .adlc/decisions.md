@@ -4,7 +4,15 @@ Catalog of all ADRs (architecture decision records). Updated by `/wrapup` when a
 
 | ID | Title | Status | Decided | Supersedes | Superseded by |
 |---|---|---|---|---|---|
-| _(empty)_ | | | | | |
+| [[architecture/adr-01-ui-layer-headless-css-modules\|ADR-01]] | UI layer: Base UI headless + CSS Modules on generated tokens | accepted | 2026-10-04 | — | — |
+| [[architecture/adr-02-server-state-tanstack-query\|ADR-02]] | TanStack Query for server state; Jotai for client state | accepted | 2026-10-04 | — | — |
+| [[architecture/adr-03-frontend-session-and-401-handling\|ADR-03]] | Frontend session: token store + ['me'] Query; global 401 via registered handler | accepted | 2026-10-05 | — | — |
+| [[architecture/adr-04-forms-without-a-library\|ADR-04]] | Forms: controlled + pure validators + useMutation; no library for now | accepted | 2026-10-05 | — | — |
+| [[architecture/adr-05-backend-tests-vitest-supertest\|ADR-05]] | Backend tests: Vitest + supertest, one mocked boundary per level, no DB | accepted | 2026-10-05 | — | — |
+| [[architecture/adr-06-config-leaf-layer\|ADR-06]] | `src/config/`: a lint-enforced leaf layer for app-wide constants | accepted | 2026-10-06 | — | — |
+| [[architecture/adr-07-root-layout-and-headerless-auth\|ADR-07]] | Root layout above two shells; auth pages without the app header | accepted | 2026-10-06 | — | amends ADR-03's mount point |
+| [[architecture/adr-08-route-code-splitting-and-url-list-state\|ADR-08]] | Route-level code splitting with `lazy`; list state lives in the URL | accepted | 2026-10-06 | — | — |
+| [[architecture/adr-09-optimistic-updates-by-cache-edit\|ADR-09]] | Optimistic updates by editing the TanStack Query cache | accepted | 2026-10-07 | — | — |
 
 ## Status legend
 

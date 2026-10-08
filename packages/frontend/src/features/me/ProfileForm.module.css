@@ -1,0 +1,43 @@
+/* The /me form: section cards on S5's rhythm (16px phone, 24px from 48rem).
+   --save-bar-height is the save bar's own height (SaveBar.module.css reads it
+   for the bar and its in-flow spacer), summed from the tokens it is built of:
+   hairline, vertical padding, and on phone the message line plus the space-2
+   gap above the buttons; the button is Button's padding, label line and border.
+   While the bar shows, every control gets a matching scroll margin, so a field
+   focused near the bottom scrolls clear of the bar (LESSON-REQ-007-1; html's
+   scroll padding already clears the phone tab bar). */
+
+.form {
+  --save-button-height: calc(var(--space-3) * 2 + var(--text-label-line) + 2px);
+  --save-bar-height: calc(
+    1px + var(--space-3) * 2 + var(--text-caption-line) + var(--space-2) + var(--save-button-height)
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* S5-UnsavedToast's "all saved" caption: 13px secondary text, centred. */
+.allSaved {
+  margin: 0;
+  font: var(--text-label);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+  text-align: center;
+}
+
+.withBar :where(input, textarea, button) {
+  scroll-margin-block-end: calc(var(--save-bar-height) + var(--space-4));
+}
+
+@media (width >= 48rem) {
+  .form {
+    --save-bar-height: calc(
+      1px + (var(--space-3) + var(--space-1) / 2) * 2 + var(--save-button-height)
+    );
+
+    gap: var(--space-5);
+  }
+}

@@ -1,0 +1,13 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light (a filter pill's panel).
+   The field above an Apply button at the end edge; the panel's own look
+   comes from Popover. */
+
+.panelForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.apply {
+  align-self: flex-end;
+}

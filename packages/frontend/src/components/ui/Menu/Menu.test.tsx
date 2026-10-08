@@ -1,0 +1,183 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { Menu, MenuItem, MenuLabel, MenuSeparator } from './Menu';
+
+function renderMenu() {
+  const onProfile = vi.fn();
+  const onLogout = vi.fn();
+  render(
+    <Menu trigger="Jane Doe">
+      <MenuLabel>Signed in as Alumni</MenuLabel>
+      <MenuItem onSelect={onProfile}>Profile</MenuItem>
+      <MenuItem onSelect={onLogout}>Log out</MenuItem>
+    </Menu>,
+  );
+  const trigger = screen.getByRole('button', { name: 'Jane Doe' });
+  return { trigger, onProfile, onLogout };
+}
+
+describe('Menu', () => {
+  it('renders a closed trigger with aria-haspopup and aria-expanded', () => {
+    const { trigger } = renderMenu();
+
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('Enter on the trigger opens the menu and focuses the first item', async () => {
+    const user = userEvent.setup();
+    const { trigger } = renderMenu();
+
+    trigger.focus();
+    await user.keyboard('{Enter}');
+
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
+  });
+
+  it('ArrowDown on the trigger opens the menu', async () => {
+    const user = userEvent.setup();
+    const { trigger } = renderMenu();
+
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
+  });
+
+  it('arrow keys move between items and skip the label', async () => {
+    const user = userEvent.setup();
+    const { trigger } = renderMenu();
+
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('menu');
+
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Log out' })).toHaveFocus();
+    expect(screen.getByRole('menuitem', { name: 'Log out' })).toHaveAttribute('data-highlighted');
+
+    await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+    expect(screen.getByText('Signed in as Alumni')).not.toHaveAttribute('tabindex');
+  });
+
+  it('Enter on an item calls onSelect once and closes the menu', async () => {
+    const user = userEvent.setup();
+    const { trigger, onProfile, onLogout } = renderMenu();
+
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('menu');
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+
+    expect(onLogout).toHaveBeenCalledTimes(1);
+    expect(onProfile).not.toHaveBeenCalled();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('clicking an item calls onSelect', async () => {
+    const user = userEvent.setup();
+    const { trigger, onLogout } = renderMenu();
+
+    await user.click(trigger);
+    await user.click(await screen.findByRole('menuitem', { name: 'Log out' }));
+
+    expect(onLogout).toHaveBeenCalledTimes(1);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('Escape closes the menu and returns focus to the trigger', async () => {
+    const user = userEvent.setup();
+    const { trigger, onProfile, onLogout } = renderMenu();
+
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('menu');
+    await user.keyboard('{Escape}');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(trigger).toHaveFocus();
+    expect(onProfile).not.toHaveBeenCalled();
+    expect(onLogout).not.toHaveBeenCalled();
+  });
+
+  it('a disabled item cannot be selected', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <Menu trigger="Account">
+        <MenuItem onSelect={onSelect} disabled>
+          Settings
+        </MenuItem>
+      </Menu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+    const item = await screen.findByRole('menuitem', { name: 'Settings' });
+    expect(item).toHaveAttribute('aria-disabled', 'true');
+    await user.click(item);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('a danger item is marked with its tone and still selects', async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    render(
+      <Menu trigger="Post actions">
+        <MenuItem onSelect={onEdit}>Edit</MenuItem>
+        <MenuItem onSelect={onDelete} tone="danger">
+          Delete post
+        </MenuItem>
+      </Menu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Post actions' }));
+    const item = await screen.findByRole('menuitem', { name: 'Delete post' });
+    expect(item).toHaveAttribute('data-tone', 'danger');
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute('data-tone', 'default');
+    await user.click(item);
+
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Post actions' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  it('names an icon-only trigger with label', () => {
+    render(
+      <Menu trigger={<span aria-hidden="true">JD</span>} label="Account menu for Jane Doe">
+        <MenuItem onSelect={vi.fn()}>Log out</MenuItem>
+      </Menu>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Account menu for Jane Doe' })).toBeInTheDocument();
+  });
+
+  it('draws a separator that is not an item and not focusable', async () => {
+    const user = userEvent.setup();
+    render(
+      <Menu trigger="Account">
+        <MenuLabel>Jane Doe</MenuLabel>
+        <MenuSeparator />
+        <MenuItem onSelect={vi.fn()}>Log out</MenuItem>
+      </Menu>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Account' }));
+
+    expect(await screen.findByRole('separator')).toBeInTheDocument();
+    expect(screen.getAllByRole('menuitem')).toHaveLength(1);
+  });
+});

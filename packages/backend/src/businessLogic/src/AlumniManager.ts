@@ -1,6 +1,6 @@
 import { AlumniDTO, AlumniQuery } from "@alumni/dal";
-import { AppError } from "./errors.js";
-import { requireId, validateAlumniFields } from "./validation.js";
+import { AppError, isUniqueViolation } from "./errors.js";
+import { parseAlumniSearch, requireId, validateAlumniFields } from "./validation.js";
 
 export class AlumniManager {
   alumniQuery: AlumniQuery;
@@ -8,18 +8,34 @@ export class AlumniManager {
   constructor() {
     this.alumniQuery = new AlumniQuery();
   }
-  public async createAlumni(alumni: AlumniDTO) {
-    const newAlumni = await this.alumniQuery.createAlumni(alumni);
-    return newAlumni;
+
+  // POST /api/alumni: creates the caller's own profile. `userId` comes from the token, never the body.
+  public async createAlumni(userId: number, body: Record<string, unknown>) {
+    const existing = await this.alumniQuery.findAlumniByUserId(userId);
+    if (existing) throw new AppError(409, "You already have an alumni profile");
+    const f = validateAlumniFields(body);
+    // validateAlumniFields returns years as text; the columns are INTEGER, so pass numbers.
+    const alumni = new AlumniDTO({
+      ...f,
+      user_id: userId,
+      graduation_year: f.graduation_year === undefined ? undefined : Number(f.graduation_year),
+      start_year: f.start_year === undefined ? undefined : Number(f.start_year),
+    });
+    try {
+      return await this.alumniQuery.createAlumni(alumni);
+    } catch (error) {
+      // alumni.user_id is UNIQUE: a concurrent create for the same user lands here.
+      if (isUniqueViolation(error)) {
+        throw new AppError(409, "You already have an alumni profile");
+      }
+      throw error;
+    }
   }
 
-  public async findAlumniByEmail(email: string) {
-    const alumni = await this.alumniQuery.findAlumniByEmail(email);
-    return alumni;
-  }
-
-  public async findAlumniById(id: number) {
-    const alumni = await this.alumniQuery.findAlumniById(id);
+  // GET /api/alumni/:id. A malformed or unknown id is 404.
+  public async findAlumniById(id: unknown) {
+    const alumni = await this.alumniQuery.findAlumniById(requireId(id, "Alumni"));
+    if (!alumni) throw new AppError(404, "Alumni not found");
     return alumni;
   }
 
@@ -32,8 +48,9 @@ export class AlumniManager {
     return this.alumniQuery.updateAlumni(id, validateAlumniFields(body));
   }
 
-  public async getAllAlumni() {
-    const allAlumni = await this.alumniQuery.getAllAlumnil();
-    return allAlumni;
+  // GET /api/alumni: validates the raw query string first (AppError 400), so bad input never reaches SQL.
+  public async searchAlumni(query: Record<string, unknown>) {
+    const { filters, page, pageSize } = parseAlumniSearch(query);
+    return this.alumniQuery.searchAlumni(filters, { limit: pageSize, offset: (page - 1) * pageSize });
   }
 }

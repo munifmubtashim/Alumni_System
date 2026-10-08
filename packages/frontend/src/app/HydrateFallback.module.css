@@ -1,0 +1,6 @@
+/* Lazy-route loading line: quiet secondary text, tokens only. */
+
+.status {
+  color: var(--ink-secondary);
+  font: var(--text-body);
+}

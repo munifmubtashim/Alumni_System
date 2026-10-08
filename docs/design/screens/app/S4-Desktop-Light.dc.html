@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feed — Desktop, Light</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#ad6a4d;text-decoration:none} a:hover{color:#8f5540}
+  .nav-link{font-size:14px;font-weight:500;color:#6b6560;padding:22px 0}
+  .nav-link.active{color:#2b2724;border-bottom:2px solid #ad6a4d}
+  .btn-ghost{appearance:none;cursor:pointer;background:transparent;border:none;font-family:inherit;color:#6b6560;}
+  .comment{display:flex;gap:10px;}
+  .menu-item{display:block;padding:8px 14px;font-size:13px;color:#2b2724;cursor:pointer;}
+  .menu-item:hover{background:#f0ebe3;}
+</style></helmet>
+<div style="width:100%;min-height:1300px;background:#faf7f2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2b2724;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 32px;height:64px;background:#ffffff;border-bottom:1px solid #e4dcd0;">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">A</div>
+        <span style="font-size:15px;font-weight:600;">Alumni Network</span>
+      </div>
+      <nav style="display:flex;gap:24px;">
+        <a href="S2-Desktop-Light.dc.html" class="nav-link">Directory</a>
+        <a href="S4-Desktop-Light.dc.html" class="nav-link active">Feed</a>
+        <a href="S5-Desktop-Light.dc.html" class="nav-link">My Profile</a>
+        <a href="S6-Desktop-Light.dc.html" class="nav-link">Admin</a>
+      </nav>
+    </div>
+    <div style="width:32px;height:32px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">SM</div>
+  </header>
+
+  <div style="padding:32px;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+    <h1 style="margin:0;font-size:22px;font-weight:600;">Feed</h1>
+
+    <div style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:16px;display:flex;gap:12px;">
+      <div style="width:36px;height:36px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;">SM</div>
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:10px;">
+        <textarea placeholder="What's on your mind, Sophia?" rows="2" style="resize:none;border:1px solid #e4dcd0;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;color:#2b2724;outline:none;"></textarea>
+        <div style="display:flex;justify-content:flex-end;">
+          <button style="appearance:none;cursor:pointer;background:#ad6a4d;border:1px solid #ad6a4d;color:#fdf8f3;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:inherit;">Post</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <div style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div style="display:flex;gap:10px;">
+            <a href="S3-Desktop-Light.dc.html" style="width:36px;height:36px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;">AM</a>
+            <div>
+              <a href="S3-Desktop-Light.dc.html" style="font-size:14px;font-weight:600;color:#2b2724;">Amira Mendes</a>
+              <div style="font-size:12px;color:#948c84;">3 days ago</div>
+            </div>
+          </div>
+        </div>
+        <p style="margin:0;font-size:14px;line-height:1.6;">Hiring a product designer on my team at Terra Climate — fully remote, climate-tech, 4+ years experience. DM me if interested!</p>
+        <button class="btn-ghost" onClick="{{toggleComments}}" style="font-size:13px;font-weight:500;text-align:left;padding:0;">{{commentToggleLabel}}</button>
+
+        <sc-if value="{{expanded}}" hint-placeholder-val="true">
+          <div style="display:flex;flex-direction:column;gap:14px;padding-top:6px;border-top:1px solid #efe9df;">
+            <div class="comment">
+              <div style="width:28px;height:28px;border-radius:999px;background:#e8e1d4;color:#6b6560;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0;">JK</div>
+              <div>
+                <div style="font-size:13px;"><span style="font-weight:600;">Jonas Kessler</span> Would love an intro — know someone who'd be great for this.</div>
+                <div style="font-size:11px;color:#948c84;margin-top:2px;">2 days ago · Reply</div>
+              </div>
+            </div>
+            <div class="comment">
+              <div style="width:28px;height:28px;border-radius:999px;background:#e8e1d4;color:#6b6560;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0;">LN</div>
+              <div>
+                <div style="font-size:13px;"><span style="font-weight:600;">Lena Novak</span> Sent you a DM with a referral, good luck with the search!</div>
+                <div style="font-size:11px;color:#948c84;margin-top:2px;">1 day ago · Reply</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <div style="width:28px;height:28px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0;">SM</div>
+              <input type="text" placeholder="Write a reply…" style="flex-grow:1;border:1px solid #e4dcd0;border-radius:999px;padding:8px 14px;font-family:inherit;font-size:13px;outline:none;">
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div style="display:flex;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;">JK</div>
+            <div>
+              <span style="font-size:14px;font-weight:600;">Jonas Kessler</span>
+              <div style="font-size:12px;color:#948c84;">1 week ago</div>
+            </div>
+          </div>
+        </div>
+        <p style="margin:0;font-size:14px;line-height:1.6;">Our team at Nimbus Cloud just open-sourced the internal rate-limiting library we built — feedback welcome.</p>
+        <span style="font-size:13px;color:#6b6560;">6 comments</span>
+      </div>
+
+      <div style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div style="display:flex;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;">SM</div>
+            <div>
+              <span style="font-size:14px;font-weight:600;">Sophia Martins</span>
+              <div style="font-size:12px;color:#948c84;">2 weeks ago</div>
+            </div>
+          </div>
+          <div style="position:relative;">
+            <button class="btn-ghost" style="padding:4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+            </button>
+            <div style="position:absolute;top:28px;right:0;background:#ffffff;border:1px solid #e4dcd0;border-radius:10px;box-shadow:0 8px 20px rgba(43,39,36,0.08);min-width:120px;overflow:hidden;z-index:2;">
+              <div class="menu-item">Edit post</div>
+              <div class="menu-item" style="color:#a3503f;">Delete post</div>
+            </div>
+          </div>
+        </div>
+        <p style="margin:0;font-size:14px;line-height:1.6;">Grateful for everyone who showed up to the mentorship mixer last night — 40 alumni and students in one room, great energy.</p>
+        <span style="font-size:13px;color:#6b6560;">3 comments</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { expanded: true };
+  }
+  toggleComments() {
+    this.setState({ expanded: !this.state.expanded });
+  }
+  renderVals() {
+    return {
+      expanded: this.state.expanded,
+      commentToggleLabel: this.state.expanded ? 'Hide comments' : '14 comments'
+    };
+  }
+}
+</script>
+</body>
+</html>

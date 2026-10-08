@@ -1,0 +1,190 @@
+/* Public About page, after docs/design/screens/app/S7-*. One centred column:
+   the hero (up to 760px = 47.5rem), then the steps and the two cards (up to
+   900px = 56.25rem). Phone sizes come first, desktop from 48rem; steps are a
+   column on phones and three columns from 48rem, the cards likewise.
+   Nearest tokens where the design's size has none (S7 -> token): the hero
+   title (26px phone, 38px desktop) and the desktop section heading (22px) are
+   token sizes plus or minus a token step (see the calc() below); hero text
+   14/16px -> body-sm/body; phone section heading 19px -> heading-md (20px); step and card titles 14/15/16px -> body-sm weight 600 on phone and
+   heading-sm (16px) on desktop; step and card text 13px -> label size with the
+   body-sm line. Step circle 28px phone, 32px desktop. Sums of tokens give the
+   rest, e.g. 14px = space-3 + space-1 / 2, 20px = space-4 + space-1. */
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  align-items: center;
+  padding-block: var(--space-5) var(--space-6);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 47.5rem;
+  text-align: center;
+}
+
+/* 26px = heading-lg (28px) - 2px; line 34px = space-6 + 2px. */
+.title {
+  font-weight: var(--text-heading-lg-weight);
+  font-size: calc(var(--text-heading-lg-size) - var(--space-1) / 2);
+  line-height: calc(var(--space-6) + var(--space-1) / 2);
+  color: var(--ink-primary);
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 32.5rem;
+  font: var(--text-body-sm);
+  color: var(--ink-secondary);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  inline-size: 100%;
+  max-width: 56.25rem;
+}
+
+.heading {
+  font: var(--text-heading-md);
+  color: var(--ink-primary);
+  text-align: center;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: calc(var(--space-3) + var(--space-1) / 2);
+}
+
+.number {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: var(--text-label);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stepTitle {
+  font: var(--text-body-sm);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--ink-primary);
+}
+
+.stepText,
+.cardText {
+  font-size: var(--text-label-size);
+  line-height: var(--text-body-sm-line);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-3) + var(--space-1) / 2);
+  inline-size: 100%;
+  max-width: 56.25rem;
+}
+
+.card {
+  flex: 1;
+  padding: calc(var(--space-4) + var(--space-1) / 2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.cardTitle {
+  margin-block-end: var(--space-2);
+  font: var(--text-body-sm);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--ink-primary);
+}
+
+@media (width >= 48rem) {
+  .about {
+    gap: var(--space-8);
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  .hero {
+    gap: var(--space-4);
+  }
+
+  /* 38px = display (44px) - 6px; line 48px = space-7. */
+  .title {
+    font-weight: var(--text-display-weight);
+    font-size: calc(var(--text-display-size) - var(--space-1) - var(--space-1) / 2);
+    line-height: var(--space-7);
+  }
+
+  .lead {
+    font: var(--text-body);
+  }
+
+  .steps {
+    gap: calc(var(--space-6) + var(--space-1));
+  }
+
+  /* 22px = heading-md (20px) + 2px. */
+  .heading {
+    font-size: calc(var(--text-heading-md-size) + var(--space-1) / 2);
+  }
+
+  .stepList {
+    flex-direction: row;
+    gap: calc(var(--space-5) + var(--space-1));
+  }
+
+  .step {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .number {
+    inline-size: 2rem;
+    block-size: 2rem;
+  }
+
+  .stepTitle,
+  .cardTitle {
+    font: var(--text-heading-sm);
+  }
+
+  .benefits {
+    flex-direction: row;
+    gap: calc(var(--space-4) + var(--space-1));
+  }
+
+  .card {
+    padding: calc(var(--space-5) - var(--space-1) / 2);
+  }
+}

@@ -1,0 +1,117 @@
+/* Signed-in home, after docs/design/screens/app/S1-*: a greeting and a grid of
+   quick-link cards in a column up to 1040px (65rem), left-aligned. Phone sizes
+   come first, desktop from 48rem.
+   Nearest tokens where the design's size has none: heading-md (20px) on
+   phone and heading-lg (28px, design 24px) on desktop for the title; the
+   subtitle is label size (13px) on phone and body-sm (14px) on desktop; card
+   title body-sm weight 600 (14px) on phone and heading-sm (16px, design 15px)
+   on desktop; card text caption size (12px) on phone and label size (13px) on
+   desktop. Sums of tokens give the rest: 6px = space-1 + space-1 / 2, 20px =
+   space-4 + space-1. */
+
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 65rem;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-1) + var(--space-1) / 2);
+}
+
+.title {
+  font: var(--text-heading-md);
+  color: var(--ink-primary);
+}
+
+.subtitle {
+  font-size: var(--text-label-size);
+  line-height: var(--text-label-line);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cardTitle {
+  font: var(--text-body-sm);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+.cardText {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  font-weight: var(--text-body-weight);
+  color: var(--ink-secondary);
+}
+
+@media (width >= 48rem) {
+  .home {
+    gap: var(--space-5);
+    padding-block: var(--space-2);
+  }
+
+  .title {
+    font: var(--text-heading-lg);
+  }
+
+  .subtitle {
+    font: var(--text-body-sm);
+  }
+
+  .cards {
+    grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+  }
+
+  .card {
+    gap: calc(var(--space-1) + var(--space-1) / 2);
+    padding: calc(var(--space-4) + var(--space-1));
+  }
+
+  .cardTitle {
+    font: var(--text-heading-sm);
+  }
+
+  .cardText {
+    font-size: var(--text-label-size);
+    line-height: var(--text-label-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

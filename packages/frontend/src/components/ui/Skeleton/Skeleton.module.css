@@ -1,0 +1,44 @@
+/* Loading placeholder: a sunken-surface shape with a slow opacity pulse.
+   Default sizes sit inside :where() (zero specificity), so a caller's
+   className sets width and height without fighting the order of CSS files. */
+
+.skeleton {
+  display: block;
+  background: var(--surface-sunken);
+  animation: skeleton-pulse calc(var(--duration-fast) * 10) var(--easing-standard) infinite
+    alternate;
+}
+
+:where(.skeleton[data-shape='line']) {
+  inline-size: 100%;
+  block-size: var(--text-body-sm-line);
+  border-radius: var(--radius-sm);
+}
+
+:where(.skeleton[data-shape='block']) {
+  inline-size: 100%;
+  block-size: var(--space-8);
+  border-radius: var(--radius-md);
+}
+
+:where(.skeleton[data-shape='circle']) {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--radius-pill);
+}
+
+@keyframes skeleton-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

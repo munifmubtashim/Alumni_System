@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App shell — Phone, Light</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#ad6a4d;text-decoration:none}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#948c84;flex:1;padding:8px 0;}
+  .tab.active{color:#ad6a4d;}
+</style></helmet>
+<div style="width:100%;min-height:844px;background:#faf7f2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2b2724;box-sizing:border-box;display:flex;flex-direction:column;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#ffffff;border-bottom:1px solid #e4dcd0;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">A</div>
+      <span style="font-size:14px;font-weight:600;">Alumni Network</span>
+    </div>
+    <div style="width:30px;height:30px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;">SM</div>
+  </div>
+
+  <div style="flex-grow:1;padding:20px 16px;display:flex;flex-direction:column;gap:16px;">
+    <div>
+      <h1 style="margin:0 0 6px;font-size:20px;font-weight:600;">Welcome back, Sophia</h1>
+      <p style="margin:0;font-size:13px;color:#6b6560;">Tabs below carry across every page.</p>
+    </div>
+    <a href="S2-Phone-Light.dc.html" style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:14px;font-weight:600;">Browse the directory</span>
+      <span style="font-size:12px;color:#6b6560;">Find classmates by year, department or field</span>
+    </a>
+    <a href="S4-Phone-Light.dc.html" style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:14px;font-weight:600;">Catch up on the feed</span>
+      <span style="font-size:12px;color:#6b6560;">See what classmates have posted recently</span>
+    </a>
+    <a href="S5-Phone-Light.dc.html" style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:14px;font-weight:600;">Update your profile</span>
+      <span style="font-size:12px;color:#6b6560;">Keep your role and mentorship status current</span>
+    </a>
+  </div>
+
+  <nav style="display:flex;background:#ffffff;border-top:1px solid #e4dcd0;padding:4px 8px 10px;">
+    <div class="tab active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+      Directory
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      Feed
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
+      Profile
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
+      Admin
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

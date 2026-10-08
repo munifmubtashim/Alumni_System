@@ -56,8 +56,8 @@ layout:
 # `gh pr create` / `gh pr merge`, or use `--no-verify`. Read commands
 # (status / diff / log / show) are always allowed.
 git:
-  mode: manual
-  protect: [main, master, release/*]
+  mode: commit
+  protect: [main, master, release/*, redesign]
 
 stack:
   # Declare what's in use. Skills read these to decide what stack-specific

@@ -1,0 +1,19 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": { "v": 1, "at": "2026-10-04T00:00:00Z" },
+  "title": "Alumni Network",
+  "namespace": "AlumniNetworkDS",
+  "libraries": [],
+  "sections": {},
+  "groups": [],
+  "assetGroups": {},
+  "blobs": {},
+  "docs": { "readme": "project/README.md", "sections": [] },
+  "lastChange": {
+    "by": "Mash",
+    "via": "Cowork",
+    "at": "2026-10-04T00:00:00Z",
+    "note": "Replaced with a from-brief Scandinavian system: warm neutrals, one muted accent, generous whitespace, soft borders, light/dark tokens, Button/Input/Card/Tag/ThemeToggle."
+  }
+}

@@ -1,0 +1,5 @@
+A labeled text field. Rests on `surface-sunken` with a `border-strong` border — slightly recessed, so it reads as "fillable" next to a card's `surface-raised`.
+
+On focus the background lifts to `surface-raised` and the border becomes `accent` — no glow or outer ring, the line itself is the only focus signal. There is no hover change. Disabled fields drop to 50% opacity and keep their value visible but non-interactive. Helper text sits below in `caption`/`ink-secondary`; the placeholder is `ink-secondary` too, while the value stays `ink-primary`, so a placeholder still reads as a hint.
+
+This departs from the original bundle on purpose (REQ-001, decision d1): the bundle rested on `border-subtle` with a hover step to `border-strong`, and used `ink-muted` for placeholder and helper text. The stronger border makes the field's edge easier to find, and `ink-secondary` brings the text to 4.5:1. The resting border is still under 3:1 in both themes; that is an accepted exception, pinned in `packages/frontend/src/styles/contrast.test.ts`.

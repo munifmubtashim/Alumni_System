@@ -22,6 +22,7 @@ Alumni_System
 │  │  │  │  │  └─ roleMiddleware.ts
 │  │  │  │  ├─ app.ts
 │  │  │  │  ├─ controllers
+│  │  │  │  │  ├─ AdminController.ts
 │  │  │  │  │  ├─ AlumniController.ts
 │  │  │  │  │  ├─ CommentController.ts
 │  │  │  │  │  ├─ PostController.ts
@@ -29,6 +30,7 @@ Alumni_System
 │  │  │  │  ├─ index.ts
 │  │  │  │  ├─ package.json
 │  │  │  │  ├─ routes
+│  │  │  │  │  ├─ AdminRoutes.ts
 │  │  │  │  │  ├─ AlumniRoutes.ts
 │  │  │  │  │  ├─ AuthRoutes.ts
 │  │  │  │  │  ├─ CommentRoutes.ts
@@ -41,6 +43,7 @@ Alumni_System
 │  │  │  ├─ businessLogic
 │  │  │  │  ├─ package.json
 │  │  │  │  ├─ src
+│  │  │  │  │  ├─ AdminManager.ts
 │  │  │  │  │  ├─ AlumniManager.ts
 │  │  │  │  │  ├─ CommentManager.ts
 │  │  │  │  │  ├─ PostManager.ts
@@ -61,6 +64,7 @@ Alumni_System
 │  │  │     ├─ index.ts
 │  │  │     ├─ package.json
 │  │  │     ├─ query
+│  │  │     │  ├─ AdminQuery.ts
 │  │  │     │  ├─ AlumniQuery.ts
 │  │  │     │  ├─ CommentQuery.ts
 │  │  │     │  ├─ PostQuery.ts
@@ -75,23 +79,28 @@ Alumni_System
 │  │  ├─ public
 │  │  │  ├─ favicon.svg
 │  │  │  └─ icons.svg
+│  │  ├─ scripts
+│  │  │  └─ generate-tokens.ts
 │  │  ├─ src
-│  │  │  ├─ App.tsx
+│  │  │  ├─ app
+│  │  │  │  ├─ App.tsx
+│  │  │  │  ├─ AppShell
+│  │  │  │  ├─ RouteError.tsx
+│  │  │  │  ├─ providers.tsx
+│  │  │  │  └─ router.tsx
 │  │  │  ├─ components
-│  │  │  │  └─ LoginForm.tsx
+│  │  │  │  └─ ui
+│  │  │  ├─ features
+│  │  │  │  └─ theme
 │  │  │  ├─ main.tsx
-│  │  │  ├─ pages
-│  │  │  │  ├─ DashboardPage.tsx
-│  │  │  │  └─ LoginPage.tsx
-│  │  │  └─ services
-│  │  │     └─ authApi.ts
+│  │  │  ├─ services
+│  │  │  ├─ store
+│  │  │  ├─ styles
+│  │  │  └─ test
+│  │  ├─ stylelint.config.js
 │  │  ├─ tsconfig.app.json
 │  │  ├─ tsconfig.json
 │  │  ├─ tsconfig.node.json
-│  │  ├─ vite.config.d.ts
-│  │  ├─ vite.config.d.ts.map
-│  │  ├─ vite.config.js
-│  │  ├─ vite.config.js.map
 │  │  └─ vite.config.ts
 │  └─ shared
 │     ├─ .DS_Store

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My Profile — Desktop, Dark</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#d08a66;text-decoration:none}
+  .nav-link{font-size:14px;font-weight:500;color:#b7afa5;padding:22px 0}
+  .nav-link.active{color:#f1ece4;border-bottom:2px solid #d08a66}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  label{font-size:12px;font-weight:600;color:#b7afa5;}
+  input,select{background:#1d1a17;border:1px solid #3a352f;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:14px;color:#f1ece4;outline:none;}
+  input:focus,select:focus{border-color:#d08a66;}
+  .section-card{background:#272320;border:1px solid #3a352f;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .toggle{width:40px;height:22px;border-radius:999px;background:#d08a66;position:relative;flex-shrink:0;}
+  .toggle-knob{width:16px;height:16px;border-radius:999px;background:#1d1a17;position:absolute;top:3px;right:3px;}
+</style></helmet>
+<div style="width:100%;min-height:1700px;background:#1d1a17;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f1ece4;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 32px;height:64px;background:#272320;border-bottom:1px solid #3a352f;">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#d08a66;color:#1d1a17;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">A</div>
+        <span style="font-size:15px;font-weight:600;">Alumni Network</span>
+      </div>
+      <nav style="display:flex;gap:24px;">
+        <a href="S2-Desktop-Dark.dc.html" class="nav-link">Directory</a>
+        <a href="S4-Desktop-Dark.dc.html" class="nav-link">Feed</a>
+        <a href="S5-Desktop-Dark.dc.html" class="nav-link active">My Profile</a>
+        <a href="S6-Desktop-Dark.dc.html" class="nav-link">Admin</a>
+      </nav>
+    </div>
+    <div style="width:32px;height:32px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">SM</div>
+  </header>
+
+  <div style="padding:32px 32px 100px;max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
+    <h1 style="margin:0;font-size:22px;font-weight:600;">My Profile</h1>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Personal</h2>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:56px;height:56px;border-radius:999px;background:#3a2c23;color:#e4a07c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;">SM</div>
+        <button style="appearance:none;cursor:pointer;background:#272320;border:1px solid #3a352f;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;font-family:inherit;color:#f1ece4;">Change photo</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Full name</label><input type="text" value="Sophia Martins"></div>
+        <div class="field"><label>Headline</label><input type="text" value="Senior Product Manager at Meridian Health"></div>
+      </div>
+      <div class="field"><label>Location</label><input type="text" value="Toronto, Canada"></div>
+    </div>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Education</h2>
+      <div class="row2">
+        <div class="field"><label>University</label><input type="text" value="University of Toronto"></div>
+        <div class="field"><label>Degree</label><input type="text" value="B.A. Economics"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Start year</label><input type="text" value="2012"></div>
+        <div class="field"><label>Graduation year</label><input type="text" value="2016"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Career</h2>
+      <div class="row2">
+        <div class="field"><label>Current role</label><input type="text" value="Senior Product Manager"></div>
+        <div class="field"><label>Company</label><input type="text" value="Meridian Health"></div>
+      </div>
+      <div class="field"><label>LinkedIn URL</label><input type="text" value="linkedin.com/in/sophiamartins"></div>
+    </div>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Mentorship</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:14px;font-weight:500;">Available for mentorship</div>
+          <div style="font-size:12px;color:#b7afa5;">Show a mentorship badge on your profile and appear in mentor search.</div>
+        </div>
+        <div class="toggle"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2 style="margin:0;font-size:15px;font-weight:600;">Password</h2>
+      <div class="field"><label>Current password</label><input type="password" value="••••••••••"></div>
+      <div class="row2">
+        <div class="field"><label>New password</label><input type="password" placeholder="Leave blank to keep current"></div>
+        <div class="field"><label>Confirm new password</label><input type="password"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#272320;border-top:1px solid #3a352f;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 -4px 16px rgba(0,0,0,0.3);">
+    <span style="font-size:13px;font-weight:500;color:#e4a07c;display:flex;align-items:center;gap:8px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      You have unsaved changes
+    </span>
+    <div style="display:flex;gap:10px;">
+      <button style="appearance:none;cursor:pointer;background:#272320;border:1px solid #3a352f;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:500;font-family:inherit;color:#f1ece4;">Discard</button>
+      <button style="appearance:none;cursor:pointer;background:#d08a66;border:1px solid #d08a66;color:#1d1a17;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;font-family:inherit;">Save changes</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

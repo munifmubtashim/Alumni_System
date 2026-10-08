@@ -52,9 +52,7 @@ import { UserManager } from "./UserManager";
 // //   "https://linkedin.com/in/alumni",
 // // );
 // // alumniManager.createAlumni(alumni);
-// alumniManager.getAllAlumni();
 // // alumniManager.findAlumniById(1);
-// // alumniManager.findAlumniByEmail("alumni@email.com");
 // // alumniManager.updateAlumni(1, { department: "Software Engineering" });
 
 
@@ -68,7 +66,5 @@ import { UserManager } from "./UserManager";
 // userManager.findUserById(1);
 // userManager.findUserByEmail("munifmubtashim@gmail.com");
 // userManager.updateUser(1, { name: "Updated" });
-// userManager.updateLoginTime(1);
-// userManager.updateLogoutTime(1);
 // // userManager.deleteUser(1);\
 

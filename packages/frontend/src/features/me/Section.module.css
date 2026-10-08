@@ -1,0 +1,60 @@
+/* Shared by the /me section cards (Personal, Education, Career, Mentorship, Password).
+   Design: docs/design/screens/app/S5-Desktop-Light and S5-Phone-Light
+   (.section-card, .row2). Card: surface-raised, border-subtle hairline,
+   radius-lg (14px). Padding 16px phone (space-4), 22px from 48rem
+   (space-5 - space-1 / 2); gap 12px phone (space-3), 16px from 48rem
+   (space-4). Two-column rows from 48rem, one column below (and so at 200% zoom
+   on a desktop window); row gap 14px (space-3 + space-1 / 2).
+   Nearest tokens: the heading is text-heading-sm (16px) for S5's 14px / 15px.
+   S5's 56px / 48px avatar: 3rem phone, 3.5rem from 48rem. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.heading {
+  margin: 0;
+  font: var(--text-heading-sm);
+}
+
+.intro {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-label);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3) calc(var(--space-3) + var(--space-1) / 2);
+}
+
+/* Qualified with the span and data-size so it outranks the Avatar's own size rule (G30). */
+span.avatar[data-size] {
+  align-self: flex-start;
+  inline-size: 3rem;
+  block-size: 3rem;
+}
+
+@media (width >= 48rem) {
+  .card {
+    gap: var(--space-4);
+    padding: calc(var(--space-5) - var(--space-1) / 2);
+  }
+
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  span.avatar[data-size] {
+    inline-size: 3.5rem;
+    block-size: 3.5rem;
+  }
+}

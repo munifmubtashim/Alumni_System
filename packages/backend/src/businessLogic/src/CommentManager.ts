@@ -35,6 +35,23 @@ export class CommentManager {
     }
   }
 
+  // Only the comment's author or an admin may edit it, and only its text: the author,
+  // post and parent stay. Ownership is checked before the body, so a non-owner never
+  // sees validation errors.
+  public async updateComment(requester: { id: number; role: string }, commentId: unknown, body: Record<string, unknown>) {
+    const id = requireId(commentId, "Comment");
+    const comment = await this.commentQuery.findCommentById(id);
+    if (!comment) throw new AppError(404, "Comment not found");
+    if (comment.user_id !== requester.id && requester.role !== "admin") {
+      throw new AppError(403, "You can only change your own comments");
+    }
+    const content = requiredText(body.content, "Comment", 2000);
+    const updated = await this.commentQuery.updateComment(id, content);
+    // Deleted between the lookup and the update.
+    if (!updated) throw new AppError(404, "Comment not found");
+    return updated;
+  }
+
   // Only the comment's author or an admin may delete it.
   public async deleteComment(requester: { id: number; role: string }, commentId: unknown) {
     const id = requireId(commentId, "Comment");

@@ -1,0 +1,77 @@
+import type { AlumniListItem } from '@alumni/shared';
+import { Link, useLocation } from 'react-router';
+import { Avatar } from '@/components/ui/Avatar';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Tag } from '@/components/ui/Tag';
+import { directoryReturnState, profilePath } from '@/config/directoryReturn';
+import { present } from '@/config/text';
+import styles from './AlumniCard.module.css';
+
+export interface AlumniCardProps {
+  alumnus: AlumniListItem;
+}
+
+/** "Job title, Company", leaving out whichever part is missing (no stray comma). */
+function jobLine(alumnus: Pick<AlumniListItem, 'job_title' | 'current_company'>) {
+  const parts = [present(alumnus.job_title), present(alumnus.current_company)].filter(
+    (part): part is string => part !== undefined,
+  );
+  return parts.length > 0 ? parts.join(', ') : undefined;
+}
+
+/**
+ * One directory result: the whole card is a single link to the profile.
+ * The avatar is aria-hidden, so the link reads as the name, then the details.
+ * A "Mentor" tag closes the card when `mentorship_available` is true (S2;
+ * REQ-011). The link carries the current search as router state so the
+ * profile's back link can restore it (REQ-008).
+ */
+export function AlumniCard({ alumnus }: AlumniCardProps) {
+  const { search } = useLocation();
+  const name = present(alumnus.name) ?? '';
+  const year = alumnus.graduation_year ?? undefined;
+  const department = present(alumnus.department);
+  const job = jobLine(alumnus);
+
+  return (
+    <Link to={profilePath(alumnus.id)} state={directoryReturnState(search)} className={styles.card}>
+      <div className={styles.header}>
+        <Avatar name={name} photoUrl={present(alumnus.photo_url)} />
+        <div className={styles.identity}>
+          <p className={styles.name}>{name}</p>
+          {year !== undefined && <p className={styles.meta}>Class of {year}</p>}
+        </div>
+      </div>
+      {(department !== undefined || job !== undefined) && (
+        <div className={styles.details}>
+          {department !== undefined && <p className={styles.meta}>{department}</p>}
+          {job !== undefined && <p className={styles.job}>{job}</p>}
+        </div>
+      )}
+      {alumnus.mentorship_available === true && (
+        <div className={styles.tags}>
+          <Tag tone="accent">Mentor</Tag>
+        </div>
+      )}
+    </Link>
+  );
+}
+
+/** A placeholder in the card's shape, shown while results load. Decorative. */
+export function AlumniCardSkeleton() {
+  return (
+    <div aria-hidden="true" className={styles.card} data-skeleton="">
+      <div className={styles.header}>
+        <Skeleton shape="circle" />
+        <div className={styles.identity}>
+          <Skeleton className={styles.skeletonName} />
+          <Skeleton className={styles.skeletonMeta} />
+        </div>
+      </div>
+      <div className={styles.details}>
+        <Skeleton className={styles.skeletonMeta} />
+        <Skeleton className={styles.skeletonJob} />
+      </div>
+    </div>
+  );
+}

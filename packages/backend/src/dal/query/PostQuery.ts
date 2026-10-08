@@ -1,7 +1,15 @@
 import pool from "../config/db.js";
 import { PostDTO } from "../dto/PostDTO.js";
 
+// The post columns an edit may change.
+const POST_PATCH_COLUMNS = ["caption", "media_url"] as const;
+export type PostPatch = { caption?: string | null; media_url?: string | null };
 
+// Post row + public author fields. author_alumni_id is the author's alumni.id (the id
+// /alumni/:id takes), null for a user with no alumni row. A scalar subquery picking the
+// lowest id (as findAlumniByUserId does), so a second alumni row never duplicates a post.
+const POST_COLUMNS = `posts.*, users.name AS author_name, users.photo_url AS author_photo,
+         (SELECT MIN(a.id) FROM alumni a WHERE a.user_id = posts.user_id) AS author_alumni_id`;
 
 export class PostQuery {
     constructor() {
@@ -19,12 +27,13 @@ export class PostQuery {
         return info.rows[0];
     }
 
+// The id tie-break keeps offset paging stable when posts share a created_at.
 public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDTO[]> {
     const info = await pool.query(
-        `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+        `SELECT ${POST_COLUMNS}
          FROM posts
          JOIN users ON posts.user_id = users.id
-         ORDER BY posts.created_at DESC
+         ORDER BY posts.created_at DESC, posts.id DESC
          LIMIT $1 OFFSET $2`,
         [limit, offset]
     );
@@ -33,7 +42,7 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
 
     public async getPostsByUserId(user_id: number): Promise<PostDTO[]> {
         const info = await pool.query(
-            `SELECT posts.*, users.name AS author_name, users.photo_url AS author_photo
+            `SELECT ${POST_COLUMNS}
              FROM posts
              JOIN users ON posts.user_id = users.id
              WHERE posts.user_id = $1
@@ -45,15 +54,28 @@ public async getAllPosts(limit: number = 50, offset: number = 0): Promise<PostDT
         return info.rows;
     }
 
-    public async updatePost(post: PostDTO): Promise<PostDTO> {
+    public async findPostById(id: number): Promise<PostDTO | undefined> {
+        const info = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
+        return info.rows[0];
+    }
+
+    // Sets only the columns present in the patch (AC14); omitted ones keep their value.
+    // Column names come from a fixed allowlist and values are parameters. Never sets
+    // user_id: an admin editing someone's post keeps the original author.
+    public async updatePost(id: number, patch: PostPatch): Promise<PostDTO> {
+        const sets: string[] = [];
+        const params: unknown[] = [];
+        for (const column of POST_PATCH_COLUMNS) {
+            if (Object.prototype.hasOwnProperty.call(patch, column)) {
+                params.push(patch[column]);
+                sets.push(`${column}=$${params.length}`);
+            }
+        }
+        params.push(id);
         const info = await pool.query(
-            `UPDATE posts SET caption=$1, media_url=$2, updated_at=NOW()
-            WHERE id=$3 RETURNING *`,
-            [
-                post.caption,
-                post.media_url,
-                post.id
-            ]
+            `UPDATE posts SET ${[...sets, 'updated_at=NOW()'].join(', ')}
+            WHERE id=$${params.length} RETURNING *`,
+            params
         );
         return info.rows[0];
     }

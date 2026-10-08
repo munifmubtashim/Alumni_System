@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Directory — Phone, Light</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#ad6a4d;text-decoration:none}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#948c84;flex:1;padding:8px 0;}
+  .tab.active{color:#ad6a4d;}
+</style></helmet>
+<div style="width:100%;min-height:1400px;background:#faf7f2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2b2724;box-sizing:border-box;display:flex;flex-direction:column;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#ffffff;border-bottom:1px solid #e4dcd0;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">A</div>
+      <span style="font-size:14px;font-weight:600;">Alumni Network</span>
+    </div>
+    <div style="width:30px;height:30px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;">SM</div>
+  </div>
+
+  <div style="flex-grow:1;padding:16px;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;">
+      <h1 style="margin:0;font-size:18px;font-weight:600;">Directory</h1>
+      <span style="font-size:12px;color:#6b6560;">142 alumni</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#f0ebe3;border:1px solid #e4dcd0;border-radius:8px;padding:11px 14px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#948c84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" placeholder="Search alumni" style="flex-grow:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:16px;color:#2b2724;">
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <span style="display:inline-flex;align-items:center;gap:6px;background:#f3e4d9;color:#8f5540;border-radius:999px;padding:6px 8px 6px 12px;font-size:12px;font-weight:500;">Comp. Science
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </span>
+      <button style="appearance:none;cursor:pointer;background:#ffffff;border:1px solid #e4dcd0;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:500;color:#2b2724;font-family:inherit;">University</button>
+      <button style="appearance:none;cursor:pointer;background:#ffffff;border:1px solid #e4dcd0;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:500;color:#2b2724;font-family:inherit;">Field</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+      <sc-for list="{{alumni}}" as="p" hint-placeholder-count="6">
+        <a href="S3-Phone-Light.dc.html" style="background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;color:#2b2724;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:999px;background:#f3e4d9;color:#8f5540;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0;">{{p.initials}}</div>
+            <div style="min-width:0;">
+              <div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{p.name}}</div>
+              <div style="font-size:12px;color:#6b6560;">Class of {{p.year}}</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#2b2724;">{{p.job}}</div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+      <button disabled style="appearance:none;cursor:not-allowed;background:#ffffff;border:1px solid #e4dcd0;border-radius:8px;padding:9px 16px;font-size:13px;color:#948c84;font-family:inherit;">Prev</button>
+      <span style="font-size:13px;color:#6b6560;">Page 1 of 24</span>
+      <button style="appearance:none;cursor:pointer;background:#ffffff;border:1px solid #e4dcd0;border-radius:8px;padding:9px 16px;font-size:13px;color:#2b2724;font-family:inherit;">Next</button>
+    </div>
+  </div>
+
+  <nav style="display:flex;background:#ffffff;border-top:1px solid #e4dcd0;padding:4px 8px 10px;">
+    <div class="tab active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+      Directory
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      Feed
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
+      Profile
+    </div>
+    <div class="tab">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
+      Admin
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      alumni: [
+        { initials: 'AM', name: 'Amira Mendes', year: '2017', job: 'Design Lead, Terra Climate' },
+        { initials: 'JK', name: 'Jonas Kessler', year: '2015', job: 'Staff Engineer, Nimbus Cloud' },
+        { initials: 'RS', name: 'Priya Rao Shah', year: '2020', job: 'Associate, Harrow Capital' },
+        { initials: 'TO', name: 'Tomás Oliveira', year: '2012', job: 'Founder, Oliveira Works' },
+        { initials: 'LN', name: 'Lena Novak', year: '2019', job: 'Program Manager, City Health Dept.' },
+        { initials: 'DW', name: 'Darius Whitfield', year: '2016', job: 'Marketing Director, Fenwick & Co.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

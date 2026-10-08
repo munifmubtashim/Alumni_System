@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About — Desktop, Light</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  body{margin:0}
+  a{color:#ad6a4d;text-decoration:none}
+  .nav-link{font-size:14px;font-weight:500;color:#6b6560;padding:22px 0}
+  .step-num{width:32px;height:32px;border-radius:999px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0;}
+  .benefit-card{background:#ffffff;border:1px solid #e4dcd0;border-radius:14px;padding:22px;flex:1;}
+</style></helmet>
+<div style="width:100%;min-height:1500px;background:#faf7f2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#2b2724;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 32px;height:64px;background:#ffffff;border-bottom:1px solid #e4dcd0;">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#ad6a4d;color:#fdf8f3;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">A</div>
+        <span style="font-size:15px;font-weight:600;">Alumni Network</span>
+      </div>
+      <nav style="display:flex;gap:24px;">
+        <a href="S2-Desktop-Light.dc.html" class="nav-link">Directory</a>
+        <a href="S4-Desktop-Light.dc.html" class="nav-link">Feed</a>
+        <a href="S5-Desktop-Light.dc.html" class="nav-link">My Profile</a>
+        <a href="S6-Desktop-Light.dc.html" class="nav-link">Admin</a>
+      </nav>
+    </div>
+    <a href="Main.dc.html" style="appearance:none;cursor:pointer;background:#ad6a4d;border:1px solid #ad6a4d;color:#fdf8f3;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;">Go to app</a>
+  </header>
+
+  <div style="padding:80px 32px 64px;max-width:760px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <h1 style="margin:0;font-size:38px;font-weight:600;line-height:1.25;">A lifelong connection between alumni and the students who follow them.</h1>
+    <p style="margin:0;font-size:16px;color:#6b6560;max-width:520px;line-height:1.6;">Find mentors, share opportunities, and stay close to the community you studied with — wherever your career takes you next.</p>
+  </div>
+
+  <div style="padding:0 32px 72px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:36px;">
+    <h2 style="margin:0;font-size:22px;font-weight:600;text-align:center;">How it works</h2>
+    <div style="display:flex;gap:28px;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div class="step-num">1</div>
+        <h3 style="margin:0;font-size:15px;font-weight:600;">Create your profile</h3>
+        <p style="margin:0;font-size:13px;color:#6b6560;line-height:1.6;">Add your education, career history, and whether you're open to mentoring.</p>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div class="step-num">2</div>
+        <h3 style="margin:0;font-size:15px;font-weight:600;">Find your people</h3>
+        <p style="margin:0;font-size:13px;color:#6b6560;line-height:1.6;">Search the directory by university, department, or graduation year.</p>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div class="step-num">3</div>
+        <h3 style="margin:0;font-size:15px;font-weight:600;">Connect and share</h3>
+        <p style="margin:0;font-size:13px;color:#6b6560;line-height:1.6;">Post updates, ask for advice, and offer opportunities in the feed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 32px 72px;max-width:900px;margin:0 auto;display:flex;gap:20px;">
+    <div class="benefit-card">
+      <h3 style="margin:0 0 10px;font-size:16px;font-weight:600;">For students</h3>
+      <p style="margin:0;font-size:13px;color:#6b6560;line-height:1.7;">Reach out to alumni in the field you want to enter, ask questions about real career paths, and find mentors who've walked the road before you.</p>
+    </div>
+    <div class="benefit-card">
+      <h3 style="margin:0 0 10px;font-size:16px;font-weight:600;">For alumni</h3>
+      <p style="margin:0;font-size:13px;color:#6b6560;line-height:1.7;">Stay connected to your university community, give back by mentoring students, and find collaborators and hires from your own network.</p>
+    </div>
+  </div>
+
+  <footer style="border-top:1px solid #e4dcd0;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;">
+    <span style="font-size:13px;color:#948c84;">© 2026 Alumni Network</span>
+    <div style="display:flex;gap:20px;">
+      <a href="#" style="font-size:13px;color:#6b6560;">Privacy</a>
+      <a href="#" style="font-size:13px;color:#6b6560;">Terms</a>
+      <a href="#" style="font-size:13px;color:#6b6560;">Contact</a>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

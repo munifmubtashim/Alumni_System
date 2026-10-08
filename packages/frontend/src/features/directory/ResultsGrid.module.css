@@ -1,0 +1,24 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light / S2-Phone-Light.
+   repeat(auto-fill, minmax(260px, 1fr)); 260px is 16.25rem so it scales with
+   zoom. The min() keeps one column from overflowing below 260px of room
+   (360px phone at 200% zoom). Gap space-4 on phone, space-5 from 48rem
+   (design 16px / 24px). */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16.25rem, 100%), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  min-width: 0;
+}
+
+@media (width >= 48rem) {
+  .grid {
+    gap: var(--space-5);
+  }
+}

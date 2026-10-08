@@ -1,0 +1,96 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light and S2-Phone-Light (result
+   card). Nearest tokens: padding space-4 on phone and space-5 from 48rem
+   (design 16px / 20px), gap space-3 (12px / 10px). The design's divider is
+   the details block's top border. Department shows on phone too (AC8), where
+   the phone design leaves it out. The hover border follows Button secondary.
+   The Mentor tag (accent Tag, REQ-011) closes the card, left-aligned, as on
+   S2 desktop; the phone design shows no tag, but it shows at every width. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  block-size: 100%;
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+a.card:hover {
+  border-color: var(--accent-strong);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+/* One line; a long name ends in an ellipsis. */
+.name {
+  margin: 0;
+  overflow: hidden;
+  font: var(--text-heading-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-label);
+  font-weight: var(--text-body-weight);
+  overflow-wrap: anywhere;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Long job titles and company names wrap instead of overflowing. */
+.job {
+  margin: 0;
+  font: var(--text-body-sm);
+  overflow-wrap: anywhere;
+}
+
+/* A block line of its own, so the link's name reads "… Terra Climate Mentor" (G27). */
+.tags {
+  display: flex;
+}
+
+.skeletonName {
+  inline-size: 60%;
+}
+
+.skeletonMeta {
+  inline-size: 40%;
+}
+
+.skeletonJob {
+  inline-size: 75%;
+}
+
+@media (width >= 48rem) {
+  .card {
+    padding: var(--space-5);
+  }
+}

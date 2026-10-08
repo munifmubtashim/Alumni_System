@@ -1,0 +1,117 @@
+/* Design: docs/design/screens/app/S2-Desktop-Light (search box above the
+   filters). The box is the wrapper, so the icon sits inside it; the <input>
+   itself is borderless. Departures, for the same contrast reasons as Input:
+   the resting border is border-strong, not border-subtle; focus switches to
+   the accent border and the raised fill. Text is 16px (--text-body), not the
+   design's 15px, so iOS does not zoom on focus. The box is ~40px tall like
+   Input: the 22px line, space-2/space-4 padding and a 1px border (the
+   design's 11px/14px padding has no token). */
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--ink-muted);
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* The accent border is the only focus signal (no ring), as in Input. */
+.field:focus-within {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+/* Decorative; sized in rem so it scales with zoom (18px in the design). */
+.icon {
+  flex-shrink: 0;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+
+.input {
+  flex-grow: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-primary);
+  font: var(--text-body);
+  line-height: var(--text-body-sm-line);
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+.input::placeholder {
+  color: var(--ink-secondary);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+/* Hide the browser's own clear control (a blue x in Chrome and Safari): it is
+   off-palette and ignores tokens. The .clear button below replaces it.
+   Firefox draws none. */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* Our clear button: 40px square like PasswordInput's toggle, sized in rem so
+   it scales with zoom. The negative block margin lets it overhang the
+   field's padding, so the box stays ~40px tall whether it shows or not; the
+   end margin pulls it into the end padding. */
+.clear {
+  appearance: none;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  margin-block: calc((var(--text-body-sm-line) - 2.5rem) / 2);
+  margin-inline: calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+
+  /* ink-secondary, not ink-muted (as in PasswordInput): the icon is the
+     control's only visible cue, and ink-muted on the sunken fill is under
+     3:1 in the light theme. */
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-standard);
+}
+
+/* :where() keeps the hover at single-class weight (G04). */
+.clear:where(:hover) {
+  color: var(--ink-primary);
+}
+
+.clearIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field,
+  .clear {
+    transition: none;
+  }
+}

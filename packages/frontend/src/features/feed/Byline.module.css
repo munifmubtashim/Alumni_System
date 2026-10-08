@@ -1,0 +1,7 @@
+/* The avatar link: as big as the avatar inside it, never shrunk by the row. */
+
+.avatarLink {
+  display: inline-flex;
+  flex: none;
+  border-radius: var(--radius-pill);
+}

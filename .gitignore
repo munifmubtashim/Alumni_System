@@ -1,7 +1,12 @@
-.env
-node_modules/
+.DS_Store
+**/.DS_Store
+packages/frontend/vite.config.js
+packages/frontend/vite.config.js.map
+packages/frontend/vite.config.d.ts
+packages/frontend/vite.config.d.ts.map
 dist/
-db/backups/
+.env
+node_modules
 
 # ADLC — per-developer scratch state. Shared knowledge files stay committed;
 # the shared logs (hot.md, decisions.md, glossary.md) are committed too.
@@ -23,3 +28,4 @@ db/backups/
 .adlc/bugs/**/last-seen.json
 .adlc/sprints/**/*.json
 .adlc/ui-auth.env
+db/backups/
