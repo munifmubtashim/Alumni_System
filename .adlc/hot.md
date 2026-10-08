@@ -2,6 +2,8 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] bug-archived | BUG-001-feed-null-caption-crash
+## [2026-10-08] bug-merged | BUG-001-feed-null-caption-crash | PR #35 into redesign (a4f0e63f)
 ## [2026-10-08] ship-gate-cleared | BUG-001-feed-null-caption-crash
 ## [2026-10-08] bug-ready-to-merge | BUG-001-feed-null-caption-crash | null-caption feed crash fixed; caption required on create/update
 ## [2026-10-08] lesson | L-BUG-001-1..2 — nullable column is `T | null` in shared types; create and update share one validator

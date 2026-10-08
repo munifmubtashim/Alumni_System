@@ -86,4 +86,4 @@ Cross-cutting reference docs that don't fit elsewhere.
 
 | Bug | Title | Status | Path |
 |---|---|---|---|
-| BUG-001 | /feed crashed for everyone on a null-caption post; caption now required | ready to merge 2026-10-08 | bugs/2026-10/m/BUG-001-feed-null-caption-crash |
+| BUG-001 | /feed crashed for everyone on a null-caption post; caption now required | merged 2026-10-08 (PR #35) | bugs/_archive/2026-10/m/BUG-001-feed-null-caption-crash |
