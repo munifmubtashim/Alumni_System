@@ -2,6 +2,8 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] req-archived | REQ-015-admin-page
+## [2026-10-08] req-merged | REQ-015-admin-page | PR #32 into redesign (8c211e8a)
 ## [2026-10-08] ship-gate-cleared | REQ-015-admin-page
 ## [2026-10-08] req-ready-to-merge | REQ-015-admin-page | admin page at /admin: stats, sortable table, add/edit drawer, cascade delete; 0 critical open, 4 follow-ups
 ## [2026-10-08] lesson | L-REQ-015-1..5 — cascade delete recount + lock, route vs user id spaces, contract changes update conventions-api, optional means null-safe, edit Save disabled until changed
