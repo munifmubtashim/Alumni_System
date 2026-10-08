@@ -1,8 +1,9 @@
 export interface Post {
   id: number;
   user_id: number;
-  caption?: string;
-  media_url?: string;
+  // Nullable columns: the API sends SQL NULL as JSON null, so guard null as well as missing.
+  caption?: string | null;
+  media_url?: string | null;
   comment_count?: number;
   created_at?: Date;
   updated_at?: Date;

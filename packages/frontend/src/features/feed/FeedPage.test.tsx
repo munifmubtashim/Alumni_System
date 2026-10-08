@@ -43,6 +43,21 @@ describe('FeedPage', () => {
     expect(screen.getAllByRole('article')).toHaveLength(2);
   });
 
+  // BUG-001: one null-caption post used to replace the whole feed with the error page.
+  it('renders the feed when one post among others has a null caption', async () => {
+    api.on('get /posts', {
+      ok: [
+        makePost(3, { caption: 'Newest' }),
+        makePost(2, { caption: null }),
+        makePost(1, { caption: 'Oldest' }),
+      ],
+    });
+    renderPage();
+    expect(await screen.findByText('Newest')).toBeInTheDocument();
+    expect(screen.getByText('Oldest')).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(3);
+  });
+
   it('shows the empty state when there are no posts', async () => {
     api.on('get /posts', { ok: [] });
     renderPage();

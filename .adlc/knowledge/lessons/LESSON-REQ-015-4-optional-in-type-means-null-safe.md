@@ -16,3 +16,8 @@ If `@alumni/shared` marks a field optional (`caption?: string`), every read must
 ## Saw it in
 
 - `packages/frontend/src/features/feed/PostCard.tsx:155` — found by the REQ-015 UI re-review (UI-003); filed as a follow-up bugfix
+
+
+## Saw it again
+
+- [[BUG-001]]: fixed the feed crash this lesson came from; the root type is now `caption?: string | null` (see [[knowledge/lessons/LESSON-BUG-001-1-nullable-column-means-null-in-shared-type|L-BUG-001-1]]).

@@ -12,6 +12,8 @@ One row per lesson file. Title is the H1 without its `^L…` anchor. Superseded 
 
 | ID | Title | Tags | Severity | REQ |
 |---|---|---|---|---|
+| LESSON-BUG-001-1 | A nullable DB column is `T | null` in the shared type, not `T?` | shared-types, null, postgres, frontend | trap | BUG-001 |
+| LESSON-BUG-001-2 | Create and update validate a field with one shared helper, and are tightened together | backend, validation, api, posts | guideline | BUG-001 |
 | LESSON-REQ-001-1 | Pick toolchain majors by plugin peer ranges, not by "latest" | toolchain, typescript, eslint, vitest | guideline | REQ-001 |
 | LESSON-REQ-001-2 | After a major React bump in a workspace, prove there is one React copy | npm-workspaces, react, dependencies | trap | REQ-001 |
 | LESSON-REQ-001-3 | Vitest 5 Node-side tests: per-file environment comment, DOM-safe setup, and live in scripts/ | vitest, testing, typescript | guideline | REQ-001 |
