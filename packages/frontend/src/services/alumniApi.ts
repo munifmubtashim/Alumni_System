@@ -1,4 +1,11 @@
-import type { Alumni, AlumniListResponse, AlumniSort, Post, SortOrder } from '@alumni/shared';
+import type {
+  Alumni,
+  AlumniListResponse,
+  AlumniSort,
+  Post,
+  SortOrder,
+  SuggestedAlumni,
+} from '@alumni/shared';
 import { httpClient } from './httpClient';
 
 // Search params for GET /api/alumni. The page size is the caller's choice; its
@@ -8,6 +15,8 @@ export interface AlumniSearchParams {
   department?: string;
   university?: string;
   graduationYear?: number;
+  /** Only alumni available for mentorship. The API has no "false" filter. */
+  mentorship?: true;
   /** Server-side sort; left out, the API sorts by name (the directory's order). */
   sort?: AlumniSort;
   order?: SortOrder;
@@ -19,7 +28,7 @@ type QueryParams = Record<string, string | number>;
 
 // Blank text and missing filters are left out of the query string, so the URL
 // only carries what the user actually searched for (the API treats them as
-// absent anyway). sort and order go only when set. page and pageSize are
+// absent anyway). mentorship, sort and order go only when set. page and pageSize are
 // always sent.
 function toQueryParams(params: AlumniSearchParams): QueryParams {
   const out: QueryParams = {};
@@ -28,6 +37,7 @@ function toQueryParams(params: AlumniSearchParams): QueryParams {
     if (value !== undefined && value.trim() !== '') out[key] = value;
   }
   if (params.graduationYear !== undefined) out.graduationYear = params.graduationYear;
+  if (params.mentorship === true) out.mentorship = 'true';
   if (params.sort !== undefined) out.sort = params.sort;
   if (params.order !== undefined) out.order = params.order;
   out.page = params.page;
@@ -39,6 +49,13 @@ export async function searchAlumni(params: AlumniSearchParams): Promise<AlumniLi
   const res = await httpClient.get<AlumniListResponse>('/alumni', {
     params: toQueryParams(params),
   });
+  return res.data;
+}
+
+// GET /api/alumni/suggestions: up to 5 other alumni for the signed-in user
+// (ranked by the API; a bare array, [] when there is nobody else).
+export async function getSuggestedAlumni(): Promise<SuggestedAlumni> {
+  const res = await httpClient.get<SuggestedAlumni>('/alumni/suggestions');
   return res.data;
 }
 

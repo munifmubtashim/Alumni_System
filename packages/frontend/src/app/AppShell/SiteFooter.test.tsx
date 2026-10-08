@@ -33,6 +33,20 @@ describe('SiteFooter', () => {
     );
   });
 
+  it('keeps the © and the links in one inner box, the page-width column', () => {
+    renderFooter();
+
+    // jsdom has no layout: this pins the structure the --page-max rule in
+    // SiteFooter.module.css relies on; the edges are measured in a browser.
+    const footer = screen.getByRole('contentinfo');
+    const inner = footer.firstElementChild;
+
+    expect(footer.children).toHaveLength(1);
+    expect(inner).toHaveClass('inner');
+    expect(inner).toContainElement(screen.getByText(new RegExp(`^© .*${BRAND_NAME}$`)));
+    expect(inner).toContainElement(screen.getByRole('navigation', { name: 'Footer' }));
+  });
+
   it('does not link Privacy or Terms pages that do not exist', () => {
     renderFooter();
 

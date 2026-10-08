@@ -1,0 +1,53 @@
+/* A Home section card (REQ-016, no design screen): Card's surface, border,
+   radius and padding; the title in heading-sm with the "See all" style link
+   on the right in the accent label (as the log-in page's links). The error
+   state follows the profile's Recent posts: the alert spans the card and
+   Retry sits under it, start-aligned. */
+
+.section {
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.heading {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-sm);
+}
+
+.action {
+  flex: none;
+  color: var(--accent);
+  font: var(--text-label);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.action:hover {
+  text-decoration: underline;
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.retry {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-4);
+}

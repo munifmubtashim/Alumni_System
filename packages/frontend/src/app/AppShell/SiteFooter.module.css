@@ -1,5 +1,7 @@
-/* Footer after docs/design/screens/app/S7-*: a hairline, then © and the links
-   in a column up to 900px (56.25rem). Phones stack and centre them. The ©
+/* Footer after docs/design/screens/app/S7-*: a hairline, then © and the links.
+   The inner box is as wide as the page column (--page-max from AppShell,
+   REQ-016; S7 drew 900px) and the footer's side padding equals .main's, so
+   its edges line up with the page content. Phones stack and centre them. The ©
    uses ink-secondary rather than S7's muted grey: ink-muted on the page
    background is under 4.5:1 (G33). */
 
@@ -13,7 +15,7 @@
   flex-direction: column;
   align-items: center;
   gap: calc(var(--space-2) + var(--space-1) / 2);
-  max-width: 56.25rem;
+  width: min(100%, var(--page-max));
   margin-inline: auto;
 }
 

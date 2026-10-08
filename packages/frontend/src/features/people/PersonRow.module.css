@@ -1,0 +1,72 @@
+/* No design screen for this row (REQ-016); it follows the directory card
+   (S2): avatar, name in heading-sm, "job title, company" in ink-secondary,
+   the accent Mentor tag. A compact row for a narrow column: the sm avatar
+   (2.5rem), a sunken hover like a menu item. The name is one line with an
+   ellipsis; "role, company" wraps to at most two lines so a narrow sidebar
+   still shows the company (REQ-016 screenshot pass). Neither widens it. */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+a.row:hover {
+  background: var(--surface-sunken);
+}
+
+.identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name,
+.role {
+  margin: 0;
+  overflow: hidden;
+}
+
+.name {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--text-label);
+  font-weight: var(--text-heading-sm-weight);
+}
+
+.role {
+  color: var(--ink-secondary);
+  font: var(--text-caption);
+  font-weight: var(--text-body-weight);
+  display: -webkit-box;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.tag {
+  display: flex;
+  flex: none;
+}
+
+.skeletonAvatar {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
+.skeletonName {
+  inline-size: 55%;
+}
+
+.skeletonRole {
+  inline-size: 75%;
+  block-size: var(--text-caption-line);
+}
