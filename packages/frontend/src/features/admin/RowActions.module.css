@@ -1,0 +1,53 @@
+/* Design: S6 .row-btn: transparent, ink-muted, ink-primary on hover. The
+   15px icon is 1rem; the visible button is 2rem square (space-6; S6 about
+   27px). A ::before reaches 6px past each edge, so the tap target is 44px
+   while the row stays short; the gap between the two buttons is space-3
+   (12px), so the two hit areas meet but never overlap (G35). */
+
+.actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.iconButton {
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+/* (44px - 32px) / 2 = 6px = half of space-3. */
+.iconButton::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--space-3) / -2);
+}
+
+.iconButton:hover {
+  background: var(--surface-sunken);
+  color: var(--ink-primary);
+}
+
+.icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconButton {
+    transition: none;
+  }
+}

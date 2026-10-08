@@ -1,0 +1,91 @@
+/* Design: docs/design/screens/app/S6-Desktop-Light (table inside the card).
+   Nearest tokens: header caption weight 600 in ink-secondary (design 12px);
+   cells label size (13px) in ink-primary; cell padding space-3/space-4
+   (design 14px/16px), which with the 32px row buttons gives a 57px row
+   (design about 59px); header padding space-1/space-4/space-2 (design
+   0/16px/10px: the 4px top keeps the sort button's focus ring inside the
+   scroller, which clips); row dividers border-subtle (S6's lighter divider has
+   no token, architecture.md). Only the scroller scrolls sideways, so the
+   page never does at 200% zoom. The name column is a row header (<th>). */
+
+.scroller {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+/* A newer page is loading behind these rows (keepPreviousData). */
+.stale {
+  opacity: 0.6;
+}
+
+.th {
+  padding: var(--space-1) var(--space-4) var(--space-2);
+  color: var(--ink-secondary);
+  font-size: var(--text-caption-size);
+  font-weight: var(--text-heading-sm-weight);
+  line-height: var(--text-caption-line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sortButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sortButton:hover,
+.sortActive {
+  color: var(--ink-primary);
+}
+
+.arrow {
+  color: var(--accent);
+}
+
+.td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--ink-primary);
+  font-size: var(--text-label-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-label-line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.name {
+  font-weight: var(--text-heading-sm-weight);
+}
+
+.actionsCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.skeletonName {
+  inline-size: 8rem;
+}
+
+.skeletonShort {
+  inline-size: 3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table {
+    transition: none;
+  }
+}

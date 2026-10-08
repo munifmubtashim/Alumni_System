@@ -1,0 +1,72 @@
+/* Design: docs/design/screens/app/S6-Phone-Light (card list). Nearest
+   tokens: card padding space-3 block / space-4 inline (design 14px), radius-lg
+   (12px), gap space-3 (10px); name body-sm at weight 600 (14px) directly
+   over the detail, caption size (12px) in ink-secondary, no gap (as S6).
+   A card is about 64px tall (design about 62px); the row buttons keep a
+   44px tap target through their ::before (RowActions.module.css). */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.stale {
+  opacity: 0.6;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.name {
+  margin: 0;
+  color: var(--ink-primary);
+  font-size: var(--text-body-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  line-height: var(--text-body-sm-line);
+  overflow-wrap: anywhere;
+}
+
+.detail {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: var(--text-caption-size);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-caption-line);
+  overflow-wrap: anywhere;
+}
+
+.skeletonName {
+  inline-size: 60%;
+}
+
+.skeletonDetail {
+  inline-size: 40%;
+  block-size: var(--text-caption-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    transition: none;
+  }
+}
