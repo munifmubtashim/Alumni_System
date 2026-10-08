@@ -22,6 +22,7 @@ Alumni_System
 │  │  │  │  │  └─ roleMiddleware.ts
 │  │  │  │  ├─ app.ts
 │  │  │  │  ├─ controllers
+│  │  │  │  │  ├─ AdminController.ts
 │  │  │  │  │  ├─ AlumniController.ts
 │  │  │  │  │  ├─ CommentController.ts
 │  │  │  │  │  ├─ PostController.ts
@@ -29,6 +30,7 @@ Alumni_System
 │  │  │  │  ├─ index.ts
 │  │  │  │  ├─ package.json
 │  │  │  │  ├─ routes
+│  │  │  │  │  ├─ AdminRoutes.ts
 │  │  │  │  │  ├─ AlumniRoutes.ts
 │  │  │  │  │  ├─ AuthRoutes.ts
 │  │  │  │  │  ├─ CommentRoutes.ts
@@ -41,6 +43,7 @@ Alumni_System
 │  │  │  ├─ businessLogic
 │  │  │  │  ├─ package.json
 │  │  │  │  ├─ src
+│  │  │  │  │  ├─ AdminManager.ts
 │  │  │  │  │  ├─ AlumniManager.ts
 │  │  │  │  │  ├─ CommentManager.ts
 │  │  │  │  │  ├─ PostManager.ts
@@ -61,6 +64,7 @@ Alumni_System
 │  │  │     ├─ index.ts
 │  │  │     ├─ package.json
 │  │  │     ├─ query
+│  │  │     │  ├─ AdminQuery.ts
 │  │  │     │  ├─ AlumniQuery.ts
 │  │  │     │  ├─ CommentQuery.ts
 │  │  │     │  ├─ PostQuery.ts
