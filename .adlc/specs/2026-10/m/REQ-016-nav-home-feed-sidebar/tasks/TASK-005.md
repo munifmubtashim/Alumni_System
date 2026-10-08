@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-016 |
 | Tier | 2 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | 002 |
 | Blocks | 006, 007 |
@@ -29,13 +29,22 @@ One eager `features/people` folder provides `PersonRow`, `SuggestedAlumni` and `
 
 ## Acceptance
 
-- [ ] Row shows avatar, name, role+company, Mentor badge only when true, link to /alumni/<id>
-- [ ] Loading, empty, error+Retry states tested
-- [ ] A failing request does not affect the parent
+- [x] Row shows avatar, name, role+company, Mentor badge only when true, link to /alumni/<id>
+- [x] Loading, empty, error+Retry states tested
+- [x] A failing request does not affect the parent
 
 ## Notes
 
 Spec: requirement.md in this folder. Conventions: tokens only, no hex; TanStack Query for server data; layers route -> controller -> Manager -> Query. Rebuild `packages/backend/src/businessLogic` (`tsc`) before running the API (CLAUDE.md). Draft the commit message into commits-draft.md.
+
+Implemented 2026-10-08:
+- Added `features/people/index.ts` (not in the file list) as the import surface, like `features/home/index.ts`; Home and Feed import `@/features/people`.
+- Heading level prop: `headingLevel` 2 | 3 | 4 (default 2). `className` prop for placement.
+- The card is a `Card as="section"` labelled by its heading, so tests find it as region "Suggested alumni".
+- staleTime 5 min (`useSuggestedAlumni.ts`); retry left to the client default. Exported `SUGGESTED_ALUMNI_KEY` for callers that need to invalidate.
+- No eslint change and no new boundary test: `people` is not lazy, and the existing lazy ban already applies to every file in it.
+- No design screen exists for the row or card; styles follow the directory card (S2) and Recent posts' error layout.
+- Not done here (TASK-008): add `people/` to `src/features/README.md` and the CLAUDE.md feature list.
 
 ## Related
 

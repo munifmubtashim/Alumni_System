@@ -80,7 +80,7 @@ A signed-in member lands on a Home that shows people and content (a profile-comp
 ## Assumptions
 
 - A1. A user with no alumni profile (a student, or an admin with none) gets a Profile tab that opens Account settings (`/me`), because there is no public profile to open. `STATUS: needs verification`
-- A2. "Incomplete profile" means at least one of these is empty on the user's own record: photo, headline, job title, company, department, graduation year, bio. The progress bar is filled fields over total fields; the next step names the first missing one. Students are measured against the fields their account has. `STATUS: needs verification`
+- A2. "Incomplete profile" means at least one of these is empty on the user's own record: headline, job title, company, department, graduation year, bio (alumni; students use expected graduation year and have no headline). The photo is not counted because no upload exists yet (decided at the implement step, 2026-10-08). The progress bar is filled fields over total fields; the next step names the first missing one. Students are measured against the fields their account has.
 - A3. "Tablet width" is the existing 48rem breakpoint.
 - A4. Suggestions are computed per request with no caching on the server. They exclude nobody else (no "already seen" memory).
 - A5. Home's posts come from `GET /api/posts?limit=3`; no new posts endpoint is needed.

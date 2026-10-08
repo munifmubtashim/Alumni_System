@@ -39,6 +39,8 @@
 
 Spec: requirement.md in this folder. Conventions: tokens only, no hex; TanStack Query for server data; layers route -> controller -> Manager -> Query. Rebuild `packages/backend/src/businessLogic` (`tsc`) before running the API (CLAUDE.md). Draft the commit message into commits-draft.md.
 
+Implementation (2026-10-08): `parseAlumniSearch` trims `mentorship`; "true" sets `filters.mentorship = true`, empty/blank is absent, any other value 400 "mentorship must be true", array/object 400 via `singleQueryValue`. `AlumniSearchFilters.mentorship?: true`. `AlumniQuery.searchAlumni` pushes `a.mentorship_available = $n` with bound `true`, after graduationYear, so the count query shares it. Frontend `AlumniSearchParams.mentorship?: true`, sent as `'true'` only when set. businessLogic `dist/` rebuilt with `tsc`. Checks: test:backend 645 pass, typecheck:backend clean, frontend typecheck clean, alumniApi.test 13 pass, eslint/prettier clean on touched frontend files.
+
 ## Related
 
 - Architecture: [[specs/2026-10/m/REQ-016-nav-home-feed-sidebar/architecture]]

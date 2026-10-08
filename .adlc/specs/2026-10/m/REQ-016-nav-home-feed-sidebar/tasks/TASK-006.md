@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-016 |
 | Tier | 3 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | 004, 005 |
 | Blocks | 008 |
@@ -26,13 +26,20 @@ At 48rem and up the Feed shows a right sidebar with 3-5 suggestions; below 48rem
 
 ## Acceptance
 
-- [ ] Wide: aside present with rows; phone: aside absent and `/alumni/suggestions` not requested
-- [ ] Sidebar error leaves the feed working
-- [ ] Existing feed tests pass
+- [x] Wide: aside present with rows; phone: aside absent and `/alumni/suggestions` not requested
+- [x] Sidebar error leaves the feed working
+- [x] Existing feed tests pass
 
 ## Notes
 
 Spec: requirement.md in this folder. Conventions: tokens only, no hex; TanStack Query for server data; layers route -> controller -> Manager -> Query. Rebuild `packages/backend/src/businessLogic` (`tsc`) before running the API (CLAUDE.md). Draft the commit message into commits-draft.md.
+
+Implementation (2026-10-08):
+- `.page` is `min(100%, var(--page-max))` centred at every width (was 40rem), so the footer lines up below 48rem too. From 48rem: grid `minmax(0, 1fr) 20rem`, gap space-6, `align-items: start`; the aside is `position: sticky; top: space-5` (the header does not stick).
+- Main column left flexible, not capped at 40rem: a cap would leave an empty band between posts and sidebar. At 72rem the post column is about 50rem; at 48rem about 24rem. TASK-008 screenshots should judge both; cap or narrow the sidebar there if it reads badly.
+- The landmark is named twice: `<aside aria-label="Suggested alumni">` wraps the card's own `<section aria-labelledby>` region of the same name, so a screen reader may say "Suggested alumni" twice. Kept as the task asked; a ui-review question.
+- Tests: the jsdom setup stub makes `(width >= 48rem)` false, so existing tests run the phone layout and send no suggestions request; the new wide tests spy on `matchMedia` for that query only.
+- Checked: typecheck, lint, format:check, full `npm test` (1596 passed); `vite build` keeps FeedPage its own chunk.
 
 ## Related
 

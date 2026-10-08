@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-016 |
 | Tier | 3 |
-| Status | pending |
+| Status | done |
 | Repo | alumni-system |
 | Depends on | 001, 003, 005 |
 | Blocks | 008 |
@@ -31,14 +31,26 @@ Home shows greeting, completeness card (if incomplete), latest posts, mentors an
 
 ## Acceptance
 
-- [ ] Each section: loading, empty, error+Retry, data tests; sections fail independently
-- [ ] Completeness tested: 0 fields, partial, complete, a student (never asked for a headline; can reach 100%), no profile row (no card)
-- [ ] No 'department or field' left anywhere; no quick-link cards
-- [ ] lazyRoutes.test and lint boundaries pass
+- [x] Each section: loading, empty, error+Retry, data tests; sections fail independently
+- [x] Completeness tested: 0 fields, partial, complete, a student (never asked for a headline; can reach 100%), no profile row (no card)
+- [x] No 'department or field' left anywhere; no quick-link cards
+- [x] lazyRoutes.test and lint boundaries pass
 
 ## Notes
 
 Spec: requirement.md in this folder. Conventions: tokens only, no hex; TanStack Query for server data; layers route -> controller -> Manager -> Query. Rebuild `packages/backend/src/businessLogic` (`tsc`) before running the API (CLAUDE.md). Draft the commit message into commits-draft.md.
+
+Implemented 2026-10-08:
+- **Open decision (photo):** A2 counts the photo, but Account settings has no photo control (no upload API, REQ-010). A user who fills everything else is stuck at 86% (alumni) / 83% (students) with "Add a profile photo" linking to `/me`, where nothing lets them add one. Built as the spec says; options for the gate: (1) keep as is, (2) drop photo from the counted fields, (3) count it but never pick it as the next step and hide the card when only the photo is missing.
+- Renamed the card file to `ProfileCompletenessCard.tsx` (+ css, test): `ProfileCompleteness.tsx` beside `profileCompleteness.ts` resolve to one file on macOS (CAND-008).
+- Added `HomeSection.tsx` (section card, loading status, error+Retry, empty note) and `homeTestKit.tsx` (test-only fake API routed by URL) inside `features/home`; neither was in the file list.
+- Mentors key `['alumni','mentors']` (under the alumni root, so admin writes refresh it). Latest posts key `['feed','latest']`, `refetchOnMount: 'always'`; the query-key tuples stay private (react-refresh rule, CAND-009).
+- Layout: phone one column (completeness, posts, mentors, suggestions); from 48rem posts beside a 20rem side column, same grid as the Feed. `--page-max` rule kept on `.home`.
+- Post preview: caption clamped to 3 lines, author link only with `author_alumni_id`, "Unknown member" without a joined name, null caption shows nothing (BUG-001).
+- Copy: "department or field" existed only in the old Home card and its test; both are gone, so no "year, department or university" sentence remains.
+- Docs: root CLAUDE.md Home and Account settings bullets, `app/README.md`, `packages/frontend/README.md` (Feed and Account settings entry points), `features/README.md` home line, new `features/home/README.md`.
+- Not done (TASK-008): `people/` in `features/README.md` and the CLAUDE.md feature list; screenshots.
+- Checks: frontend typecheck, lint, format:check, tokens:check, `npm test` (112 files, 1626 tests) and build all pass.
 
 ## Related
 

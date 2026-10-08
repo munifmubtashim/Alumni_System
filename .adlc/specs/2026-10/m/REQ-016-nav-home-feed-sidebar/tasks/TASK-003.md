@@ -4,7 +4,7 @@
 |---|---|
 | REQ | REQ-016 |
 | Tier | 0 |
-| Status | pending |
+| Status | complete |
 | Repo | alumni-system |
 | Depends on | none |
 | Blocks | 007 |
@@ -30,14 +30,22 @@ Header nav is Home, Directory, Feed (+Admin); phone tabs are Home, Directory, Fe
 
 ## Acceptance
 
-- [ ] Header: Home, Directory, Feed, Admin(admin only), nothing else
-- [ ] Tabs: icon + label each; Profile href correct for alumni and for a user without a profile (-> /me)
-- [ ] Home current only at `/`
-- [ ] Tests updated; READMEs no longer say Account tab
+- [x] Header: Home, Directory, Feed, Admin(admin only), nothing else
+- [x] Tabs: icon + label each; Profile href correct for alumni and for a user without a profile (-> /me)
+- [x] Home current only at `/`
+- [x] Tests updated; READMEs no longer say Account tab
 
 ## Notes
 
 Spec: requirement.md in this folder. Conventions: tokens only, no hex; TanStack Query for server data; layers route -> controller -> Manager -> Query. Rebuild `packages/backend/src/businessLogic` (`tsc`) before running the API (CLAUDE.md). Draft the commit message into commits-draft.md.
+
+Implementation (2026-10-08):
+- `NavItem` gained `end?: true` (Home) and `own?: true` (Profile). An `own` item's `to` is its fallback (`/me`); `navItemPath(item, alumniId)` returns `/alumni/<id>` when `alumni_id` is set. MainNav and BottomTabs both call it with `useCurrentUser().data?.alumni_id`, and key links by label (an `own` item's href changes once `['me']` loads).
+- While `['me']` is loading, the Profile tab briefly points at `/me`, then switches. Accepted: no extra loading state for one tab.
+- For an alumni user on `/me`, no tab is current (Profile points at their public page). Tests cover this.
+- `HomeIcon` is not in the design bundle (S1 has no Home tab); it's a house drawn in the same line style.
+- `features/me/README.md` didn't mention the tab, so it's unchanged. "the Home card" mentions of /me in the READMEs and CLAUDE.md were left alone: TASK-007 removes that card and must update those lines.
+- The brand link in `AppShell.tsx` still uses a literal `"/"` (out of scope; could use HOME_PATH).
 
 ## Related
 
