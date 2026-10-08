@@ -1,0 +1,35 @@
+/* Empty and error states inside the table card. S6 draws none; they follow
+   the directory's (S2-NoResults) type: heading-sm, body-sm text in
+   ink-secondary, a 22.5rem text column so it scales with zoom. */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  color: var(--ink-primary);
+  font: var(--text-heading-sm);
+  overflow-wrap: anywhere;
+}
+
+.text {
+  max-inline-size: 22.5rem;
+  margin: 0;
+  color: var(--ink-secondary);
+  font: var(--text-body-sm);
+  overflow-wrap: anywhere;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}

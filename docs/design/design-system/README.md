@@ -33,6 +33,8 @@ Two themes, one accent. Light is warm off-white and charcoal ink; dark is warm c
 | `success-strong` | `#4f6947` | `#93b188` | Text and dot on `success-soft` |
 | `warning` | `#a9813f` | `#d7ac6e` | Caution status |
 | `error` | `#a3503f` | `#d1796a` | Error / destructive |
+| `error-soft` | `#f6e1dd` | `#3d2622` | Brick tint behind a destructive icon (delete dialog); for icons, not text: `error` on it is 4.4:1 (needs 3:1) |
+| `scrim` | `#2b272459` | `#0e0c0b99` | Translucent backdrop behind a modal drawer or dialog (35% / 60% alpha) |
 
 Every text/surface pairing above meets 4.5:1 in both themes (checked at the sizes the type scale actually uses).
 

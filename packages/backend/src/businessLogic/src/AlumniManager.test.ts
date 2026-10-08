@@ -243,8 +243,19 @@ describe('AlumniManager.searchAlumni (GET /api/alumni)', () => {
     );
   });
 
+  it('passes sort and order through in the filters', async () => {
+    searchAlumni.mockResolvedValue({ items: [], total: 0 });
+    await manager.searchAlumni({ sort: 'graduationYear', order: 'desc' });
+    expect(searchAlumni).toHaveBeenCalledWith(
+      { sort: 'graduationYear', order: 'desc' },
+      { limit: 20, offset: 0 },
+    );
+  });
+
   it.each([
     ['pageSize over 100', { pageSize: '101' }],
+    ['unknown sort', { sort: 'email' }],
+    ['unknown order', { order: 'up' }],
     ['page not a number', { page: 'abc' }],
     ['q repeated', { q: ['a', 'b'] }],
   ])('%s → 400 without calling the query', async (_label, query) => {

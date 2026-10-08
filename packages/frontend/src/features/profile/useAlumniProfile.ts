@@ -1,4 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query';
+import { ALUMNI_QUERY_ROOT } from '@/config/queryKeys';
 import { getAlumniProfile } from '@/services/alumniApi';
 
 /**
@@ -10,7 +11,7 @@ import { getAlumniProfile } from '@/services/alumniApi';
  */
 export function useAlumniProfile(id: string | undefined) {
   return useQuery({
-    queryKey: ['alumni', 'profile', id],
+    queryKey: [ALUMNI_QUERY_ROOT, 'profile', id],
     queryFn: id === undefined || id === '' ? skipToken : () => getAlumniProfile(id),
   });
 }

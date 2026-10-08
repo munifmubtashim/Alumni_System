@@ -28,7 +28,12 @@ export interface Alumni {
 // One row of GET /api/alumni: the profile plus the joined public user columns (never email).
 export type AlumniListItem = Omit<Alumni, "email">;
 
-// GET /api/alumni?q=&department=&university=&graduationYear=&page=&pageSize=
+// Optional server-side sort on GET /api/alumni. No sort = name, then id (the directory's order).
+// order without sort applies to name; graduationYear puts alumni with no year last in both directions.
+export type AlumniSort = "name" | "graduationYear";
+export type SortOrder = "asc" | "desc";
+
+// GET /api/alumni?q=&department=&university=&graduationYear=&sort=&order=&page=&pageSize=
 // page defaults to 1 (max 10000), pageSize to 20 (max 100). total counts every match, not just this page.
 export interface AlumniListResponse {
   items: AlumniListItem[];

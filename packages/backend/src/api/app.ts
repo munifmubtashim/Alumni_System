@@ -7,6 +7,7 @@ import commentRoutes from './routes/CommentRoutes';
 import userRoutes from './routes/UserRoutes';
 import authRoutes from "./routes/AuthRoutes"
 import meRoutes from "./routes/MeRoutes";
+import adminRoutes from "./routes/AdminRoutes";
 
 dotenv.config({ path: '../../.env' });
 
@@ -25,5 +26,6 @@ app.use('/api/alumni', alumniRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/me', meRoutes);
+app.use('/api/admin', adminRoutes);
 
 export default app;

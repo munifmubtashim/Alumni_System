@@ -13,7 +13,8 @@ interface QuickLink {
 
 /**
  * The cards under the greeting (docs/design/screens/app/S1-*). Only pages
- * that exist are listed; add the admin card when that page is built.
+ * every signed-in user may open are listed; admins reach /admin from the nav,
+ * the tab bar and the avatar menu (REQ-015).
  */
 const QUICK_LINKS: readonly QuickLink[] = [
   {

@@ -1,7 +1,8 @@
 import type { Post } from '@alumni/shared';
 import { Card } from '@/components/ui/Card';
 import { relativeTime } from '@/config/relativeTime';
-import { commentCountText, present } from './format';
+import { present } from '@/config/text';
+import { commentCountText } from './format';
 import styles from './RecentPosts.module.css';
 
 export interface PostCardProps {

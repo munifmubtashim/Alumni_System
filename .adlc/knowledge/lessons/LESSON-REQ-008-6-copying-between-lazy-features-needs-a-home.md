@@ -18,3 +18,8 @@ Because lazy features may not import each other, each copied the same small thin
 - `features/profile/format.ts`, `features/directory/AlumniCard.tsx`, `ProfilePage.test.tsx`, `RecentPosts.module.css` — [[REQ-008]] (CAND-020, CAND-021, CAND-022, CAND-025; review findings QUAL-001..003, REFL-003)
 
 - Related: [[knowledge/gotchas#^g26|G26]] · [[architecture/adr-08-route-code-splitting-and-url-list-state|ADR-08]]
+
+
+## Saw it again
+
+- [[REQ-015]]: `serverMessage` reached five copies and `present` three before review moved them to `services/httpErrors.ts` and `config/text.ts`; cache-key roots went to `config/queryKeys.ts`. `focusIsLost`, the toast hook and `useDebouncedCallback` are still copied (follow-up: a shared hooks folder).

@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import { serverMessage } from '@/services/httpErrors';
 import { UNEXPECTED_MESSAGE, UNREACHABLE_MESSAGE } from '@/features/auth';
 import type { MeErrors, MeField } from './validation';
 
@@ -39,12 +40,6 @@ const FIELD_PREFIXES: readonly (readonly [string, MeField])[] = [
   ['Name', 'name'],
   ['Bio', 'bio'],
 ];
-
-function serverMessage(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null || !('message' in data)) return undefined;
-  const { message } = data;
-  return typeof message === 'string' && message.trim() !== '' ? message : undefined;
-}
 
 function fieldFor(message: string): MeField | undefined {
   return FIELD_PREFIXES.find(([prefix]) => message.startsWith(`${prefix} `))?.[1];

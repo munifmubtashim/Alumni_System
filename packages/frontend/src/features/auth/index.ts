@@ -1,4 +1,5 @@
-export { GuestOnly, RequireAuth } from './guards';
+export { ForbiddenPage, GuestOnly, RequireAdmin, RequireAuth } from './guards';
+export { useIsAdmin } from './useIsAdmin';
 export { resolveFrom } from './redirect';
 export { SessionBridge } from './SessionBridge';
 export { useCurrentUser, CURRENT_USER_QUERY_KEY } from './useCurrentUser';

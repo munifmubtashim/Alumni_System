@@ -2,10 +2,13 @@ import type { ComponentPropsWithRef } from 'react';
 import { cx } from '../cx';
 import styles from './Button.module.css';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
-  /** Emphasis level. Use at most one primary button per view. */
+  /**
+   * Emphasis level. Use at most one primary button per view. `danger` is the
+   * confirm button of a destructive action (e.g. in a ConfirmDialog).
+   */
   variant?: ButtonVariant;
   /**
    * Busy state, e.g. while a form submits. Disables the button, sets

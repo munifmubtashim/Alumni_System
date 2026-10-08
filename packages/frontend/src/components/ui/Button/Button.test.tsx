@@ -13,10 +13,13 @@ describe('Button', () => {
     expect(button).toHaveAttribute('type', 'button');
   });
 
-  it.each<ButtonVariant>(['primary', 'secondary', 'ghost'])('sets data-variant="%s"', (variant) => {
-    render(<Button variant={variant}>Go</Button>);
-    expect(screen.getByRole('button', { name: 'Go' })).toHaveAttribute('data-variant', variant);
-  });
+  it.each<ButtonVariant>(['primary', 'secondary', 'ghost', 'danger'])(
+    'sets data-variant="%s"',
+    (variant) => {
+      render(<Button variant={variant}>Go</Button>);
+      expect(screen.getByRole('button', { name: 'Go' })).toHaveAttribute('data-variant', variant);
+    },
+  );
 
   it('keeps an explicit type', () => {
     render(<Button type="submit">Send</Button>);

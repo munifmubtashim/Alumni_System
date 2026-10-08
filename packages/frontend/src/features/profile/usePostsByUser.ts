@@ -1,4 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query';
+import { POSTS_QUERY_ROOT } from '@/config/queryKeys';
 import { getPostsByUser } from '@/services/alumniApi';
 
 /**
@@ -10,7 +11,7 @@ import { getPostsByUser } from '@/services/alumniApi';
  */
 export function usePostsByUser(userId: number | undefined) {
   return useQuery({
-    queryKey: ['posts', 'user', userId],
+    queryKey: [POSTS_QUERY_ROOT, 'user', userId],
     queryFn: userId === undefined ? skipToken : () => getPostsByUser(userId),
   });
 }

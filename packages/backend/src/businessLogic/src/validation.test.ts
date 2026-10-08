@@ -42,7 +42,7 @@ describe('parseAlumniSearch (GET /api/alumni query)', () => {
   });
 
   it('ignores unknown keys, including field', () => {
-    expect(parseAlumniSearch({ field: 'password', sort: 'name', q: 'x' })).toEqual({
+    expect(parseAlumniSearch({ field: 'password', orderBy: 'u.email', q: 'x' })).toEqual({
       filters: { q: 'x' },
       page: 1,
       pageSize: DEFAULT_PAGE_SIZE,
@@ -120,8 +120,47 @@ describe('parseAlumniSearch (GET /api/alumni query)', () => {
     });
   });
 
+  describe('sort and order', () => {
+    it('no sort and no order adds neither to the filters (the default order)', () => {
+      expect(parseAlumniSearch({ q: 'x' }).filters).toEqual({ q: 'x' });
+    });
+
+    it.each([
+      [{ sort: 'name' }, { sort: 'name', order: 'asc' }],
+      [{ sort: 'name', order: 'desc' }, { sort: 'name', order: 'desc' }],
+      [{ sort: 'graduationYear' }, { sort: 'graduationYear', order: 'asc' }],
+      [{ sort: 'graduationYear', order: 'asc' }, { sort: 'graduationYear', order: 'asc' }],
+      [{ sort: ' graduationYear ', order: ' desc ' }, { sort: 'graduationYear', order: 'desc' }],
+      [{ order: 'desc' }, { sort: 'name', order: 'desc' }],
+    ])('accepts %j', (query, expected) => {
+      expect(parseAlumniSearch(query).filters).toEqual(expected);
+    });
+
+    it.each(['', '   '])('treats an empty sort and order (%j) as absent', (blank) => {
+      expect(parseAlumniSearch({ sort: blank, order: blank }).filters).toEqual({});
+      expect(parseAlumniSearch({ sort: blank, order: 'desc' }).filters).toEqual({ sort: 'name', order: 'desc' });
+      expect(parseAlumniSearch({ sort: 'graduationYear', order: blank }).filters).toEqual({
+        sort: 'graduationYear',
+        order: 'asc',
+      });
+    });
+
+    it.each(['email', 'Name', 'graduation_year', 'u.name', 'name; DROP TABLE users', 'name\u0000'])(
+      'rejects sort %j',
+      async (sort) => {
+        const error = await expectAppError(() => parseAlumniSearch({ sort }), 400);
+        expect(error.message).toBe('Invalid sort');
+      },
+    );
+
+    it.each(['ASC', 'up', 'descending', '1'])('rejects order %j', async (order) => {
+      const error = await expectAppError(() => parseAlumniSearch({ sort: 'name', order }), 400);
+      expect(error.message).toBe('Invalid order');
+    });
+  });
+
   describe('repeated or nested parameters', () => {
-    it.each(['q', 'department', 'university', 'graduationYear', 'page', 'pageSize'])(
+    it.each(['q', 'department', 'university', 'graduationYear', 'sort', 'order', 'page', 'pageSize'])(
       'rejects an array or object for %s',
       async (param) => {
         const asArray = await expectAppError(() => parseAlumniSearch({ [param]: ['a', 'b'] }), 400);

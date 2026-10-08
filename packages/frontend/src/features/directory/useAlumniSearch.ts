@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { ALUMNI_QUERY_ROOT } from '@/config/queryKeys';
 import { searchAlumni } from '@/services/alumniApi';
 import { DIRECTORY_PAGE_SIZE } from './constants';
 import type { DirectoryParams } from './params';
@@ -12,7 +13,7 @@ import type { DirectoryParams } from './params';
  */
 export function useAlumniSearch(params: DirectoryParams) {
   return useQuery({
-    queryKey: ['alumni', 'search', params],
+    queryKey: [ALUMNI_QUERY_ROOT, 'search', params],
     queryFn: () => searchAlumni({ ...params, pageSize: DIRECTORY_PAGE_SIZE }),
   });
 }

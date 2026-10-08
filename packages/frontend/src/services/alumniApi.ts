@@ -1,4 +1,4 @@
-import type { Alumni, AlumniListResponse, Post } from '@alumni/shared';
+import type { Alumni, AlumniListResponse, AlumniSort, Post, SortOrder } from '@alumni/shared';
 import { httpClient } from './httpClient';
 
 // Search params for GET /api/alumni. The page size is the caller's choice; its
@@ -8,6 +8,9 @@ export interface AlumniSearchParams {
   department?: string;
   university?: string;
   graduationYear?: number;
+  /** Server-side sort; left out, the API sorts by name (the directory's order). */
+  sort?: AlumniSort;
+  order?: SortOrder;
   page: number;
   pageSize: number;
 }
@@ -16,7 +19,8 @@ type QueryParams = Record<string, string | number>;
 
 // Blank text and missing filters are left out of the query string, so the URL
 // only carries what the user actually searched for (the API treats them as
-// absent anyway). page and pageSize are always sent.
+// absent anyway). sort and order go only when set. page and pageSize are
+// always sent.
 function toQueryParams(params: AlumniSearchParams): QueryParams {
   const out: QueryParams = {};
   const text = { q: params.q, department: params.department, university: params.university };
@@ -24,6 +28,8 @@ function toQueryParams(params: AlumniSearchParams): QueryParams {
     if (value !== undefined && value.trim() !== '') out[key] = value;
   }
   if (params.graduationYear !== undefined) out.graduationYear = params.graduationYear;
+  if (params.sort !== undefined) out.sort = params.sort;
+  if (params.order !== undefined) out.order = params.order;
   out.page = params.page;
   out.pageSize = params.pageSize;
   return out;

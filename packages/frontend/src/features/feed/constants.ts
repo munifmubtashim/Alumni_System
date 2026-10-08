@@ -1,3 +1,5 @@
+import { FEED_QUERY_ROOT } from '@/config/queryKeys';
+
 /** Posts per `GET /api/posts` page. The API clamps `limit` to 1..100. */
 export const FEED_PAGE_SIZE = 20;
 
@@ -16,14 +18,15 @@ export const COMMENT_MAX_LENGTH = 2000;
 export const POST_MAX_LENGTH = 2000;
 
 /**
- * Query keys (ADR-09). The two share no prefix beyond `feed`, so an edit or
+ * Query keys (ADR-09), under the shared `FEED_QUERY_ROOT` (`feed`), which the
+ * admin page invalidates after a write. The two share no prefix beyond it, so an edit or
  * invalidate of the post list never touches a thread, and every cache edit
  * uses the exact key.
  */
-export const POSTS_QUERY_KEY = ['feed', 'posts'] as const;
+export const POSTS_QUERY_KEY = [FEED_QUERY_ROOT, 'posts'] as const;
 
 export function commentsQueryKey(postId: number) {
-  return ['feed', 'comments', postId] as const;
+  return [FEED_QUERY_ROOT, 'comments', postId] as const;
 }
 
 /**

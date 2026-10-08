@@ -16,3 +16,8 @@ Adding the fifth lazy page, the six-place checklist of [[knowledge/lessons/LESSO
 ## Saw it in
 
 - Reflector REFL-001 and REFL-002 on REQ-014: no `about` fixtures, and `features/README.md`, `frontend/README.md`, `CLAUDE.md` and `conventions-frontend.md` lists stopped at `me`
+
+
+## Resolved in REQ-015
+
+The derived check now exists: `scripts/enforcement.test.ts` compares the effective ESLint ban list (`eslint.calculateConfigForFile`) with the lazy `import()` calls in `router.tsx`, and `app/lazyRoutes.test.ts` compares `LAZY_FEATURES` with the same router list. A lazy page missing from either fails a test. The doc lists are still manual.

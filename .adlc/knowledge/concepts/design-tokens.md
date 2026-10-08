@@ -16,4 +16,6 @@
 
 - SVG colours follow the same rule: the brand mark, check marks and icons take `fill`/`stroke` from CSS-module classes on tokens (`fill: var(--accent)`), never hex attributes; icon sizes stay literal layout values ([[REQ-004]]). `public/favicon.svg` is the one hex exception, because the browser renders it outside the page.
 
+- [[REQ-015]] added `error-soft` (danger tint behind the delete icon; `error` on it is pinned at 3:1) and `scrim` (modal backdrop, 8-digit hex with alpha, never in the contrast pairs — [[knowledge/gotchas#^g45|G45]]). S6's shadows were dropped (Stylelint bans `box-shadow`); drawers and dialogs use a hairline border.
+
 Introduced in [[REQ-001]]; see [[architecture/adr-01-ui-layer-headless-css-modules|ADR-01]].

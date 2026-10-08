@@ -60,8 +60,58 @@
   text-overflow: ellipsis;
 }
 
+/* Hide the browser's own clear control (a blue x in Chrome and Safari): it is
+   off-palette and ignores tokens. The .clear button below replaces it.
+   Firefox draws none. */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* Our clear button: 40px square like PasswordInput's toggle, sized in rem so
+   it scales with zoom. The negative block margin lets it overhang the
+   field's padding, so the box stays ~40px tall whether it shows or not; the
+   end margin pulls it into the end padding. */
+.clear {
+  appearance: none;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  margin-block: calc((var(--text-body-sm-line) - 2.5rem) / 2);
+  margin-inline: calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+
+  /* ink-secondary, not ink-muted (as in PasswordInput): the icon is the
+     control's only visible cue, and ink-muted on the sunken fill is under
+     3:1 in the light theme. */
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-standard);
+}
+
+/* :where() keeps the hover at single-class weight (G04). */
+.clear:where(:hover) {
+  color: var(--ink-primary);
+}
+
+.clearIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .field {
+  .field,
+  .clear {
     transition: none;
   }
 }

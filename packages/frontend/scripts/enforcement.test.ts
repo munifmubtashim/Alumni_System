@@ -1,6 +1,7 @@
 // @vitest-environment node
 // Proves the tokens-only and import-boundary lint rules actually fire.
 // Fixtures are linted in memory; nothing is written under src/.
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ESLint, type Linter } from 'eslint';
 import stylelint from 'stylelint';
@@ -250,10 +251,19 @@ describe('ESLint layer boundaries: package sub-paths and tests', () => {
   });
 });
 
-// ADR-08: each lazy feature (directory, profile, feed, me, about) is reached only through the
+/** The features router.tsx loads with a lazy import('@/features/<name>/…'). */
+function lazyFeaturesInRouter(): string[] {
+  const router = readFileSync(path.join(frontendRoot, 'src/app/router.tsx'), 'utf8');
+  const names = [...router.matchAll(/import\('@\/features\/([\w-]+)\//g)].map((m) => m[1] ?? '');
+  return [...new Set(names)];
+}
+
+const ROUTED_LAZY_FEATURES = lazyFeaturesInRouter();
+
+// ADR-08: each lazy feature (directory, profile, feed, me, about, admin) is reached only through the
 // router's lazy import(). This ban is the typescript-eslint copy of the rule,
 // so it has its own rule id.
-describe('ESLint lazy-feature boundary (features/directory, profile, feed, me, about)', () => {
+describe('ESLint lazy-feature boundary (features/directory, profile, feed, me, about, admin)', () => {
   const LAZY_RULE = '@typescript-eslint/no-restricted-imports';
 
   it.each([
@@ -292,6 +302,12 @@ describe('ESLint lazy-feature boundary (features/directory, profile, feed, me, a
     ['src/features/about', "import { x } from '../feed/feedFormat';"],
     ['src/features/about/__fixture__', "import { x } from '../../me';"],
     ['src/features/feed', "import { x } from '@/features/about/AboutPage';"],
+    ['src/app/__fixture__', "import { AdminPage } from '@/features/admin/AdminPage';"],
+    ['src/app/__fixture__', "import { x } from '../../features/admin';"],
+    ['src/features/home', "import { x } from '../admin/params';"],
+    ['src/features/admin', "import { x } from '../directory/params';"],
+    ['src/features/admin/__fixture__', "import { x } from '../../me';"],
+    ['src/features/directory', "import { x } from '@/features/admin/params';"],
   ])('rejects a static import in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', dir);
     expect(ruleIds(messages)).toContain(LAZY_RULE);
@@ -318,9 +334,40 @@ describe('ESLint lazy-feature boundary (features/directory, profile, feed, me, a
     ['src/app/__fixture__', "export const page = () => import('@/features/me/MePage');"],
     ['src/features/about', "import { x } from './AboutPage';"],
     ['src/app/__fixture__', "export const page = () => import('@/features/about/AboutPage');"],
+    ['src/features/admin', "import { x } from './params';"],
+    ['src/features/admin', "import { useIsAdmin } from '@/features/auth';"],
+    ['src/app/__fixture__', "export const page = () => import('@/features/admin/AdminPage');"],
   ])('allows in %s: %s', async (dir, imports) => {
     const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Ok.ts', dir);
     expect(ruleIds(messages)).not.toContain(LAZY_RULE);
+  });
+
+  // L-REQ-014-1: the router is the one list of lazy features. The ban list in
+  // eslint.config.js must name exactly the features router.tsx lazy-loads, and
+  // the cases below are generated from the router, so a lazy route added
+  // without its ban fails here instead of relying on a hand-edited case.
+  it('bans exactly the features the router lazy-loads', async () => {
+    const config = (await eslint.calculateConfigForFile(
+      path.join(frontendRoot, 'src/app/Ok.ts'),
+    )) as { rules: Record<string, [unknown, { patterns: { group: string[] }[] }]> };
+    const rule = config.rules[LAZY_RULE];
+    const banned = (rule?.[1].patterns ?? []).map((pattern) =>
+      (pattern.group[0] ?? '').replace('@/features/', ''),
+    );
+
+    expect(ROUTED_LAZY_FEATURES.length).toBeGreaterThan(0);
+    expect([...banned].sort()).toEqual([...ROUTED_LAZY_FEATURES].sort());
+  });
+
+  it.each(ROUTED_LAZY_FEATURES)('rejects a static import of routed features/%s', async (name) => {
+    const imports = `import { x } from '@/features/${name}/Page';`;
+    const messages = await eslintMessages(`${imports}\nexport {};\n`, 'Bad.ts', 'src/app');
+    expect(ruleIds(messages)).toContain(LAZY_RULE);
+    for (const other of ROUTED_LAZY_FEATURES.filter((feature) => feature !== name)) {
+      const sibling = `import { x } from '../${name}/Page';\nexport {};\n`;
+      const fromOther = await eslintMessages(sibling, 'Bad.ts', `src/features/${other}`);
+      expect(ruleIds(fromOther)).toContain(LAZY_RULE);
+    }
   });
 
   it('allows a test file to import the feature statically', async () => {

@@ -1,22 +1,22 @@
 # @alumni/frontend
 
-Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed and Account settings (edit your own profile), on top of the design system.
+Alma, the alumni network web app: React 19 + Vite 8 + TypeScript 6. It has a shell (header with the Alma logo and name, log-in/sign-up links or a user menu, and a theme toggle), log-in and sign-up pages (a brand panel beside the form on wide screens), a signed-in Home page, the alumni Directory (search, filters, pages), an alumni Profile page, the post Feed, Account settings (edit your own profile) and, for admins, the Admin page (stats and alumni management), on top of the design system.
 
 ## Stack
 
-| Concern       | Choice                                                                    | Why / note                                                                            |
-| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| UI runtime    | React 19.3, React DOM 19.3                                                | React Router 8 needs ≥ 19.2.7                                                         |
-| Build         | Vite 8, `@vitejs/plugin-react` 6                                          | Dev server proxies `/api` to the API                                                  |
-| Types         | TypeScript **6.0** (not 7)                                                | `typescript-eslint` 8.71 supports TS < 6.1; TS 7 would break type-aware lint          |
-| Routing       | React Router 8 (`react-router`, data router)                              |                                                                                       |
-| State         | Jotai 3 (client-only state), TanStack Query 5 (server state)              | ADR-02                                                                                |
-| HTTP          | axios, one instance (`src/services/httpClient.ts`)                        | Attaches the auth header in one interceptor                                           |
-| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu`, `SegmentedControl` (so `ThemeToggle`), `Popover` and `Switch` |
-| Styling       | CSS Modules + design tokens (CSS custom properties)                       | No component library; no raw colors or shadows                                        |
-| Font          | Inter, self-hosted via `@fontsource-variable/inter`                       | No third-party font request                                                           |
-| Lint / format | ESLint **9** (not 10), Stylelint 17, Prettier 3                           | `eslint-plugin-jsx-a11y` only supports ESLint ≤ 9                                     |
-| Tests         | Vitest 5, React Testing Library 16, user-event 14, jest-dom, **jsdom 29** | jsdom 30 needs Node ≥ 24.15; jsdom is pinned to 29 so Node 24.14 works                |
+| Concern       | Choice                                                                    | Why / note                                                                                                                              |
+| ------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| UI runtime    | React 19.3, React DOM 19.3                                                | React Router 8 needs ≥ 19.2.7                                                                                                           |
+| Build         | Vite 8, `@vitejs/plugin-react` 6                                          | Dev server proxies `/api` to the API                                                                                                    |
+| Types         | TypeScript **6.0** (not 7)                                                | `typescript-eslint` 8.71 supports TS < 6.1; TS 7 would break type-aware lint                                                            |
+| Routing       | React Router 8 (`react-router`, data router)                              |                                                                                                                                         |
+| State         | Jotai 3 (client-only state), TanStack Query 5 (server state)              | ADR-02                                                                                                                                  |
+| HTTP          | axios, one instance (`src/services/httpClient.ts`)                        | Attaches the auth header in one interceptor                                                                                             |
+| UI behavior   | Base UI (`@base-ui/react`), headless                                      | ADR-01. Used by `Menu`, `SegmentedControl` (so `ThemeToggle`), `Popover`, `Switch`, `Drawer` (Dialog) and `ConfirmDialog` (AlertDialog) |
+| Styling       | CSS Modules + design tokens (CSS custom properties)                       | No component library; no raw colors or shadows                                                                                          |
+| Font          | Inter, self-hosted via `@fontsource-variable/inter`                       | No third-party font request                                                                                                             |
+| Lint / format | ESLint **9** (not 10), Stylelint 17, Prettier 3                           | `eslint-plugin-jsx-a11y` only supports ESLint ≤ 9                                                                                       |
+| Tests         | Vitest 5, React Testing Library 16, user-event 14, jest-dom, **jsdom 29** | jsdom 30 needs Node ≥ 24.15; jsdom is pinned to 29 so Node 24.14 works                                                                  |
 
 The package is ESM (`"type": "module"` in `package.json`) so the `.js` lint configs load as modules. It needs Node 24 or later (`engines.node`): `npm run tokens` runs a `.ts` file directly with Node's built-in type stripping (no `tsx`/`ts-node`).
 
@@ -59,16 +59,18 @@ packages/frontend/
                       MainNav, BottomTabs, HydrateFallback, RouteError
     config/           app-wide constants and small pure contracts: brand.ts (BRAND_NAME, SUPPORT_EMAIL,
                       supportMailto), directoryReturn.ts (DIRECTORY_PATH, profilePath, the directory-to-profile
-                      router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), aboutPath.ts (ABOUT_PATH), relativeTime.ts
+                      router-state handover), feedPath.ts (FEED_PATH), mePath.ts (ME_PATH), aboutPath.ts (ABOUT_PATH),
+                      adminPath.ts (ADMIN_PATH), relativeTime.ts
     features/         one folder per domain: theme/, auth/ (session, guards, pages), home/,
-                      directory/, profile/, feed/, me/ and about/ (lazy-loaded directory, alumni profile,
-                      post feed, Account settings and public About pages)
+                      directory/, profile/, feed/, me/, about/ and admin/ (lazy-loaded directory, alumni
+                      profile, post feed, Account settings, public About and admin-only Admin pages)
     components/ui/    design-system primitives: Button, ButtonLink, Input, PasswordInput, Logo,
                       Textarea, Card, Tag, Alert, Menu, SegmentedControl, Switch, ThemeToggle,
-                      Avatar, Chip, Skeleton, SearchField, Popover, Toast
+                      Avatar, Chip, Skeleton, SearchField, Popover, Drawer, ConfirmDialog, Toast,
+                      VisuallyHidden
     store/            Jotai atoms for client-only state (themeAtom, sessionNoticeAtom)
     services/         httpClient (axios), authToken (token in localStorage), authApi, alumniApi,
-                      postsApi, httpErrors
+                      postsApi, adminApi, httpErrors
     styles/           tokens.css (generated), global.css, contrast test
     test/             Vitest setup and harness smoke test
 ```
@@ -94,7 +96,7 @@ Each folder's README says what belongs there and what may import it:
 
 ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log out, and get sent to `/login` with a notice when the session ends.
 
-- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home), `/directory`, `/alumni/:id`, `/feed` and `/me`. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
+- **Routes** (`app/router.tsx`): `GuestOnly` wraps `/login` and `/register`; `RequireAuth` wraps `/` (Home), `/directory`, `/alumni/:id`, `/feed`, `/me` and `/admin`, which also sits inside `RequireAdmin`. `/about` is public. An unknown path shows the empty shell. `RootLayout` holds two shells: `AuthShell` (no header, theme toggle top-right) for `/login` and `/register`, `AppShell` (header) for everything else.
 - **Endpoints:** `services/authApi.ts` has `login`, `register`, `getMe` (`GET /me`), `updateMyProfile` (`PUT /me`, a full replace) and `changePassword` (`PUT /me/password`, 204). They only return data.
 - **Token store:** `services/authToken.ts` keeps the token in `localStorage['token']`. `subscribe(listener)` fires on `setToken`/`clearToken` and on another tab's change. `isTokenExpired(token)` decodes the JWT `exp` (10 s leeway; a malformed token counts as expired). `getLiveToken()` returns the token only if it is present and not expired, with no side effects. `features/auth` reads it with `useLiveToken()` / `useHasSession()` (`useSyncExternalStore`).
 - **401s:** `httpClient` has one response interceptor. On a 401 from a request that carried a token (not `/auth/login` or `/auth/register`), it calls the handler registered with `setUnauthorizedHandler(fn)`, passing that request's token, then re-throws. `services/` never imports app or feature code.
@@ -104,7 +106,7 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
   3. clears the whole query cache whenever the token changes (login, logout, another tab), so no previous user's data is shown.
 - **Current user:** `useCurrentUser()` is the `['me']` query, enabled only with a live token. There is no atom copy.
 - **Login and sign-up:** `useLogin` / `useRegister` only store the token and clear the notice. They do not fetch `/me` or navigate; `GuestOnly` sees the token and sends the user on.
-- **Guards:** `RequireAuth` sends a guest to `/login` (saving the location as `state.from`), shows "Loading…" while `['me']` loads, and on a non-401 error shows an Alert with Retry and Log out. `GuestOnly` sends a signed-in user to `resolveFrom(location.state) ?? '/'`.
+- **Guards:** `RequireAuth` sends a guest to `/login` (saving the location as `state.from`), shows "Loading…" while `['me']` loads, and on a non-401 error shows an Alert with Retry and Log out. `GuestOnly` sends a signed-in user to `resolveFrom(location.state) ?? '/'`. `RequireAdmin` (REQ-015, nested inside `RequireAuth`) shows "Loading…" while `['me']` loads, the same Retry / Log out error when it fails with no cached data, the child route for an admin, and `ForbiddenPage` for anyone else ("You don't have access to this page" with a link home, inside the shell's `<main>`), so the admin chunk never loads and no admin request is sent. A 403 is not a 401: the session stays. `useIsAdmin()` is what the nav and avatar menu read; the API stays the judge.
 - **Redirect-back** uses only `location.state.from`, never a URL parameter, so a crafted link can't redirect off-site. `resolveFrom` accepts only an app path (one leading `/`, not `/login` or `/register`).
 - **Logout:** `useLogout()` clears the token first, then goes to `/login`; the bridge clears the cache. The header menu and the RequireAuth error state both offer it.
 - **Session notice:** `LoginPage` shows "Your session has expired, please log in again" and clears it when it unmounts.
@@ -114,12 +116,12 @@ ADR-03. Log in, sign up (student or alumni), stay signed in across reloads, log 
 
 REQ-006, ADR-08. `/directory` (signed in; the header's "Directory" link) lists alumni from `GET /api/alumni`, 12 per page.
 
-- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`) the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`) Account settings at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`) and the public About page at `/about` (`ABOUT_ROUTE`, `import('@/features/about/AboutPage')`) with the route's `lazy`, so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
+- **Lazy routes:** `app/router.tsx` loads the directory (`import('@/features/directory/DirectoryPage')`), the profile at `/alumni/:id` (`import('@/features/profile/ProfilePage')`), the feed at `/feed` (`FEED_ROUTE`, `import('@/features/feed/FeedPage')`), Account settings at `/me` (`ME_ROUTE`, `import('@/features/me/MePage')`), the public About page at `/about` (`ABOUT_ROUTE`, `import('@/features/about/AboutPage')`) and the admin-only Admin page at `/admin` (`ADMIN_ROUTE`, `import('@/features/admin/AdminPage')`) with the route's `lazy` (six lazy pages), so each is a separate chunk in `dist/assets`. Nothing else may import any of them statically, not even another lazy feature: ESLint rejects it (tests and `import type` excepted), and `src/app/lazyRoutes.test.ts` reads every non-test file in `src/` and fails if one does. Both checks run once per feature and leave out only that feature's own folder. New large pages follow the same pattern (add them to `LAZY_FEATURES` in `eslint.config.js` and in the test); Home stays eager.
 - **`HydrateFallback`** ("Loading…" in `<main>`) is a static property of each lazy route object itself. The router stops rendering at the nearest route with a fallback, so on the root it would hide the shell. A click from another page shows no fallback; a chunk that fails to load shows `RouteError` inside the shell.
 - **URL is the state:** search text, department, university, graduation year and page live in the query string, so a reload, a shared link and back/forward all work. `features/directory/params.ts` parses it (pure, tested) and ignores any value the API would reject. Filters and page changes push a history entry; typed search replaces the URL after 300 ms, and an outside change (Back, Clear all) cancels a pending write.
 - **States:** skeleton cards while loading, an error with Retry, "no matches" with Clear filters, "No alumni yet", and a page past the end with a way back to page 1.
 - **Mentor tag:** a card closes with a "Mentor" tag when the alumnus has `mentorship_available` on (REQ-011). The count line ("Showing 1–12 of 40 alumni", "40 alumni" on phones) is a polite live region.
-- **Header:** after S1. `MainNav` (desktop) shows the Directory and Feed links (`HEADER_NAV_ITEMS`) to signed-in users only, each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`, `TAB_NAV_ITEMS`) replaces it and adds an Account tab for `/me`. The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, Account settings, Log out) sit on the right. Unlike S1, `/me` is not in the header nav (REQ-012; see `src/app/README.md`).
+- **Header:** after S1. `MainNav` (desktop) shows the Directory and Feed links (`HEADER_NAV_ITEMS`) to signed-in users only, plus Admin for admins (REQ-015), each marked current on its path and below with an accent underline. On phones a sticky bottom tab bar (`BottomTabs`, `TAB_NAV_ITEMS`) replaces it and adds an Account tab for `/me`, then Admin for admins (four tabs, as S6 draws). The compact `ThemeToggle` and the avatar menu (name and email, View profile for alumni only, Account settings, Admin settings for admins only, Log out) sit on the right. Unlike S1, `/me` is not in the header nav (REQ-012; see `src/app/README.md`).
 
 ## Profile page
 
@@ -147,6 +149,16 @@ REQ-010, renamed from My Profile in REQ-012. `/me` (signed in; the avatar menu's
 - **Saving:** one Save sends `PUT /api/me` when a profile field changed, then `PUT /api/me/password` when a password was typed. A save bar shows while there are unsaved changes, a prompt asks before leaving with them, and a toast confirms a save. Not optimistic.
 - **Sections:** which ones show depends on the account (alumni, student, or no profile row). Alumni also get Headline, Location, Degree, Start year (at every width since REQ-013) and a Mentorship switch (REQ-011). Email is never shown or sent; photo upload is not built (no API for it).
 - More: `src/features/me/README.md`.
+
+## Admin page
+
+REQ-015. `/admin` (admins only; the header's "Admin" link, the Admin tab on phones and the avatar menu's "Admin settings") lets an admin see counts and manage alumni accounts, after the S6 designs. Anyone else who opens it gets the 403 page from `RequireAdmin`.
+
+- **Stats:** four cards (Total alumni, Students, Posts, Mentors available) from `GET /api/admin/stats`, numbers formatted as `1,842` whatever the browser locale.
+- **Alumni table:** from `GET /api/alumni` with the server-side `sort` (`name` | `graduationYear`) and `order` (`asc` | `desc`), 10 per page. Search text, sort and page live in the URL (ADR-08). From 48rem a table whose Name and Grad. year headers sort; below it, cards. Skeleton, error with Retry, no-match and empty states.
+- **Add / edit:** a right-side `Drawer` with the form (controlled state, ADR-04). Add creates an alumni account with a temporary password (`POST /api/admin/alumni`); edit changes six fields (`PUT /api/admin/alumni/:id`). Closing with unsaved input asks first. Not optimistic.
+- **Delete:** a `ConfirmDialog` ("Delete <name>?"), then `DELETE /api/admin/alumni/:id`, which removes the account with its posts and comments. Delete is hidden on the admin's own row, and the API refuses it (403).
+- More, including the deliberate differences from S6: `src/features/admin/README.md`.
 
 ## Forms
 
@@ -213,6 +225,12 @@ Three choices: Light, Dark, System, picked with the toggle in the header.
 ## Primitives added in REQ-006
 
 - `Avatar` (photo or initials), `Chip` (active filter with a remove button), `Skeleton` (loading placeholder), `SearchField` (search input with icon and hidden label), `Popover` (Base UI Popover with a pill trigger). Details in [components/ui](src/components/ui/README.md).
+
+## Primitives and tokens added in REQ-015
+
+- `Drawer` (Base UI Dialog: a modal panel on the right, full width on phones; controlled, never closes itself so the caller can ask before discarding input) and `ConfirmDialog` (Base UI AlertDialog: focus starts on Cancel, a backdrop click does nothing, `tone="danger"`). Details in [components/ui](src/components/ui/README.md).
+- `Button` `variant="danger"`: error fill, for the confirm of a destructive action.
+- Tokens `error-soft` (the tint behind the danger icon; `error` on it is in the contrast test) and `scrim` (the backdrop behind the drawer and dialog, with alpha).
 
 ## Testing
 

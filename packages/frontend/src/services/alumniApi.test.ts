@@ -96,6 +96,29 @@ describe('searchAlumni', () => {
     expect(Object.fromEntries(queryOf(sent()))).toEqual({ page: '1', pageSize: '50' });
   });
 
+  it('sends sort and order when set', async () => {
+    const sent = respondWith(reply);
+
+    await searchAlumni({ sort: 'graduationYear', order: 'desc', page: 1, pageSize: 10 });
+
+    expect(Object.fromEntries(queryOf(sent()))).toEqual({
+      sort: 'graduationYear',
+      order: 'desc',
+      page: '1',
+      pageSize: '10',
+    });
+  });
+
+  it('sends either half of the sort on its own', async () => {
+    const sent = respondWith(reply);
+
+    await searchAlumni({ order: 'desc', page: 1, pageSize: 10 });
+    expect([...queryOf(sent()).keys()].sort()).toEqual(['order', 'page', 'pageSize']);
+
+    await searchAlumni({ sort: 'name', page: 1, pageSize: 10 });
+    expect([...queryOf(sent()).keys()].sort()).toEqual(['page', 'pageSize', 'sort']);
+  });
+
   it('encodes text with spaces and symbols', async () => {
     const sent = respondWith(reply);
 

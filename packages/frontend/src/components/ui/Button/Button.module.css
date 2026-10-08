@@ -53,12 +53,30 @@
   color: var(--accent-strong);
 }
 
+/* Destructive confirm (S6 delete dialog): a solid brick fill. There is no
+   darker error token, so hover flips to an outline in the same brick. */
+.button[data-variant='danger'] {
+  background: var(--error);
+  border-color: var(--error);
+  color: var(--accent-ink);
+}
+
+.button[data-variant='danger']:hover:where(:not(:disabled)) {
+  background: var(--surface-raised);
+  color: var(--error);
+}
+
 .button:disabled {
   cursor: not-allowed;
   color: var(--ink-muted);
 }
 
 .button[data-variant='primary']:disabled {
+  background: var(--surface-sunken);
+  border-color: var(--border-subtle);
+}
+
+.button[data-variant='danger']:disabled {
   background: var(--surface-sunken);
   border-color: var(--border-subtle);
 }

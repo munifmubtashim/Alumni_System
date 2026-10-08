@@ -1,6 +1,6 @@
 import type { Alumni } from '@alumni/shared';
 import { useId } from 'react';
-import { present } from './format';
+import { present } from '@/config/text';
 import styles from './Section.module.css';
 
 export interface AboutSectionProps {

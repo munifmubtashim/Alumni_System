@@ -1,8 +1,13 @@
 import bcrypt from "bcrypt";
 import { UserQuery } from "@alumni/dal";
-import type { MyProfileRow, PublicUserRow, UserDTO } from "@alumni/dal";
+import type { AlumniProfileFields, MyProfileRow, PublicUserRow, RegisterUserFields, UserDTO } from "@alumni/dal";
 import { AppError, isForeignKeyViolation, isUniqueViolation } from "./errors.js";
 import {
+  COMPANY_MAX,
+  DEPARTMENT_MAX,
+  JOB_TITLE_MAX,
+  NAME_MAX,
+  UNIVERSITY_MAX,
   optionalText,
   optionalWebUrl,
   optionalYear,
@@ -17,6 +22,7 @@ import {
 } from "./validation.js";
 
 const BCRYPT_ROUNDS = 10;
+const EMAIL_TAKEN_MESSAGE = "An account with this email already exists";
 
 export const SIGNUP_ROLES = ["alumni", "student"] as const;
 export type SignupRole = (typeof SIGNUP_ROLES)[number];
@@ -30,6 +36,15 @@ export interface NewUserInput {
   name: string;
   email: string;
   password: string;
+}
+
+// A new alumni account's user columns. `password` is plain text here (hashed by createAlumniAccount);
+// university is optional (an admin may leave it out; sign-up requires it).
+export interface NewAlumniAccount {
+  name: string;
+  email: string;
+  password: string;
+  university?: string;
 }
 
 export interface RegistrationInput {
@@ -61,7 +76,7 @@ export class UserManager {
     }
     return {
       role: role as AdminCreateRole,
-      name: requiredText(body.name, "Name", 100),
+      name: requiredText(body.name, "Name", NAME_MAX),
       email: requiredEmail(body.email),
       password: validateNewPassword(body.password),
     };
@@ -74,7 +89,23 @@ export class UserManager {
       return await this.userQuery.createUser({ ...input, password: passwordHash });
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new AppError(409, "An account with this email already exists");
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
+      }
+      throw error;
+    }
+  }
+
+  // Creates a user + alumni row in one transaction (POST /api/admin/alumni). Hashes `user.password`
+  // before storing it; a taken email is 409. Returns the public users columns only.
+  public async createAlumniAccount(user: NewAlumniAccount, profile: AlumniProfileFields): Promise<PublicUserRow> {
+    const passwordHash = await bcrypt.hash(user.password, BCRYPT_ROUNDS);
+    // pg stores an undefined university parameter as NULL.
+    const fields: RegisterUserFields = { ...user, password: passwordHash };
+    try {
+      return await this.userQuery.createAlumniUser(fields, profile);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
       }
       throw error;
     }
@@ -124,10 +155,10 @@ export class UserManager {
     if (!SIGNUP_ROLES.includes(role as SignupRole)) {
       throw new AppError(400, 'Role must be "student" or "alumni"');
     }
-    const name = requiredText(body.name, "Name", 100);
+    const name = requiredText(body.name, "Name", NAME_MAX);
     const email = requiredEmail(body.email);
     const password = validateNewPassword(body.password);
-    const university = requiredText(body.university, "University", 150);
+    const university = requiredText(body.university, "University", UNIVERSITY_MAX);
 
     if (role === "student") {
       return {
@@ -136,7 +167,7 @@ export class UserManager {
         email,
         password,
         university,
-        department: requiredText(body.department, "Department", 100),
+        department: requiredText(body.department, "Department", DEPARTMENT_MAX),
         expected_graduation_year: requiredExpectedYear(body.expected_graduation_year),
       };
     }
@@ -146,10 +177,10 @@ export class UserManager {
       email,
       password,
       university,
-      department: optionalText(body.department, "Department", 100),
+      department: optionalText(body.department, "Department", DEPARTMENT_MAX),
       graduation_year: optionalYear(body.graduation_year, "Graduation year"),
-      current_company: optionalText(body.current_company, "Company", 100),
-      job_title: optionalText(body.job_title, "Job title", 100),
+      current_company: optionalText(body.current_company, "Company", COMPANY_MAX),
+      job_title: optionalText(body.job_title, "Job title", JOB_TITLE_MAX),
       linkedin_url: optionalWebUrl(body.linkedin_url, "LinkedIn URL"),
     };
   }
@@ -176,7 +207,7 @@ export class UserManager {
     } catch (error) {
       // users_email_key unique violation
       if (isUniqueViolation(error)) {
-        throw new AppError(409, "An account with this email already exists");
+        throw new AppError(409, EMAIL_TAKEN_MESSAGE);
       }
       throw error;
     }

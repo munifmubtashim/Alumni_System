@@ -5,19 +5,8 @@ import {
   educationLine,
   employmentTitle,
   headline,
-  present,
   safeLinkedInUrl,
 } from './format';
-
-describe('present', () => {
-  it('trims text and treats missing or blank values as undefined', () => {
-    expect(present('  Ana  ')).toBe('Ana');
-    expect(present('   ')).toBeUndefined();
-    expect(present('')).toBeUndefined();
-    expect(present(null)).toBeUndefined();
-    expect(present(undefined)).toBeUndefined();
-  });
-});
 
 describe('headline', () => {
   it('joins job title, company and class year', () => {

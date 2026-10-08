@@ -1,6 +1,7 @@
 import type { Alumni } from '@alumni/shared';
 import { useId } from 'react';
-import { educationLine, present } from './format';
+import { present } from '@/config/text';
+import { educationLine } from './format';
 import styles from './Section.module.css';
 import { Timeline, type TimelineItem } from './Timeline';
 

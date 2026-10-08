@@ -16,3 +16,8 @@ Beyond LESSON-REQ-009-4's six lists, search all READMEs and vault pages for the 
 ## Saw it in
 
 - `packages/frontend/README.md`, `src/app/README.md`, `features/feed/README.md`, `features/profile/README.md`, `.adlc/knowledge/components/frontend.md` went stale together (REFL-002, CAND-002/018/023); fixed in review round 2
+
+
+## Saw it again
+
+- [[REQ-015]]: the feed, me and profile READMEs' "may not import" lines had missed `about` (REQ-014); fixed with `admin`.

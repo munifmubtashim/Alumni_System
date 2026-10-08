@@ -1,11 +1,6 @@
 import { isAxiosError } from 'axios';
+import { serverMessage } from '@/services/httpErrors';
 import { UNEXPECTED_MESSAGE, UNREACHABLE_MESSAGE } from '@/features/auth';
-
-function serverMessage(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null || !('message' in data)) return undefined;
-  const { message } = data;
-  return typeof message === 'string' && message.trim() !== '' ? message : undefined;
-}
 
 /**
  * The text a failed feed write shows. A 4xx shows the API's own message as is
