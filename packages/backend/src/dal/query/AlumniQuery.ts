@@ -19,6 +19,27 @@ const ORDER_BY: Record<AlumniSort, Record<SortOrder, string>> = {
   },
 };
 
+// GET /api/alumni/suggestions. The CTE reads the caller's department (their alumni row, else their
+// students row) and university; blank counts as missing. Each "same" flag is COALESCE(..., false):
+// a NULL comparison would sort FIRST under DESC and rank people with no department above real
+// department-mates (ADV-001). $1 = caller's user id, $2 = limit.
+const SUGGEST_SQL = `WITH me AS (
+  SELECT COALESCE(NULLIF(ca.department, ''), NULLIF(cs.department, '')) AS department,
+         NULLIF(cu.university, '') AS university
+  FROM users cu
+  LEFT JOIN alumni ca ON ca.user_id = cu.id
+  LEFT JOIN students cs ON cs.user_id = cu.id
+  WHERE cu.id = $1
+  LIMIT 1
+)
+SELECT ${LIST_COLUMNS} ${LIST_FROM}
+LEFT JOIN me ON true
+WHERE a.user_id <> $1
+ORDER BY COALESCE(lower(a.department) = lower(me.department), false) DESC,
+  COALESCE(lower(u.university) = lower(me.university), false) DESC,
+  u.name, a.id
+LIMIT $2`;
+
 function orderByFor(sort: AlumniSort | undefined, order: SortOrder | undefined): string {
   if (sort === undefined) return DEFAULT_ORDER_BY;
   return ORDER_BY[sort][order ?? "asc"];
@@ -122,6 +143,9 @@ export class AlumniQuery {
     if (filters.graduationYear !== undefined) {
       conditions.push(`a.graduation_year = ${next(filters.graduationYear)}`);
     }
+    if (filters.mentorship === true) {
+      conditions.push(`a.mentorship_available = ${next(true)}`);
+    }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const countParams = [...params];
@@ -138,5 +162,12 @@ export class AlumniQuery {
     ]);
 
     return { items: itemsResult.rows, total: countResult.rows[0]?.total ?? 0 };
+  }
+
+  // Up to `limit` other alumni: same department first, then same university, then by name.
+  // The caller is never in the list (matched by user id, so it works for students too).
+  public async suggestAlumni(userId: number, limit: number): Promise<AlumniDTO[]> {
+    const info = await pool.query(SUGGEST_SQL, [userId, limit]);
+    return info.rows;
   }
 }

@@ -19,6 +19,7 @@ describe('route guard', () => {
     expect(ALL_ROUTES.length).toBeGreaterThanOrEqual(23);
     expect(ALL_ROUTES).toContain('DELETE /api/comments/:id');
     expect(ALL_ROUTES).toContain('PUT /api/comments/:id');
+    expect(ALL_ROUTES).toContain('GET /api/alumni/suggestions');
     for (const route of PUBLIC_ROUTES) expect(ALL_ROUTES).toContain(route);
   });
 

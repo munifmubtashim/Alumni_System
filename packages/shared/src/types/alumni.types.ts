@@ -33,12 +33,18 @@ export type AlumniListItem = Omit<Alumni, "email">;
 export type AlumniSort = "name" | "graduationYear";
 export type SortOrder = "asc" | "desc";
 
-// GET /api/alumni?q=&department=&university=&graduationYear=&sort=&order=&page=&pageSize=
+// GET /api/alumni?q=&department=&university=&graduationYear=&mentorship=&sort=&order=&page=&pageSize=
+// mentorship=true returns only alumni with mentorship_available; it takes no other value (REQ-016).
 // page defaults to 1 (max 10000), pageSize to 20 (max 100). total counts every match, not just this page.
 export interface AlumniListResponse {
   items: AlumniListItem[];
   total: number;
 }
+
+// GET /api/alumni/suggestions (any signed-in role; REQ-016): a bare array of up to 5 other alumni,
+// never the caller. Order: same department as the caller (their alumni row, else students row) first,
+// then same university, then name and id; missing values never count as a match. [] when nobody else.
+export type SuggestedAlumni = AlumniListItem[];
 
 // GET/PUT /api/me: the caller's account plus their alumni or students row, if they have one.
 // Every role gets a profile; alumni fields are empty when has_alumni_profile is false,

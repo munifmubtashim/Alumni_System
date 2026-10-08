@@ -112,6 +112,22 @@ describe('AlumniQuery.searchAlumni (GET /api/alumni)', () => {
     expect(items().params).toEqual([2020, 20, 40]);
   });
 
+  it('mentorship adds a.mentorship_available with a bound true, to items and count alike (REQ-016)', async () => {
+    await alumniQuery.searchAlumni({ department: 'CSE', mentorship: true }, paging);
+
+    expect(items().sql).toContain('WHERE lower(a.department) = lower($1) AND a.mentorship_available = $2 ');
+    expect(items().params).toEqual(['CSE', true, 20, 40]);
+    expect(count().sql.trimEnd()).toMatch(/WHERE lower\(a\.department\) = lower\(\$1\) AND a\.mentorship_available = \$2$/);
+    expect(count().params).toEqual(['CSE', true]);
+  });
+
+  it('no mentorship filter adds no mentorship condition', async () => {
+    await alumniQuery.searchAlumni({ department: 'CSE' }, paging);
+
+    expect(items().sql).not.toContain('mentorship_available');
+    expect(count().sql).not.toContain('mentorship_available');
+  });
+
   it('all four filters join with AND and number their parameters in order, paging last', async () => {
     await alumniQuery.searchAlumni(
       { q: 'dev', department: 'CSE', university: 'BUET', graduationYear: 2019 },
@@ -322,5 +338,63 @@ describe('AlumniQuery.updateAlumni (PUT /api/alumni/:id)', () => {
 
     const params = paramsOfLastCall();
     expect(params.slice(7)).toEqual([null, null, null, null, false, 5]);
+  });
+});
+
+describe('AlumniQuery.suggestAlumni (GET /api/alumni/suggestions)', () => {
+  const alumniQuery = new AlumniQuery();
+  const flat = () => sqlOfLastCall().replace(/\s+/g, ' ');
+
+  beforeEach(() => {
+    query.mockResolvedValue({ rows: [] } as never);
+  });
+
+  it('sends one statement with the user id and limit as the only, bound, parameters', async () => {
+    await alumniQuery.suggestAlumni(42, 5);
+
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(paramsOfLastCall()).toEqual([42, 5]);
+    expect(flat()).toMatch(/LIMIT \$2$/);
+    expect(flat()).not.toMatch(/\b42\b/);
+  });
+
+  it("reads the caller's department from alumni, else students, and university from users", async () => {
+    await alumniQuery.suggestAlumni(42, 5);
+
+    expect(flat()).toMatch(/COALESCE\(NULLIF\(ca\.department, ''\), NULLIF\(cs\.department, ''\)\) AS department/);
+    expect(flat()).toMatch(/NULLIF\(cu\.university, ''\) AS university/);
+    expect(flat()).toMatch(/LEFT JOIN alumni ca ON ca\.user_id = cu\.id/);
+    expect(flat()).toMatch(/LEFT JOIN students cs ON cs\.user_id = cu\.id/);
+    expect(flat()).toMatch(/WHERE cu\.id = \$1/);
+  });
+
+  it('excludes the caller by user id and keeps the caller-less rows (LEFT JOIN, not an inner join)', async () => {
+    await alumniQuery.suggestAlumni(42, 5);
+
+    expect(flat()).toMatch(/LEFT JOIN me ON true WHERE a\.user_id <> \$1/);
+  });
+
+  it('orders same department, then same university, each NULL-safe, then name and id (ADV-001)', async () => {
+    await alumniQuery.suggestAlumni(42, 5);
+
+    expect(flat()).toMatch(
+      /ORDER BY COALESCE\(lower\(a\.department\) = lower\(me\.department\), false\) DESC, COALESCE\(lower\(u\.university\) = lower\(me\.university\), false\) DESC, u\.name, a\.id LIMIT \$2$/,
+    );
+  });
+
+  it('selects the public list columns (no email, no password)', async () => {
+    await alumniQuery.suggestAlumni(42, 5);
+
+    expect(flat()).toMatch(/SELECT a\.\*, u\.name, u\.photo_url, u\.university FROM alumni a JOIN users u ON a\.user_id = u\.id/);
+    expect(flat()).not.toMatch(/email|password/i);
+  });
+
+  it('returns the rows in the order the database sent them, and [] when there are none', async () => {
+    const rows = [{ id: 2 }, { id: 1 }];
+    query.mockResolvedValue({ rows } as never);
+    await expect(alumniQuery.suggestAlumni(42, 5)).resolves.toBe(rows);
+
+    query.mockResolvedValue({ rows: [] } as never);
+    await expect(alumniQuery.suggestAlumni(42, 5)).resolves.toEqual([]);
   });
 });
