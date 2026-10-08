@@ -125,3 +125,47 @@ describe('UserQuery /api/me reads and writes the five alumni profile fields (REQ
     expect(clientQuery.mock.calls.some(([sql]) => /UPDATE students/.test(String(sql)))).toBe(true);
   });
 });
+
+describe('UserQuery.createAlumniUser runs in one transaction (REQ-015 admin create, ADV-001)', () => {
+  const userQuery = new UserQuery();
+  const connect = vi.mocked(pool.connect);
+  const clientQuery = vi.fn();
+  const release = vi.fn();
+  const user = { name: 'Al', email: 'al@x.io', password: 'hash', university: 'MIT' };
+  const statements = () => clientQuery.mock.calls.map(([sql]) => String(sql).replace(/\s+/g, ' ').trim());
+
+  beforeEach(() => {
+    clientQuery.mockReset();
+    release.mockReset();
+    clientQuery.mockResolvedValue({ rows: [{ id: 12, name: 'Al' }], rowCount: 1 });
+    connect.mockResolvedValue({ query: clientQuery, release } as never);
+  });
+
+  it('runs BEGIN → users insert → alumni insert (with the new user id) → COMMIT, then releases', async () => {
+    const created = await userQuery.createAlumniUser(user, { department: 'CS', graduation_year: '2015' });
+
+    const sql = statements();
+    expect(sql).toHaveLength(4);
+    expect(sql[0]).toBe('BEGIN');
+    expect(sql[1]).toMatch(/^INSERT INTO users \(name, email, password, role, university\) VALUES \(\$1, \$2, \$3, 'alumni', \$4\)/);
+    expect(sql[2]).toMatch(/^INSERT INTO alumni \(user_id,/);
+    expect(clientQuery.mock.calls[2]?.[1]?.[0]).toBe(12);
+    expect(sql[3]).toBe('COMMIT');
+    expect(created).toEqual({ id: 12, name: 'Al' });
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('rolls back, releases and rethrows when the alumni insert fails', async () => {
+    clientQuery.mockImplementation(async (sql: string) => {
+      if (/INSERT INTO alumni/.test(sql)) throw new Error('alumni insert failed');
+      return { rows: [{ id: 12 }], rowCount: 1 };
+    });
+
+    await expect(userQuery.createAlumniUser(user, {})).rejects.toThrow('alumni insert failed');
+
+    const sql = statements();
+    expect(sql.at(-1)).toBe('ROLLBACK');
+    expect(sql).not.toContain('COMMIT');
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+});

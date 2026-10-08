@@ -16,7 +16,7 @@ import {
   validateUserBasics,
 } from "./validation.js";
 
-const BCRYPT_ROUNDS = 10;
+export const BCRYPT_ROUNDS = 10;
 
 export const SIGNUP_ROLES = ["alumni", "student"] as const;
 export type SignupRole = (typeof SIGNUP_ROLES)[number];
