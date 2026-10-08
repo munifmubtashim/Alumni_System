@@ -129,6 +129,16 @@ it('reads the source tree, lazy features included and tests left out', () => {
   expect(files.some((file) => file.includes('.test.'))).toBe(false);
 });
 
+it('lists every feature the router lazy-loads (L-REQ-014-1)', () => {
+  const router = SOURCES['/src/app/router.tsx'] ?? '';
+  const routed = new Set(
+    [...router.matchAll(/import\('@\/features\/([\w-]+)\//g)].map((match) => match[1]),
+  );
+
+  expect(routed.size).toBeGreaterThan(0);
+  expect([...routed].sort()).toEqual(LAZY_FEATURES.map(({ name }) => name).sort());
+});
+
 describe.each(LAZY_FEATURES)(
   'lazy $name route (ADR-08)',
   ({ name, route, path, dynamicImport }) => {
