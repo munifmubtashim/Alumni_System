@@ -694,7 +694,7 @@ describe('REQ-011: headline, location, degree, start year and mentorship through
   });
 });
 
-describe('BUG-001: POST /api/posts refuses an empty post', () => {
+describe('BUG-001: POST /api/posts refuses a post without a caption', () => {
   let postQuery: InstanceType<typeof PostManager>['postQuery'];
 
   beforeEach(async () => {
@@ -708,15 +708,24 @@ describe('BUG-001: POST /api/posts refuses an empty post', () => {
     );
   });
 
-  it.each([{}, { caption: '   ' }, { caption: null, media_url: '' }])('%j → 400 and nothing is stored', async (body) => {
+  it.each([{}, { caption: '   ' }, { caption: null, media_url: '' }, { media_url: 'https://x.test/a.png' }])('%j → 400 and nothing is stored', async (body) => {
     const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), body);
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ message: 'A post needs a caption or media' });
+    expect(res.body).toEqual({ message: 'A post needs a caption' });
     expect(postQuery.createPost).not.toHaveBeenCalled();
   });
 
   it('a caption alone → 201', async () => {
     const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), { caption: 'hi' });
+    expect(res.status).toBe(201);
+    expect(postQuery.createPost).toHaveBeenCalledTimes(1);
+  });
+
+  it('a caption with media → 201', async () => {
+    const res = await call({ method: 'post', path: '/api/posts' }, tokenFor(STUDENT), {
+      caption: 'hi',
+      media_url: 'https://x.test/a.png',
+    });
     expect(res.status).toBe(201);
     expect(postQuery.createPost).toHaveBeenCalledTimes(1);
   });
