@@ -1047,3 +1047,51 @@ Use both. They serve different purposes.
 **Related:** [[REQ-003]] · [[architecture/adr-05-backend-tests-vitest-supertest|ADR-05]]
 
 ---
+
+## G48 — Feed card test traps: caption selector, trimmed text matchers, minimal fixtures ^g48
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | BUG-001 |
+| Component | frontend feed, backend posts tests |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** In `PostCard`, `querySelector('p')` also matches the byline's time paragraph, so "no caption paragraph" must use the caption class, with a positive control proving that selector matches. jest-dom `toHaveTextContent` trims and collapses whitespace, so it can't prove trimming; compare `textContent` with `toBe`. In `PostManager.test.ts`, the minimal `STORED_POST` fixture (no media) breaks when a rule checks the patch merged onto the stored row.
+
+**Where:** `packages/frontend/src/features/feed/PostCard.test.tsx`, `packages/backend/src/businessLogic/src/PostManager.test.ts`
+
+**Why it's surprising:** The "no element" assertion passes even when the selector is wrong, and the trim test passes against untrimmed output.
+
+**Why it exists:** CSS Modules are non-scoped in Vitest; jest-dom normalizes text by design.
+
+**Don't:** assert absence without a positive control, test trimming with `toHaveTextContent`, or add a merged-row rule without reviewing the stored-row fixtures.
+
+**Related:** [[knowledge/gotchas#^g34|G34]] · [[knowledge/gotchas#^g44|G44]]
+
+---
+
+## G49 — The post caption rule is checked in code only; no DB constraint ^g49
+
+| Field | Value |
+|---|---|
+| Discovered | 2026-10-08 |
+| REQ | BUG-001 |
+| Component | backend posts, database |
+| Status | confirmed |
+| Severity | careful |
+
+**What:** `PostManager` refuses a post or edit without a caption (400 "A post needs a caption"), but `posts.caption` is still a nullable column with no `CHECK`. Rows from before BUG-001 can be caption-less, and the update check is read-then-write, so two concurrent edits could still produce one.
+
+**Where:** `packages/backend/src/businessLogic/src/PostManager.ts` (`requireCaption`), `posts.caption` (see [[knowledge/gotchas#^g15|G15]])
+
+**Why it's surprising:** The API says captions are required, so a reader assumes every row has one.
+
+**Why it exists:** A constraint needs a migration and cleanup of existing rows; deferred at the BUG-001 review gate (m3).
+
+**Don't:** read `caption` without a null-safe guard (`present()`), and don't drop the frontend's tolerance of caption-less rows until a migration adds the constraint.
+
+**Related:** [[knowledge/lessons/LESSON-BUG-001-1-nullable-column-means-null-in-shared-type|L-BUG-001-1]] · [[knowledge/gotchas#^g39|G39]]
+
+---

@@ -2,6 +2,15 @@
 
 Append-only chronological log of significant events. One line per entry. Newest at the top.
 
+## [2026-10-08] ship-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] bug-ready-to-merge | BUG-001-feed-null-caption-crash | null-caption feed crash fixed; caption required on create/update
+## [2026-10-08] lesson | L-BUG-001-1..2 — nullable column is `T | null` in shared types; create and update share one validator
+## [2026-10-08] gotcha | G48–G49 — feed card test traps; caption rule has no DB constraint
+## [2026-10-08] review-gate-cleared | BUG-001-feed-null-caption-crash | findings: C0/M0/m2 open (m3 follow-up, m4 wrapup)
+## [2026-10-08] fix-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] investigate-gate-cleared | BUG-001-feed-null-caption-crash
+## [2026-10-08] work-path-set | BUG-001-feed-null-caption-crash | branch bugfix/BUG-001-feed-null-caption-crash
+## [2026-10-08] report-gate-cleared | BUG-001-feed-null-caption-crash
 ## [2026-10-08] req-archived | REQ-015-admin-page
 ## [2026-10-08] req-merged | REQ-015-admin-page | PR #32 into redesign (8c211e8a)
 ## [2026-10-08] ship-gate-cleared | REQ-015-admin-page
