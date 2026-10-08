@@ -1,5 +1,5 @@
 /* Design: S4 page column, centred. Since REQ-016 the page takes the shared
-   --page-max (from AppShell) so its edges line up with the footer, and from
+   --page-max (from global.css) so its edges line up with the footer, and from
    48rem it is a grid: the post column (flexible; S4's fixed 640px column no
    longer applies once a sidebar exists) and a "Suggested alumni" sidebar
    (no design screen): 16rem from 48rem, so the posts keep about 27rem at a

@@ -1,4 +1,4 @@
-import type { AlumniListResponse, Post, SuggestedAlumni } from '@alumni/shared';
+import type { AlumniListItem, AlumniListResponse, Post } from '@alumni/shared';
 import { screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { HomePage } from './HomePage';
@@ -11,7 +11,7 @@ const mentors: AlumniListResponse = {
   items: [{ id: 2, user_id: 20, name: 'Grace Mentor', mentorship_available: true }],
   total: 1,
 };
-const suggestions: SuggestedAlumni = [{ id: 3, user_id: 30, name: 'Linus Suggested' }];
+const suggestions: AlumniListItem[] = [{ id: 3, user_id: 30, name: 'Linus Suggested' }];
 
 const all = { '/posts': ok(posts), '/alumni': ok(mentors), '/alumni/suggestions': ok(suggestions) };
 

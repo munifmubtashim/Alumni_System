@@ -1,4 +1,4 @@
-import type { Alumni, AlumniListResponse, Post, SuggestedAlumni } from '@alumni/shared';
+import type { Alumni, AlumniListItem, AlumniListResponse, Post } from '@alumni/shared';
 import { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig } from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
 import { getAlumniProfile, getPostsByUser, getSuggestedAlumni, searchAlumni } from './alumniApi';
@@ -218,7 +218,7 @@ describe('getSuggestedAlumni', () => {
   });
 
   it('gets /alumni/suggestions with no query string and returns the array', async () => {
-    const people: SuggestedAlumni = [
+    const people: AlumniListItem[] = [
       { id: 2, user_id: 8, name: 'Grace Hopper', mentorship_available: true },
     ];
     const sent = respondWith(people);

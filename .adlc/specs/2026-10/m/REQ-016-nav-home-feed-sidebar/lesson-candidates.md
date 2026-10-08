@@ -72,3 +72,63 @@
 **Claim:** Size a sidebar per breakpoint, and check it at the exact breakpoint width; a fixed 20rem rail at 48rem leaves the main column barely wider than the rail.
 **Saw it in:** `packages/frontend/src/features/feed/FeedPage.module.css` (48rem / 64rem grid)
 **Context:** At 768px the Feed was 352px of posts beside a 320px sidebar; Home kept 20rem because 16rem cut mentor names.
+
+## CAND-014 [review-qual]
+**Claim:** When a new feature needs the same card/loading/empty/error shell as an existing one, extract the shell to the shared home first instead of copying it.
+**Saw it in:** `packages/frontend/src/features/people/SuggestedAlumni.tsx:36` vs `packages/frontend/src/features/home/HomeSection.tsx:40`
+**Context:** Eager people feature copied Home's section shell and CSS because the shell lived in home/.
+
+## CAND-015 [review-qual]
+**Claim:** Put the fake-API (axios adapter) test helpers in src/test/ once; every REQ that re-declares them adds drift.
+**Saw it in:** `packages/frontend/src/features/people/SuggestedAlumni.test.tsx:15` and `features/home/homeTestKit.tsx:21`
+**Context:** Third copy of ok/fail/never; the kit header already lists the move as an open follow-up.
+
+## CAND-016 [review-qual]
+**Claim:** Do not assert CSS-module class names in tests to prove a layout rule; test the rule in CSS text or measure it in a browser.
+**Saw it in:** `packages/frontend/src/app/AppShell/SiteFooter.test.tsx:44`
+**Context:** jsdom has no layout, so the footer-alignment test only pins markup.
+
+## CAND-001 [review-corr]
+**Claim:** When a ranked list depends on the caller's own profile fields, invalidate its query key in the profile-save handler.
+**Saw it in:** `packages/frontend/src/features/people/useSuggestedAlumni.ts:19`
+**Context:** Suggestions use a 5-minute staleTime and are only invalidated by admin writes.
+
+## CAND-002 [review-corr]
+**Claim:** In SQL ORDER BY on a boolean comparison, wrap with COALESCE(..., false); NULL sorts first under DESC.
+**Saw it in:** `packages/backend/src/dal/query/AlumniQuery.ts:22`
+**Context:** Already handled here (ADV-001); worth a lesson for the next ranked query.
+
+## CAND-101 [review-arch]
+**Claim:** A CSS custom property read by lazy pages and shared chrome belongs in global.css `:root` (or has a fallback), not only on one shell element.
+**Saw it in:** `packages/frontend/src/app/AppShell/AppShell.module.css` (`--page-max`)
+**Context:** Five modules use it; outside AppShell the width rule silently becomes invalid.
+
+## CAND-102 [review-arch]
+**Claim:** Put a list shared by an eager and a lazy page in its own eager feature folder with an index.ts, never a copy and never a lazy-to-lazy import.
+**Saw it in:** `packages/frontend/src/features/people/index.ts`
+**Context:** Worked cleanly for REQ-016 (L-REQ-008-6 applied); LAZY_FEATURES stayed untouched.
+
+## CAND-014 [review-reflect]
+**Claim:** Pure helpers copied across Home, Feed and Profile post lines (`isoDate`, unknown-author text) belong in `config/`, not a third copy.
+**Saw it in:** `packages/frontend/src/features/home/LatestPosts.tsx:28`
+**Context:** Third copy of `isoDate` after `feed/feedFormat.ts` and `profile/PostCard.tsx:15`.
+
+## CAND-015 [review-reflect]
+**Claim:** Document one page-width custom property (`--page-max`) and list which pages deliberately stay off it, so the footer alignment claim is checkable.
+**Saw it in:** `packages/frontend/src/app/AppShell/AppShell.module.css:21`, `features/me/MePage.module.css:17`
+**Context:** Four pages use it; Me, About and Admin do not.
+
+## CAND-103 [implement-task]
+**Claim:** Before adding a cache invalidation, check whether a root-key invalidation already covers it: `invalidateQueries` matches by prefix.
+**Saw it in:** `packages/frontend/src/features/me/useUpdateProfile.ts:31`
+**Context:** CORR-001 asked to invalidate `['alumni','suggestions']` after PUT /api/me; the existing `['alumni']` call already did, so the fix was a test, not code.
+
+## CAND-104 [implement-task]
+**Claim:** Use a CSS size container on a list row to re-flow it in narrow columns, rather than a viewport media query.
+**Saw it in:** `packages/frontend/src/features/people/PersonRow.module.css:14`
+**Context:** The same PersonRow sits in a 16rem Feed sidebar and a 20rem Home column at one viewport width; only the row's own width tells them apart (UI-001).
+
+## CAND-105 [review-qual]
+**Claim:** A shared fake-API test helper should offer a strict mode that rejects unlisted URLs, so a wrong URL fails loudly instead of timing out.
+**Saw it in:** `packages/frontend/src/test/fakeApi.tsx:62`
+**Context:** Moving to the shared helper changed unlisted-URL behaviour from reject to hang for the people test.

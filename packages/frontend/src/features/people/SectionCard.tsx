@@ -5,9 +5,13 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { cx } from '@/components/ui/cx';
-import styles from './HomeSection.module.css';
+import styles from './SectionCard.module.css';
 
-export interface HomeSectionAction {
+const HEADINGS = { 2: 'h2', 3: 'h3', 4: 'h4' } as const;
+
+export type SectionHeadingLevel = keyof typeof HEADINGS;
+
+export interface SectionCardAction {
   to: string;
   /** The visible link text ("See all"). */
   label: string;
@@ -15,27 +19,38 @@ export interface HomeSectionAction {
   name?: string;
 }
 
-export interface HomeSectionProps {
+export interface SectionCardProps {
   title: string;
+  /** The title's heading level, so it fits the parent page's outline. Default 2. */
+  headingLevel?: SectionHeadingLevel;
   /** A link beside the title (to the full page). */
-  action?: HomeSectionAction;
+  action?: SectionCardAction;
+  /** Placement from the parent (grid area, margins). */
   className?: string;
   children: ReactNode;
 }
 
 /**
- * One Home section: a card (`<section>`, named by its h2 title) with an
- * optional link to the full page beside the title. The section's own
- * loading, empty and error content goes in as children.
+ * One section card (Home's sections, the Feed sidebar): a `<section>` named by
+ * its title, with an optional link to the full page beside the title. The
+ * section's own loading, empty and error content goes in as children, built
+ * from the helpers below, so every section looks and behaves alike.
  */
-export function HomeSection({ title, action, className, children }: HomeSectionProps) {
+export function SectionCard({
+  title,
+  headingLevel = 2,
+  action,
+  className,
+  children,
+}: SectionCardProps) {
   const headingId = useId();
+  const Heading = HEADINGS[headingLevel];
   return (
     <Card as="section" aria-labelledby={headingId} className={cx(styles.section, className)}>
       <div className={styles.header}>
-        <h2 id={headingId} className={styles.heading}>
+        <Heading id={headingId} className={styles.heading}>
           {title}
-        </h2>
+        </Heading>
         {action !== undefined && (
           <Link to={action.to} className={styles.action} aria-label={action.name}>
             {action.label}
@@ -63,7 +78,7 @@ export interface SectionErrorProps {
   onRetry: () => void;
 }
 
-/** A section's own error: an inline alert with Retry under it, so the rest of Home stays. */
+/** A section's own error: an inline alert with Retry under it, so the rest of the page stays. */
 export function SectionError({ title, retrying, onRetry }: SectionErrorProps) {
   return (
     <div className={styles.error}>

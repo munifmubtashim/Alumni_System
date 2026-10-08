@@ -44,7 +44,7 @@ export interface AlumniListResponse {
 // GET /api/alumni/suggestions (any signed-in role; REQ-016): a bare array of up to 5 other alumni,
 // never the caller. Order: same department as the caller (their alumni row, else students row) first,
 // then same university, then name and id; missing values never count as a match. [] when nobody else.
-export type SuggestedAlumni = AlumniListItem[];
+// The body is AlumniListItem[]; there is no alias, so the name stays free for the UI card.
 
 // GET/PUT /api/me: the caller's account plus their alumni or students row, if they have one.
 // Every role gets a profile; alumni fields are empty when has_alumni_profile is false,

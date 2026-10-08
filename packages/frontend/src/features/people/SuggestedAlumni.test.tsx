@@ -1,62 +1,27 @@
-import type { SuggestedAlumni as SuggestedAlumniList } from '@alumni/shared';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { act, render, screen, within } from '@testing-library/react';
+import type { AlumniListItem } from '@alumni/shared';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
-  AxiosError,
-  type AxiosAdapter,
-  type AxiosResponse,
-  type InternalAxiosRequestConfig,
-} from 'axios';
-import { MemoryRouter } from 'react-router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createQueryClient } from '@/app/queryClient';
-import { httpClient } from '@/services/httpClient';
+  fail,
+  mockApi,
+  never,
+  ok,
+  renderWithProviders,
+  requests,
+  resetApi,
+  type Responder,
+} from '@/test/fakeApi';
 import { SuggestedAlumni, type SuggestedAlumniProps } from './SuggestedAlumni';
 
-// ---- a fake API at the axios adapter (the REQ-001 test policy) ----
-
-type Responder = (config: InternalAxiosRequestConfig) => Promise<AxiosResponse>;
-
-const ok =
-  (data: unknown): Responder =>
-  (config) =>
-    Promise.resolve({ data, status: 200, statusText: 'OK', headers: {}, config });
-
-// A custom adapter must reject non-2xx itself (G26).
-const fail =
-  (status: number): Responder =>
-  (config) =>
-    Promise.reject(
-      new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, null, {
-        data: { message: 'nope' },
-        status,
-        statusText: String(status),
-        headers: {},
-        config,
-      }),
-    );
-
-/** Never answers: the query stays pending. */
-const never: Responder = () => new Promise<AxiosResponse>(() => undefined);
-
-const originalAdapter = httpClient.defaults.adapter;
-const requests: string[] = [];
+const SUGGESTIONS_URL = '/alumni/suggestions';
 
 /** Each GET /alumni/suggestions takes the next responder; the last one repeats. */
 function mockSuggestions(...responders: Responder[]): void {
-  const adapter: AxiosAdapter = (config) => {
-    const url = config.url ?? '';
-    if (url !== '/alumni/suggestions') return Promise.reject(new Error(`Unmocked: ${url}`));
-    requests.push(url);
-    const responder = responders[Math.min(requests.length, responders.length) - 1];
-    if (responder === undefined) return Promise.reject(new Error('no responder'));
-    return responder(config);
-  };
-  httpClient.defaults.adapter = adapter;
+  mockApi({ [SUGGESTIONS_URL]: responders });
 }
 
-const people: SuggestedAlumniList = [
+const people: AlumniListItem[] = [
   {
     id: 3,
     user_id: 30,
@@ -69,30 +34,18 @@ const people: SuggestedAlumniList = [
 ];
 
 function renderSuggestions(props: SuggestedAlumniProps = {}) {
-  const client = createQueryClient();
-  // Errors end at once here; the app's retry policy is tested in queryClient.test.ts.
-  client.setDefaultOptions({
-    queries: { ...client.getDefaultOptions().queries, retry: false },
-  });
-  render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter>
-        <p>Parent content</p>
-        <SuggestedAlumni {...props} />
-      </MemoryRouter>
-    </QueryClientProvider>,
-  );
-  return client;
+  return renderWithProviders(
+    <>
+      <p>Parent content</p>
+      <SuggestedAlumni {...props} />
+    </>,
+  ).queryClient;
 }
 
 const region = () => screen.getByRole('region', { name: 'Suggested alumni' });
 
-beforeEach(() => {
-  requests.length = 0;
-});
-
 afterEach(() => {
-  httpClient.defaults.adapter = originalAdapter;
+  resetApi();
 });
 
 describe('SuggestedAlumni', () => {
@@ -104,7 +57,7 @@ describe('SuggestedAlumni', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/alumni/3', '/alumni/4']);
     expect(links[0]).toHaveAccessibleName('Ada Lovelace Engineer, Analytical Mentor');
     expect(links[1]).toHaveAccessibleName('Grace Hopper');
-    expect(requests).toEqual(['/alumni/suggestions']);
+    expect(requests.map((request) => request.url)).toEqual([SUGGESTIONS_URL]);
   });
 
   it("caches under the alumni root, so the admin page's invalidation reaches it", async () => {

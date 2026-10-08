@@ -1,10 +1,10 @@
 import type {
   Alumni,
+  AlumniListItem,
   AlumniListResponse,
   AlumniSort,
   Post,
   SortOrder,
-  SuggestedAlumni,
 } from '@alumni/shared';
 import { httpClient } from './httpClient';
 
@@ -54,8 +54,8 @@ export async function searchAlumni(params: AlumniSearchParams): Promise<AlumniLi
 
 // GET /api/alumni/suggestions: up to 5 other alumni for the signed-in user
 // (ranked by the API; a bare array, [] when there is nobody else).
-export async function getSuggestedAlumni(): Promise<SuggestedAlumni> {
-  const res = await httpClient.get<SuggestedAlumni>('/alumni/suggestions');
+export async function getSuggestedAlumni(): Promise<AlumniListItem[]> {
+  const res = await httpClient.get<AlumniListItem[]>('/alumni/suggestions');
   return res.data;
 }
 

@@ -9,8 +9,8 @@ import { FEED_PATH } from '@/config/feedPath';
 import { FEED_QUERY_ROOT } from '@/config/queryKeys';
 import { relativeTime } from '@/config/relativeTime';
 import { present } from '@/config/text';
+import { SectionCard, SectionEmpty, SectionError, SectionLoadingStatus } from '@/features/people';
 import { listPosts } from '@/services/postsApi';
-import { HomeSection, SectionEmpty, SectionError, SectionLoadingStatus } from './HomeSection';
 import styles from './LatestPosts.module.css';
 
 /** How many posts Home previews. */
@@ -135,11 +135,11 @@ export function LatestPosts() {
   }
 
   return (
-    <HomeSection
+    <SectionCard
       title="Latest from the feed"
       action={{ to: FEED_PATH, label: 'See all', name: 'See all posts' }}
     >
       {body}
-    </HomeSection>
+    </SectionCard>
   );
 }

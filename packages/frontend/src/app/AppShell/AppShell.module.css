@@ -13,12 +13,9 @@
    (space-1 top, space-2 + space-1 / 2 bottom), tab padding (space-2 twice),
    the 1.25rem icon, the space-1 gap and one caption line. BottomTabs uses it
    as its min height, so the two never disagree by more than a wrapped label.
-   --page-max: the widest a page's content column gets (REQ-016). Home,
-   Directory, Profile, Feed and the footer's inner box all use
-   min(100%, var(--page-max)), centred inside the same gutters, so the footer
-   lines up with the page above it. */
+   --page-max (the page column width, REQ-016) is declared in
+   styles/global.css :root. */
 .shell {
-  --page-max: 72rem;
   --tab-bar-height: calc(
     1px + var(--space-1) + var(--space-2) * 2 + 1.25rem + var(--space-1) +
       var(--text-caption-line) + var(--space-2) + var(--space-1) / 2

@@ -7,7 +7,7 @@
 
 .page {
   /* The shell no longer caps page width (REQ-007), so the page does, with the
-     shared --page-max from AppShell (REQ-016). */
+     shared --page-max from global.css (REQ-016). */
   width: min(100%, var(--page-max));
   margin-inline: auto;
   display: flex;

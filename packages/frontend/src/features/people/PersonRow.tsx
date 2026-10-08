@@ -25,6 +25,8 @@ function roleLine(person: AlumniListItem): string | undefined {
  * is true. The whole row is one link to the profile. It carries no directory
  * router state, so the profile's back link goes to the plain directory. Each
  * line is its own block element so the link's name reads with spaces (G27).
+ * In a narrow column the Mentor tag drops under the text (a container query
+ * in the CSS), so the role line keeps the full width.
  */
 export function PersonRow({ person }: PersonRowProps) {
   const name = present(person.name) ?? '';
@@ -32,16 +34,23 @@ export function PersonRow({ person }: PersonRowProps) {
 
   return (
     <Link to={profilePath(person.id)} className={styles.row}>
-      <Avatar name={name} photoUrl={present(person.photo_url)} size="sm" />
-      <div className={styles.identity}>
-        <p className={styles.name}>{name}</p>
-        {role !== undefined && <p className={styles.role}>{role}</p>}
-      </div>
-      {person.mentorship_available === true && (
-        <div className={styles.tag}>
-          <Tag tone="accent">Mentor</Tag>
+      <div className={styles.layout}>
+        <Avatar
+          name={name}
+          photoUrl={present(person.photo_url)}
+          size="sm"
+          className={styles.avatar}
+        />
+        <div className={styles.identity}>
+          <p className={styles.name}>{name}</p>
+          {role !== undefined && <p className={styles.role}>{role}</p>}
         </div>
-      )}
+        {person.mentorship_available === true && (
+          <div className={styles.tag}>
+            <Tag tone="accent">Mentor</Tag>
+          </div>
+        )}
+      </div>
     </Link>
   );
 }
@@ -49,7 +58,7 @@ export function PersonRow({ person }: PersonRowProps) {
 /** A placeholder in the row's shape, shown while the list loads. Decorative. */
 export function PersonRowSkeleton() {
   return (
-    <div aria-hidden="true" className={styles.row} data-skeleton="">
+    <div aria-hidden="true" className={styles.skeletonRow} data-skeleton="">
       <Skeleton shape="circle" className={styles.skeletonAvatar} />
       <div className={styles.identity}>
         <Skeleton className={styles.skeletonName} />

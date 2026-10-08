@@ -1,8 +1,8 @@
-/* A Home section card (REQ-016, no design screen): Card's surface, border,
-   radius and padding; the title in heading-sm with the "See all" style link
-   on the right in the accent label (as the log-in page's links). The error
-   state follows the profile's Recent posts: the alert spans the card and
-   Retry sits under it, start-aligned. */
+/* A section card (REQ-016, no design screen), shared by Home's sections and
+   the Feed sidebar: Card's surface, border, radius and padding; the title in
+   heading-sm with the "See all" style link on the right in the accent label
+   (as the log-in page's links). The error state follows the profile's Recent
+   posts: the alert spans the card and Retry sits under it, start-aligned. */
 
 .section {
   min-width: 0;

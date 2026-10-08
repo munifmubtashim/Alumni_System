@@ -2,10 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { DIRECTORY_PATH } from '@/config/directoryReturn';
 import { ALUMNI_QUERY_ROOT } from '@/config/queryKeys';
-import { PersonRow, PersonRowSkeleton } from '@/features/people';
+import {
+  PersonList,
+  PersonListSkeleton,
+  SectionCard,
+  SectionEmpty,
+  SectionError,
+  SectionLoadingStatus,
+} from '@/features/people';
 import { searchAlumni } from '@/services/alumniApi';
-import { HomeSection, SectionEmpty, SectionError, SectionLoadingStatus } from './HomeSection';
-import styles from './MentorsAvailable.module.css';
 
 /** How many mentors Home shows. */
 export const MENTORS_SHOWN = 4;
@@ -42,11 +47,7 @@ export function MentorsAvailable({ ownAlumniId }: MentorsAvailableProps) {
     body = (
       <>
         <SectionLoadingStatus>Loading mentors…</SectionLoadingStatus>
-        <div className={styles.list} aria-busy="true">
-          {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-            <PersonRowSkeleton key={index} />
-          ))}
-        </div>
+        <PersonListSkeleton count={SKELETON_COUNT} />
       </>
     );
   } else if (mentors.isError && mentors.data === undefined) {
@@ -67,22 +68,16 @@ export function MentorsAvailable({ ownAlumniId }: MentorsAvailableProps) {
       people.length === 0 ? (
         <SectionEmpty>No mentors available yet. Check back soon.</SectionEmpty>
       ) : (
-        <ul className={styles.list}>
-          {people.map((person) => (
-            <li key={person.id}>
-              <PersonRow person={person} />
-            </li>
-          ))}
-        </ul>
+        <PersonList people={people} />
       );
   }
 
   return (
-    <HomeSection
+    <SectionCard
       title="Mentors available"
       action={{ to: DIRECTORY_PATH, label: 'Browse directory' }}
     >
       {body}
-    </HomeSection>
+    </SectionCard>
   );
 }

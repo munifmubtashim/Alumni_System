@@ -5,6 +5,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CURRENT_USER_QUERY_KEY } from '@/features/auth';
+import { SUGGESTED_ALUMNI_KEY } from '@/features/people';
 import { clearToken, setToken } from '@/services/authToken';
 import { httpClient } from '@/services/httpClient';
 import { useUpdateProfile } from './useUpdateProfile';
@@ -85,6 +86,10 @@ describe('useUpdateProfile', () => {
       ['feed', 'comments', 1],
       ['alumni', 'profile', 11],
       ['alumni', 'search', {}],
+      // Home and the Feed sidebar: ranked by the user's own department and
+      // university, and the mentors list follows the mentorship switch.
+      ['alumni', 'suggestions'],
+      ['alumni', 'mentors'],
       ['posts', 'user', 1],
     ] as const;
     const fetches = new Map<string, number>();
@@ -125,6 +130,23 @@ describe('useUpdateProfile', () => {
     unsubscribes.forEach((unsubscribe) => {
       unsubscribe();
     });
+  });
+
+  it('marks the suggested alumni stale, so Home and the Feed re-rank them (CORR-001)', async () => {
+    api({ '/me': 200 });
+    const { client, result } = setup();
+    // No observer: the card is not on /me, so the entry only goes stale and
+    // refetches when Home or the Feed mounts it again.
+    client.setQueryData(SUGGESTED_ALUMNI_KEY, []);
+
+    await act(() =>
+      result.current.mutateAsync({
+        profile: { name: 'Sophia Martins', department: 'Physics' },
+        password: null,
+      }),
+    );
+
+    expect(client.getQueryState(SUGGESTED_ALUMNI_KEY)?.isInvalidated).toBe(true);
   });
 
   it('skips PUT /api/me when only the password is sent, and leaves the cache alone', async () => {
