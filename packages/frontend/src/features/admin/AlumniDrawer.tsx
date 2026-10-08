@@ -3,10 +3,11 @@ import { useId, useMemo, useRef, useState, type RefObject, type SubmitEvent } fr
 import { flushSync } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import { Drawer, type DrawerChangeReason } from '@/components/ui/Drawer';
+import { present } from '@/config/text';
 import { mapAdminError } from './adminErrors';
 import { AlumniForm } from './AlumniForm';
+import { GONE_TEXT } from './rowText';
 import { useCreateAlumni, useUpdateAlumni } from './mutations';
-import { present } from './rowText';
 import {
   EMPTY_VALUES,
   formFields,
@@ -24,7 +25,6 @@ import styles from './AlumniDrawer.module.css';
 export const ADD_TITLE = 'Add alumni';
 export const EDIT_TITLE = 'Edit alumni';
 export const CHANGES_SAVED_TEXT = 'Changes saved';
-export const GONE_TEXT = 'This alumni no longer exists';
 export const DISCARD_NEW_TEXT = 'Discard this new alumni?';
 export const DISCARD_CHANGES_TEXT = 'Discard changes?';
 
@@ -64,7 +64,8 @@ function initialValues(target: DrawerTarget): AlumniFormValues {
 /**
  * The S6 add/edit drawer. Add creates an account (POST /api/admin/alumni),
  * edit sets the six profile fields (PUT /api/admin/alumni/:id); neither is
- * optimistic. Errors show when a field is left or the form is submitted, and
+ * optimistic; edit's Save changes stays disabled until a value differs from
+ * the row (compared trimmed). Errors show when a field is left or the form is submitted, and
  * a failed submit focuses the first invalid field (ADR-04, L-REQ-002-7).
  *
  * While a save is in flight every control is disabled and close requests (×,
@@ -126,6 +127,9 @@ export function AlumniDrawer({ open, target, onClose, onToast, listHeadingId }: 
   const create = useCreateAlumni();
   const update = useUpdateAlumni();
   const dirty = isFormDirty(values, initial, mode);
+  // Edit saves only a change: an untouched (or whitespace-only) edit has
+  // nothing to send, so Save changes stays disabled until a value differs.
+  const nothingToSave = mode === 'edit' && !dirty;
 
   function close() {
     onClose(trigger);
@@ -214,7 +218,7 @@ export function AlumniDrawer({ open, target, onClose, onToast, listHeadingId }: 
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (savingRef.current || confirming) return;
+    if (savingRef.current || confirming || nothingToSave) return;
     const found = validateAlumniForm(values, mode);
     const firstInvalid = fields.find((field) => found[field] !== undefined);
     flushSync(() => {
@@ -273,7 +277,13 @@ export function AlumniDrawer({ open, target, onClose, onToast, listHeadingId }: 
       >
         Cancel
       </Button>
-      <Button type="submit" form={formId} variant="primary" loading={saving}>
+      <Button
+        type="submit"
+        form={formId}
+        variant="primary"
+        loading={saving}
+        disabled={nothingToSave}
+      >
         {mode === 'add' ? 'Add alumni' : 'Save changes'}
       </Button>
     </div>

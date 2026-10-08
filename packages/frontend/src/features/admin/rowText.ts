@@ -1,4 +1,8 @@
 import type { AlumniListItem } from '@alumni/shared';
+import { present } from '@/config/text';
+
+/** The toast when an edit or delete finds the alumni already deleted (404). */
+export const GONE_TEXT = 'This alumni no longer exists';
 
 /** Shown in place of a missing name in the row and in the action buttons' names. */
 export const UNNAMED = 'Unnamed alumni';
@@ -7,12 +11,6 @@ export const UNNAMED = 'Unnamed alumni';
 export function alumniName(row: AlumniListItem): string {
   const name = row.name?.trim() ?? '';
   return name === '' ? UNNAMED : name;
-}
-
-/** Trimmed text, or undefined when there is none. */
-export function present(value: string | null | undefined): string | undefined {
-  const trimmed = value?.trim() ?? '';
-  return trimmed === '' ? undefined : trimmed;
 }
 
 /** The phone card's second line, "2017 · Product Design", from whichever parts exist. */

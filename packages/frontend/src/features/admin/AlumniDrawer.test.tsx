@@ -10,8 +10,8 @@ import {
   DISCARD_CHANGES_TEXT,
   DISCARD_NEW_TEXT,
   EDIT_TITLE,
-  GONE_TEXT,
 } from './AlumniDrawer';
+import { GONE_TEXT } from './rowText';
 import {
   alumni,
   byPage,
@@ -360,6 +360,28 @@ describe('AlumniDrawer: edit', () => {
     await waitFor(() => {
       expect(trigger).toHaveFocus();
     });
+  });
+
+  it('keeps Save changes disabled until a value differs from the row', async () => {
+    const { user, api } = await renderPage({ 'PUT /admin/alumni/2': ok(SECOND) });
+    const { drawer } = await openEdit(user, 'Alum 2');
+    const save = within(drawer).getByRole('button', { name: 'Save changes' });
+
+    expect(save).toBeDisabled();
+    await submit(user);
+    // Whitespace around a value is not a change.
+    await user.type(field('Department'), '  ');
+    expect(save).toBeDisabled();
+    await submit(user);
+    expect(api.bodies).toEqual([]);
+    expect(screen.queryByText(CHANGES_SAVED_TEXT)).not.toBeInTheDocument();
+    expect(dialog(EDIT_TITLE)).toBeInTheDocument();
+
+    await user.type(field('Department'), 'and Law');
+    expect(save).toBeEnabled();
+    await user.clear(field('Department'));
+    await user.type(field('Department'), 'Economics');
+    expect(save).toBeDisabled();
   });
 
   it('returns focus to the list heading when the edited row has left the page', async () => {

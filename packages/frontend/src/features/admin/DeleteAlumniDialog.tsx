@@ -5,7 +5,7 @@ import { Alert } from '@/components/ui/Alert';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { BRAND_NAME } from '@/config/brand';
 import { TrashIcon } from './AdminIcons';
-import { GONE_TEXT } from './AlumniDrawer';
+import { GONE_TEXT } from './rowText';
 import { mapDeleteError } from './deleteErrors';
 import { useDeleteAlumni } from './mutations';
 import { alumniName } from './rowText';
