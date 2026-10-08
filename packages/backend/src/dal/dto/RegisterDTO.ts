@@ -4,7 +4,9 @@ export interface RegisterUserFields {
   name: string;
   email: string;
   password: string; // bcrypt hash, never plaintext
-  university: string;
+  // Required at sign-up (the validator enforces it); an admin-created alumni account may omit it.
+  // undefined is stored as NULL.
+  university?: string;
 }
 
 export interface AlumniProfileFields {
