@@ -132,3 +132,25 @@
 **Claim:** A shared fake-API test helper should offer a strict mode that rejects unlisted URLs, so a wrong URL fails loudly instead of timing out.
 **Saw it in:** `packages/frontend/src/test/fakeApi.tsx:62`
 **Context:** Moving to the shared helper changed unlisted-URL behaviour from reject to hang for the people test.
+
+## Candidate verdicts
+
+The file's numbers collide (implementers and reviewers each started at CAND-001); entries are identified by their `[source]` tag and claim.
+
+| Candidate | Verdict | Target / Reason |
+|---|---|---|
+| CAND-005 [implement], CAND-002 [review-corr] | promote | LESSON-REQ-016-1 |
+| CAND-010 [implement] | promote | LESSON-REQ-016-2 |
+| CAND-003 [implement, --page-max], CAND-101, CAND-015 [review-reflect], CAND-016 [review-qual] | promote | LESSON-REQ-016-3 |
+| CAND-014 [review-qual], CAND-015 [review-qual], CAND-105 | promote | LESSON-REQ-016-4 |
+| CAND-103, CAND-001 [review-corr] | promote | LESSON-REQ-016-5 (CORR-001 was a reviewer mistake) |
+| CAND-008 [implement] | demote-to-gotcha | ^g50 |
+| CAND-007 [implement] | demote-to-gotcha | ^g51 |
+| CAND-004 [implement] | demote-to-gotcha | ^g52 |
+| CAND-002 [implement, nav ['me']], CAND-003 [implement, NavLink end] | demote-to-gotcha | ^g53 |
+| CAND-009 [implement] | demote-to-gotcha | ^g54 |
+| CAND-006, CAND-102 | discard | duplicate of LESSON-REQ-008-6 (applied cleanly; no new claim) |
+| CAND-001 [implement] | discard | recorded in conventions-api.md |
+| CAND-002 [implement, headless measuring] | discard | tooling recipe; kept in screenshot-diff.md |
+| CAND-011, CAND-012, CAND-013, CAND-104 | discard | one-off, already fixed in this REQ |
+| CAND-014 [review-reflect] | discard | follow-up task (move isoDate and author text to config/), listed in the PR |

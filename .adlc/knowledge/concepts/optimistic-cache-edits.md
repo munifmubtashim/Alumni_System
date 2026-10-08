@@ -19,4 +19,4 @@ Writes that must show before the server answers (a new post or comment, an edit,
 
 `cacheEdits.test.ts` (every edit), `useFeedMutations.test.tsx` (rollback, overlapping writes, 401, paused writes). Traps: [[knowledge/gotchas#^g34|G34]].
 
-Introduced in [[REQ-009]].
+Introduced in [[REQ-009]]. Note ([[REQ-016]]): Home's `['feed','latest']` query is safe next to these edits only because they use exact keys; it refetches on mount (`refetchOnMount: 'always'`) instead of relying on them.
